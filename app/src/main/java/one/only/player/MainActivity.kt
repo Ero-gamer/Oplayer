@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -40,8 +41,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.only.player.core.common.AppThemeMode
+import one.only.player.core.common.createManageExternalStorageAccessIntent
 import one.only.player.core.common.extensions.applyPrivacyProtection
 import one.only.player.core.common.extensions.resolvePrivacyPreviewScrim
+import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.common.storagePermission
 import one.only.player.core.media.services.MediaService
 import one.only.player.core.media.sync.MediaSynchronizer
@@ -208,10 +211,6 @@ class MainActivity : AppCompatActivity() {
                 paletteStyle = preferences?.themePaletteStyle ?: ThemePaletteStyle.TONAL_SPOT,
                 colorSpec = preferences?.themeColorSpec ?: ThemeColorSpec.SPEC_2025,
             ) {
-                if (!shouldShowStartupSplash) {
-                    StartupUpdateDialog(viewModel = viewModel)
-                }
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MiuixTheme.colorScheme.surface,
@@ -355,19 +354,43 @@ class MainActivity : AppCompatActivity() {
         onResumeWithPermission: () -> Unit,
     ) {
         val storagePermissionState = rememberRuntimePermissionState(permission = storagePermission)
+        var hasAllFilesAccess by remember {
+            mutableStateOf(hasManageExternalStorageAccess())
+        }
 
         LifecycleEventEffect(event = Lifecycle.Event.ON_START) {
             storagePermissionState.launchPermissionRequest()
         }
 
-        LaunchedEffect(storagePermissionState.isGranted) {
-            if (!storagePermissionState.isGranted) return@LaunchedEffect
+        LaunchedEffect(storagePermissionState.isGranted, hasAllFilesAccess) {
+            if (!storagePermissionState.isGranted || !hasAllFilesAccess) return@LaunchedEffect
             onPermissionGranted()
         }
 
         LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
             if (!storagePermissionState.isGranted) return@LifecycleEventEffect
+            val hasAccess = hasManageExternalStorageAccess()
+            hasAllFilesAccess = hasAccess
+            if (!hasAccess) return@LifecycleEventEffect
             onResumeWithPermission()
+        }
+
+        NavigationBarColorEffect(
+            activity = this@MainActivity,
+            color = MiuixTheme.colorScheme.surface,
+        )
+
+        if (storagePermissionState.isGranted && !hasAllFilesAccess) {
+            AllFilesAccessDialog(
+                onGrantClick = {
+                    startActivity(createManageExternalStorageAccessIntent(this@MainActivity))
+                },
+            )
+            return
+        }
+
+        if (storagePermissionState.isGranted && hasAllFilesAccess) {
+            StartupUpdateDialog(viewModel = viewModel)
         }
 
         val mainNavController = rememberNavController()
@@ -386,10 +409,6 @@ class MainActivity : AppCompatActivity() {
             pendingDebugPlayerIntent = null
             startActivity(playerIntent)
         }
-        NavigationBarColorEffect(
-            activity = this@MainActivity,
-            color = MiuixTheme.colorScheme.surface,
-        )
 
         Surface(
             modifier = Modifier
@@ -567,6 +586,25 @@ private fun StartupSplashScreen() {
                 testTagsAsResourceId = true
             }
             .testTag("startup_splash"),
+    )
+}
+
+@Composable
+private fun AllFilesAccessDialog(
+    onGrantClick: () -> Unit,
+) {
+    NextDialog(
+        onDismissRequest = {},
+        title = stringResource(UiR.string.all_files_access_title),
+        content = { Text(text = stringResource(UiR.string.all_files_access_required_desc)) },
+        confirmButton = {
+            TextButton(
+                modifier = Modifier.testTag("btn_all_files_access_grant"),
+                text = stringResource(UiR.string.grant_permission),
+                colors = ButtonDefaults.textButtonColorsPrimary(),
+                onClick = onGrantClick,
+            )
+        },
     )
 }
 

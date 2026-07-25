@@ -526,7 +526,7 @@ class LocalMediaSynchronizer @Inject constructor(
 
         media.forEach { mediaVideo ->
             var currentPath = File(mediaVideo.data).parent ?: return@forEach
-            while (directoryPaths.add(currentPath)) {
+            while (currentPath != File.separator && directoryPaths.add(currentPath)) {
                 if (currentPath in volumePaths) break
                 currentPath = File(currentPath).parent ?: break
             }

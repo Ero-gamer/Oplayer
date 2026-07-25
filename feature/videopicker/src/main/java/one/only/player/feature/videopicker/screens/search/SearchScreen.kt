@@ -84,6 +84,7 @@ fun SearchRoute(
     onPlayVideo: (video: Video, playerPreferences: PlayerPreferences, playlist: List<Video>) -> Unit,
     onFolderClick: (folderPath: String) -> Unit,
     onNavigateUp: () -> Unit,
+    onMoveSelectionStarted: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -92,6 +93,7 @@ fun SearchRoute(
         onNavigateUp = onNavigateUp,
         onFolderClick = { folder -> onFolderClick(folder.path) },
         onVideoClick = { video, playlist -> onPlayVideo(video, uiState.playerPreferences, playlist) },
+        onMoveSelectionStarted = onMoveSelectionStarted,
         onEvent = viewModel::onEvent,
     )
 }
@@ -102,6 +104,7 @@ internal fun SearchScreen(
     onNavigateUp: () -> Unit = {},
     onFolderClick: (Folder) -> Unit = {},
     onVideoClick: (Video, List<Video>) -> Unit = { _, _ -> },
+    onMoveSelectionStarted: () -> Unit = {},
     onEvent: (SearchUiEvent) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -221,7 +224,7 @@ internal fun SearchScreen(
                                             ),
                                         )
                                         selectionManager.exitSelectionMode()
-                                        onNavigateUp()
+                                        onMoveSelectionStarted()
                                     },
                                     onFavoriteAction = {
                                         shouldShowSelectionMenu = false

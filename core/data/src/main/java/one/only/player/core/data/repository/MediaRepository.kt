@@ -48,11 +48,13 @@ interface MediaRepository {
 
 data class MediaMoveSummary(
     val movedCount: Int = 0,
+    val partiallyMovedCount: Int = 0,
     val failedCount: Int = 0,
     val canceledCount: Int = 0,
 ) {
     operator fun plus(other: MediaMoveSummary): MediaMoveSummary = MediaMoveSummary(
         movedCount = movedCount + other.movedCount,
+        partiallyMovedCount = partiallyMovedCount + other.partiallyMovedCount,
         failedCount = failedCount + other.failedCount,
         canceledCount = canceledCount + other.canceledCount,
     )

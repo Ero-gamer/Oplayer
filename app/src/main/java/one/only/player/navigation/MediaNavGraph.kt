@@ -20,6 +20,7 @@ import one.only.player.feature.player.service.PlayerService
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
 import one.only.player.feature.videopicker.navigation.mediaPickerScreen
 import one.only.player.feature.videopicker.navigation.navigateToMediaPickerScreen
+import one.only.player.feature.videopicker.navigation.navigateToMoveTargetScreen
 import one.only.player.feature.videopicker.navigation.navigateToRecycleBinScreen
 import one.only.player.feature.videopicker.navigation.navigateToSearch
 import one.only.player.feature.videopicker.navigation.searchScreen
@@ -53,6 +54,8 @@ fun MediaRootPage(
         onCloudClick = { onRootSelected(RootDestination.CLOUD) },
         onFavoritesClick = { onRootSelected(RootDestination.FAVORITES) },
         onExitAppClick = { context.exitApp() },
+        onMoveSelectionStarted = navController::openMoveTarget,
+        onMoveSelectionClosed = {},
     )
 }
 
@@ -83,6 +86,8 @@ fun NavGraphBuilder.mediaDetailNavGraph(
         onCloudClick = { onRootSelected(RootDestination.CLOUD) },
         onFavoritesClick = { onRootSelected(RootDestination.FAVORITES) },
         onExitAppClick = { context.exitApp() },
+        onMoveSelectionStarted = navController::openMoveTarget,
+        onMoveSelectionClosed = navController::closeMoveTarget,
     )
 
     searchScreen(
@@ -100,7 +105,17 @@ fun NavGraphBuilder.mediaDetailNavGraph(
                 screenMode = MediaPickerScreenMode.LIBRARY,
             )
         },
+        onMoveSelectionStarted = navController::openMoveTarget,
     )
+}
+
+private fun NavHostController.openMoveTarget() {
+    popBackStack(RootPagerRoute, inclusive = false)
+    navigateToMoveTargetScreen()
+}
+
+private fun NavHostController.closeMoveTarget() {
+    popBackStack(RootPagerRoute, inclusive = false)
 }
 
 private fun Context.exitApp() {

@@ -76,6 +76,7 @@ import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.preview.VideoPickerPreviewParameterProvider
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.videopicker.composables.MediaView
+import one.only.player.feature.videopicker.composables.MoveTargetView
 import one.only.player.feature.videopicker.composables.NoVideosFound
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.RenameDialog
@@ -119,6 +120,8 @@ fun MediaPickerRoute(
     onExitAppClick: () -> Unit,
     onNavigateUp: () -> Unit,
     onNavigateHome: () -> Unit,
+    onMoveSelectionStarted: () -> Unit,
+    onMoveSelectionClosed: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -135,6 +138,8 @@ fun MediaPickerRoute(
         onFavoritesClick = onFavoritesClick,
         onSettingsClick = onSettingsClick,
         onExitAppClick = onExitAppClick,
+        onMoveSelectionStarted = onMoveSelectionStarted,
+        onMoveSelectionClosed = onMoveSelectionClosed,
         onEvent = viewModel::onEvent,
     )
 }
@@ -163,6 +168,8 @@ internal fun MediaPickerScreen(
     onFavoritesClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onExitAppClick: () -> Unit = {},
+    onMoveSelectionStarted: () -> Unit = {},
+    onMoveSelectionClosed: () -> Unit = {},
     onEvent: (MediaPickerUiEvent) -> Unit = {},
 ) {
     val selectionManager = rememberSelectionManager()
@@ -186,8 +193,9 @@ internal fun MediaPickerScreen(
     var shouldShowMoveProgressDialog by rememberSaveable { mutableStateOf(false) }
 
     val isLibraryMode = uiState.screenMode == MediaPickerScreenMode.LIBRARY
+    val isMoveMode = uiState.moveSelection != null && isLibraryMode
     val isTitleLongPressHomeNavigationEnabled = shouldEnableTitleLongPressHomeNavigation(
-        isInSelectionMode = selectionManager.isInSelectionMode,
+        isInSelectionMode = selectionManager.isInSelectionMode || isMoveMode,
         folderName = uiState.folderName,
         shouldNavigateHomeOnTitleLongPress = uiState.preferences.shouldNavigateHomeOnTitleLongPress,
     )
@@ -204,11 +212,16 @@ internal fun MediaPickerScreen(
     val selectedItemsSize = selectionManager.selectedFolders.size + selectionManager.selectedVideos.size
     val totalItemsSize = (uiState.mediaDataState as? DataState.Success)?.value?.run { folderList.size + mediaList.size } ?: 0
     val recentlyPlayedVideo = (uiState.mediaDataState as? DataState.Success)?.value?.recentlyPlayedVideo
-    val isMoveMode = uiState.moveSelection != null
     val moveResult = uiState.moveResult
     val moveResultMessage = when {
         moveResult == null -> null
         moveResult.canceledCount > 0 -> stringResource(R.string.move_cancelled, moveResult.movedCount, moveResult.failedCount)
+        moveResult.partiallyMovedCount > 0 -> stringResource(
+            R.string.move_incomplete,
+            moveResult.movedCount,
+            moveResult.partiallyMovedCount,
+            moveResult.failedCount,
+        )
         moveResult.movedCount > 0 && moveResult.failedCount > 0 -> stringResource(
             R.string.move_partial_success,
             moveResult.movedCount,
@@ -225,8 +238,9 @@ internal fun MediaPickerScreen(
     }
     val canMoveToCurrentFolder = when {
         !isMoveMode -> false
-        !isLibraryMode -> false
         uiState.folderPath == null -> false
+        (uiState.moveTargetDataState as? DataState.Success)?.value?.canMoveHere != true -> false
+        uiState.moveSpaceCheck?.hasEnoughSpace != true -> false
         else -> uiState.moveSelection.canMoveTo(uiState.folderPath)
     }
     val moveProgress = uiState.moveProgress
@@ -234,7 +248,7 @@ internal fun MediaPickerScreen(
     val selectedCountTitle = stringResource(R.string.m_n_selected, selectedItemsSize, totalItemsSize)
     val topBarTitle = when {
         selectionManager.isInSelectionMode -> selectedCountTitle
-        isMoveMode -> stringResource(R.string.move_here)
+        isMoveMode -> stringResource(R.string.move)
         else -> uiState.folderName ?: stringResource(
             if (isRecycleBinMode) R.string.recycle_bin else R.string.app_name,
         )
@@ -284,20 +298,11 @@ internal fun MediaPickerScreen(
                 },
                 actions = {
                     if (isMoveMode) {
-                        TextButton(
-                            text = stringResource(
-                                if (uiState.isMovingSelection) R.string.moving else R.string.move_here,
-                            ),
-                            onClick = {
-                                uiState.folderPath?.let { folderPath ->
-                                    onEvent(MediaPickerUiEvent.MoveSelectionToFolder(folderPath))
-                                }
-                            },
-                            enabled = canMoveToCurrentFolder && !uiState.isMovingSelection,
-                            modifier = Modifier.testTag("btn_move_here"),
-                        )
                         IconButton(
-                            onClick = { onEvent(MediaPickerUiEvent.CancelMoveSelection) },
+                            onClick = {
+                                onEvent(MediaPickerUiEvent.CancelMoveSelection)
+                                onMoveSelectionClosed()
+                            },
                             enabled = !uiState.isMovingSelection,
                             modifier = Modifier.testTag("btn_cancel_move"),
                         ) {
@@ -381,6 +386,7 @@ internal fun MediaPickerScreen(
                                         ),
                                     )
                                     selectionManager.exitSelectionMode()
+                                    onMoveSelectionStarted()
                                 },
                                 onFavoriteAction = {
                                     shouldShowSelectionMenu = false
@@ -509,7 +515,8 @@ internal fun MediaPickerScreen(
                     permission = permissionState.permission,
                     launchPermissionRequest = { permissionState.launchPermissionRequest() },
                 ) {
-                    val shouldShowRefreshIndicator = uiState.isRefreshing || uiState.mediaDataState is DataState.Loading
+                    val activeDataState = if (isMoveMode) uiState.moveTargetDataState else uiState.mediaDataState
+                    val shouldShowRefreshIndicator = uiState.isRefreshing || activeDataState is DataState.Loading
                     val updatedScaffoldPadding = scaffoldPadding.copy(top = 0.dp, start = 0.dp).withBottomFallback()
                     val refreshTexts = rememberPullToRefreshTexts()
                     PullToRefresh(
@@ -518,26 +525,37 @@ internal fun MediaPickerScreen(
                         onRefresh = { onEvent(MediaPickerUiEvent.Refresh) },
                         refreshTexts = refreshTexts,
                     ) {
-                        when (uiState.mediaDataState) {
-                            DataState.Loading -> {
-                                Box(modifier = Modifier.fillMaxSize())
+                        when (activeDataState) {
+                            DataState.Loading -> Box(modifier = Modifier.fillMaxSize())
+                            is DataState.Error -> Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(MiuixTheme.colorScheme.background),
+                            ) {
+                                Text(
+                                    text = stringResource(id = R.string.unknown_error),
+                                    modifier = Modifier.padding(16.dp),
+                                )
                             }
-
-                            is DataState.Error -> {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(MiuixTheme.colorScheme.background),
-                                ) {
-                                    Text(
-                                        text = stringResource(id = R.string.unknown_error),
-                                        modifier = Modifier.padding(16.dp),
-                                    )
-                                }
-                            }
-
-                            is DataState.Success -> {
-                                val rootFolder = uiState.mediaDataState.value
+                            is DataState.Success -> if (isMoveMode) {
+                                val moveTargetContent = (uiState.moveTargetDataState as DataState.Success).value
+                                MoveTargetView(
+                                    content = moveTargetContent,
+                                    spaceCheck = uiState.moveSpaceCheck,
+                                    canMoveHere = canMoveToCurrentFolder,
+                                    isMoving = uiState.isMovingSelection,
+                                    contentPadding = updatedScaffoldPadding,
+                                    onDirectoryClick = { directory ->
+                                        onFolderClick(directory.path, MediaPickerScreenMode.LIBRARY)
+                                    },
+                                    onMoveHere = {
+                                        uiState.folderPath?.let { folderPath ->
+                                            onEvent(MediaPickerUiEvent.MoveSelectionToFolder(folderPath))
+                                        }
+                                    },
+                                )
+                            } else {
+                                val rootFolder = (uiState.mediaDataState as DataState.Success).value
                                 if (rootFolder == null || rootFolder.folderList.isEmpty() && rootFolder.mediaList.isEmpty()) {
                                     NoVideosFound(contentPadding = updatedScaffoldPadding)
                                 } else {
@@ -548,9 +566,7 @@ internal fun MediaPickerScreen(
                                             onEvent(MediaPickerUiEvent.CacheFolderSnapshot(it))
                                             onFolderClick(it.path, uiState.screenMode)
                                         },
-                                        onVideoClick = { video ->
-                                            if (!isMoveMode) onPlayVideo(video, uiState.playerPreferences)
-                                        },
+                                        onVideoClick = { video -> onPlayVideo(video, uiState.playerPreferences) },
                                         selectionManager = selectionManager,
                                         lazyGridState = lazyGridState,
                                         contentPadding = updatedScaffoldPadding,
@@ -580,6 +596,7 @@ internal fun MediaPickerScreen(
         val message = moveResultMessage ?: return@LaunchedEffect
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         onEvent(MediaPickerUiEvent.ClearMoveResult)
+        if (uiState.moveSelection == null) onMoveSelectionClosed()
     }
 
     LaunchedEffect(moveProgress != null) {
@@ -634,6 +651,13 @@ internal fun MediaPickerScreen(
 
     BackHandler(enabled = selectionManager.isInSelectionMode) {
         selectionManager.exitSelectionMode()
+    }
+
+    BackHandler(
+        enabled = isMoveMode && uiState.folderPath == null && !uiState.isMovingSelection,
+    ) {
+        onEvent(MediaPickerUiEvent.CancelMoveSelection)
+        onMoveSelectionClosed()
     }
 
     if (shouldShowQuickSettingsDialog) {

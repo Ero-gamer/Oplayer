@@ -13,6 +13,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import one.only.player.core.common.Logger
@@ -27,6 +28,8 @@ import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.toFavoriteItem
 import one.only.player.core.domain.GetSortedMediaUseCase
+import one.only.player.core.media.services.MediaMoveSpaceCheck
+import one.only.player.core.media.services.MediaMoveTargetDirectoryContent
 import one.only.player.core.media.services.MediaService
 import one.only.player.core.media.sync.MediaInfoSynchronizer
 import one.only.player.core.media.sync.MediaSynchronizer
@@ -127,11 +130,16 @@ class MediaPickerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            moveSelectionStore.selection.collect { selection ->
+            moveSelectionStore.selection.collectLatest { selection ->
                 uiStateInternal.update { currentState ->
                     currentState.copy(
                         moveSelection = selection,
+                        moveTargetDataState = DataState.Loading,
+                        moveSpaceCheck = null,
                     )
+                }
+                if (selection != null && screenMode == MediaPickerScreenMode.LIBRARY) {
+                    loadMoveTargetDirectory(selection)
                 }
             }
         }
@@ -308,7 +316,7 @@ class MediaPickerViewModel @Inject constructor(
                 )
             }
             val summary = videoSummary + folderSummary
-            if (summary.movedCount > 0) {
+            if (summary.movedCount > 0 || summary.partiallyMovedCount > 0) {
                 moveSelectionStore.clear()
             }
             uiStateInternal.update { currentState ->
@@ -358,9 +366,51 @@ class MediaPickerViewModel @Inject constructor(
         viewModelScope.launch {
             uiStateInternal.update { it.copy(isRefreshing = true) }
             try {
-                mediaSynchronizer.refresh()
+                val moveSelection = uiStateInternal.value.moveSelection
+                if (moveSelection == null) {
+                    mediaSynchronizer.refresh()
+                } else {
+                    loadMoveTargetDirectory(moveSelection)
+                }
             } finally {
                 uiStateInternal.update { it.copy(isRefreshing = false) }
+            }
+        }
+    }
+
+    private suspend fun loadMoveTargetDirectory(selection: MediaPickerMoveSelection) {
+        uiStateInternal.update { currentState ->
+            currentState.copy(
+                moveTargetDataState = DataState.Loading,
+                moveSpaceCheck = null,
+            )
+        }
+        runCatching {
+            val content = mediaService.getMoveTargetDirectory(folderPath)
+                ?: throw IllegalStateException("Move target directory is unavailable")
+            val spaceCheck = folderPath
+                ?.takeIf { targetPath -> content.canMoveHere && selection.canMoveTo(targetPath) }
+                ?.let { targetPath ->
+                    mediaService.checkMoveSpace(
+                        videoUris = selection.videoUris.map(String::toUri),
+                        folderPaths = selection.folderPaths,
+                        targetFolderPath = targetPath,
+                    )
+                }
+            content to spaceCheck
+        }.onSuccess { (content, spaceCheck) ->
+            uiStateInternal.update { currentState ->
+                currentState.copy(
+                    moveTargetDataState = DataState.Success(content),
+                    moveSpaceCheck = spaceCheck,
+                )
+            }
+        }.onFailure { throwable ->
+            uiStateInternal.update { currentState ->
+                currentState.copy(
+                    moveTargetDataState = DataState.Error(throwable),
+                    moveSpaceCheck = null,
+                )
             }
         }
     }
@@ -414,6 +464,8 @@ data class MediaPickerUiState(
     val playerPreferences: PlayerPreferences = PlayerPreferences(),
     val screenMode: MediaPickerScreenMode = MediaPickerScreenMode.LIBRARY,
     val moveSelection: MediaPickerMoveSelection? = null,
+    val moveTargetDataState: DataState<MediaMoveTargetDirectoryContent> = DataState.Loading,
+    val moveSpaceCheck: MediaMoveSpaceCheck? = null,
     val isMovingSelection: Boolean = false,
     val moveProgress: MediaMoveProgress? = null,
     val moveResult: MediaMoveSummary? = null,

@@ -356,6 +356,7 @@
     <string name="android_version">Android version</string>
     <string name="error_opening_link">No app found to handle this link</string>
     <string name="all_files_access_title">Allow all files access</string>
+    <string name="all_files_access_required_desc">Only Player needs all files access to scan and manage videos in any folder. Grant access in system settings to continue.</string>
     <string name="media_library_all_files_access_desc">Ignore .nomedia files and recycle bin require all files access. Grant permission to enable both features.</string>
     <string name="not_now">Not now</string>
     <string name="media_layout">Media Layout</string>
@@ -482,7 +483,15 @@
     <string name="move_success">Moved %1$d items</string>
     <string name="move_failed">Move failed</string>
     <string name="move_partial_success">Moved %1$d items, %2$d failed</string>
+    <string name="move_incomplete">Fully moved %1$d items, %2$d folders partially moved, %3$d failed</string>
     <string name="move_cancelled">Canceled, moved %1$d items, %2$d failed</string>
+    <string name="storage_locations">Storage locations</string>
+    <string name="storage_available_total">Available %1$s of %2$s</string>
+    <string name="storage_available">Available %1$s</string>
+    <string name="storage_available_percent">%1$s available · %2$d%%</string>
+    <string name="storage_total">%1$s total</string>
+    <string name="move_required_space">Move needs %1$s, %2$s available</string>
+    <string name="move_insufficient_space">Not enough space: %1$s needed, %2$s available</string>
     <string name="move_progress_title">Moving</string>
     <string name="move_progress_message">Processed %1$d/%2$d items</string>
     <string name="move_progress_current_file">Current file: %1$s</string>

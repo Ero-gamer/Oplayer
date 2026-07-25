@@ -347,6 +347,7 @@
     <string name="android_version">Android 版本</string>
     <string name="error_opening_link">沒有應用程式可開啟這個連結</string>
     <string name="all_files_access_title">允許所有檔案存取</string>
+    <string name="all_files_access_required_desc">Only Player 需要「所有檔案存取權限」，才能掃描並管理任意資料夾中的影片。請前往系統設定授予權限後繼續。</string>
     <string name="media_library_all_files_access_desc">忽略 .nomedia 和回收站功能需要所有檔案存取權限，授權後才能啟用這兩項功能。</string>
     <string name="not_now">稍後</string>
     <string name="grid">格狀</string>
@@ -473,7 +474,15 @@
     <string name="move_success">已移動 %1$d 個項目</string>
     <string name="move_failed">移動失敗</string>
     <string name="move_partial_success">已移動 %1$d 個，%2$d 個失敗</string>
+    <string name="move_incomplete">已完整移動 %1$d 個，%2$d 個資料夾僅部分移動，%3$d 個失敗</string>
     <string name="move_cancelled">已取消，已移動 %1$d 個，%2$d 個失敗</string>
+    <string name="storage_locations">儲存位置</string>
+    <string name="storage_available_total">可用 %1$s，共 %2$s</string>
+    <string name="storage_available">可用 %1$s</string>
+    <string name="storage_available_percent">可用 %1$s · %2$d%%</string>
+    <string name="storage_total">共 %1$s</string>
+    <string name="move_required_space">移動需要 %1$s，可用 %2$s</string>
+    <string name="move_insufficient_space">空間不足：需要 %1$s，可用 %2$s</string>
     <string name="move_progress_title">正在移動</string>
     <string name="move_progress_message">已處理 %1$d/%2$d 個項目</string>
     <string name="move_progress_current_file">目前檔案：%1$s</string>

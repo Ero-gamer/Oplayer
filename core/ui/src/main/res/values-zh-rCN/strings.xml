@@ -349,6 +349,7 @@
     <string name="android_version">安卓版本</string>
     <string name="error_opening_link">未找到可打开此链接的应用</string>
     <string name="all_files_access_title">允许所有文件访问</string>
+    <string name="all_files_access_required_desc">Only Player 需要“所有文件访问权限”，才能扫描并管理任意文件夹中的视频。请前往系统设置授予权限后继续。</string>
     <string name="media_library_all_files_access_desc">忽略 .nomedia 和回收站功能需要所有文件访问权限，授权后才能启用这两项功能。</string>
     <string name="not_now">暂不</string>
     <string name="list">列表</string>
@@ -479,7 +480,15 @@
     <string name="move_success">已移动 %1$d 个项目</string>
     <string name="move_failed">移动失败</string>
     <string name="move_partial_success">已移动 %1$d 个，%2$d 个失败</string>
+    <string name="move_incomplete">已完整移动 %1$d 个，%2$d 个文件夹仅部分移动，%3$d 个失败</string>
     <string name="move_cancelled">已取消，已移动 %1$d 个，%2$d 个失败</string>
+    <string name="storage_locations">存储位置</string>
+    <string name="storage_available_total">可用 %1$s，共 %2$s</string>
+    <string name="storage_available">可用 %1$s</string>
+    <string name="storage_available_percent">可用 %1$s · %2$d%%</string>
+    <string name="storage_total">共 %1$s</string>
+    <string name="move_required_space">移动需要 %1$s，可用 %2$s</string>
+    <string name="move_insufficient_space">空间不足：需要 %1$s，可用 %2$s</string>
     <string name="move_progress_title">正在移动</string>
     <string name="move_progress_message">已处理 %1$d/%2$d 个项目</string>
     <string name="move_progress_current_file">当前文件：%1$s</string>
