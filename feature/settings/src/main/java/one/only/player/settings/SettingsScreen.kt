@@ -1,5 +1,6 @@
 package one.only.player.settings
 
+import android.os.Build
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,10 +43,20 @@ fun SettingsScreen(
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = MiuixScrollBehavior()
+    // 与外观页一致：低版本不索引悬浮栏模糊文案
+    val shouldIndexFloatingNavigationBarBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     // resolve 标题、描述和子设置项文本，全部用于搜索匹配
     val resolvedRows = SettingRow.entries.map { row ->
-        val subTexts = row.subSettingResIds.map { stringResource(it) }
+        val subTexts = row.subSettingResIds
+            .filter { resId ->
+                shouldIndexFloatingNavigationBarBlur ||
+                    (
+                        resId != R.string.floating_navigation_bar_blur &&
+                            resId != R.string.floating_navigation_bar_blur_description
+                        )
+            }
+            .map { stringResource(it) }
         ResolvedSettingRow(
             row = row,
             title = stringResource(row.titleResId),

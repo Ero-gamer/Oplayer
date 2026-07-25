@@ -1,7 +1,8 @@
 package one.only.player.ui.component.miuix.animation
 
-import android.annotation.SuppressLint
 import android.graphics.RuntimeShader
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.VisibilityThreshold
@@ -21,7 +22,6 @@ import kotlinx.coroutines.launch
 import one.only.player.ui.component.miuix.modifier.inspectDragGestures
 import org.intellij.lang.annotations.Language
 
-@SuppressLint("NewApi")
 class InteractiveHighlight(
     val animationScope: CoroutineScope,
     val position: (size: Size, offset: Offset) -> Offset = { _, offset -> offset },
@@ -40,21 +40,13 @@ class InteractiveHighlight(
     private var startPosition = Offset.Zero
     val offset: Offset get() = positionAnimation.value - startPosition
 
-    @Language("AGSL")
-    private val shader =
-        RuntimeShader(
-            """
-    uniform float2 size;
-    layout(color) uniform half4 color;
-    uniform float radius;
-    uniform float2 position;
-
-    half4 main(float2 coord) {
-        float dist = distance(coord, position);
-        float intensity = smoothstep(radius, radius * 0.5, dist);
-        return color * intensity;
-    }""",
-        )
+    // RuntimeShader 仅 API 33+ 可用，低版本只保留白光叠层
+    private val shader: RuntimeShader? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            createHighlightShader()
+        } else {
+            null
+        }
 
     val modifier: Modifier =
         Modifier.drawWithContent {
@@ -64,21 +56,24 @@ class InteractiveHighlight(
                     Color.White.copy(0.06f * progress),
                     blendMode = BlendMode.Plus,
                 )
-                shader.apply {
-                    val position = position(size, positionAnimation.value)
-                    setFloatUniform("size", size.width, size.height)
-                    setColorUniform("color", Color.White.copy(0.12f * progress).toArgb())
-                    setFloatUniform("radius", size.minDimension * 1.2f)
-                    setFloatUniform(
-                        "position",
-                        position.x.fastCoerceIn(0f, size.width),
-                        position.y.fastCoerceIn(0f, size.height),
+                val runtimeShader = shader
+                if (runtimeShader != null) {
+                    runtimeShader.apply {
+                        val position = position(size, positionAnimation.value)
+                        setFloatUniform("size", size.width, size.height)
+                        setColorUniform("color", Color.White.copy(0.12f * progress).toArgb())
+                        setFloatUniform("radius", size.minDimension * 1.2f)
+                        setFloatUniform(
+                            "position",
+                            position.x.fastCoerceIn(0f, size.width),
+                            position.y.fastCoerceIn(0f, size.height),
+                        )
+                    }
+                    drawRect(
+                        ShaderBrush(runtimeShader),
+                        blendMode = BlendMode.Plus,
                     )
                 }
-                drawRect(
-                    ShaderBrush(shader),
-                    blendMode = BlendMode.Plus,
-                )
             }
 
             drawContent()
@@ -111,3 +106,20 @@ class InteractiveHighlight(
             }
         }
 }
+
+@Language("AGSL")
+private const val HIGHLIGHT_SHADER_SOURCE = """
+    uniform float2 size;
+    layout(color) uniform half4 color;
+    uniform float radius;
+    uniform float2 position;
+
+    half4 main(float2 coord) {
+        float dist = distance(coord, position);
+        float intensity = smoothstep(radius, radius * 0.5, dist);
+        return color * intensity;
+    }
+"""
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private fun createHighlightShader(): RuntimeShader = RuntimeShader(HIGHLIGHT_SHADER_SOURCE)

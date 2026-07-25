@@ -45,9 +45,9 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
-import top.yukonga.miuix.kmp.shader.isRenderEffectSupported
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 // 根 Tab 定义，每项对应一个顶级导航目的地
@@ -85,9 +85,10 @@ fun RootScaffold(
     val navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val navigationBarHeight = if (shouldUseFloatingNavigationBar) FLOATING_NAV_BAR_RESERVED_HEIGHT else NAV_BAR_CONTENT_HEIGHT
     val bottomBarPadding = PaddingValues(bottom = navigationBarsBottom + navigationBarHeight)
+    // 液态模糊管线依赖 RuntimeShader（API 33+），与 miuix-blur 门槛对齐
     val shouldEnableFloatingBlur = shouldUseFloatingNavigationBar &&
         shouldBlurFloatingNavigationBar &&
-        isRenderEffectSupported()
+        isRuntimeShaderSupported()
     val floatingBlurBackdrop = if (shouldEnableFloatingBlur) {
         val surfaceColor = MiuixTheme.colorScheme.surface
         rememberLayerBackdrop {
