@@ -774,6 +774,7 @@ open class PlayerActivity : AppCompatActivity() {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             super.onPlaybackStateChanged(playbackState)
+            updateKeepScreenOnFlag()
             when (playbackState) {
                 Player.STATE_ENDED -> {
                     val controller = mediaController
@@ -781,15 +782,12 @@ open class PlayerActivity : AppCompatActivity() {
                         hasPausedAtEndOfQueue = true
                         isPlaybackFinished = true
                         controller.pause()
-                        updateKeepScreenOnFlag()
                         return
                     }
                     if (controller?.playWhenReady == false && hasPausedAtEndOfQueue) {
-                        updateKeepScreenOnFlag()
                         return
                     }
                     isPlaybackFinished = mediaController?.playbackState == Player.STATE_ENDED
-                    updateKeepScreenOnFlag()
                     finishAndStopPlayerSession()
                 }
 
@@ -813,6 +811,7 @@ open class PlayerActivity : AppCompatActivity() {
 
         override fun onPlayWhenReadyChanged(shouldPlayWhenReady: Boolean, reason: Int) {
             super.onPlayWhenReadyChanged(shouldPlayWhenReady, reason)
+            updateKeepScreenOnFlag()
 
             if (reason != Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
                 val controller = mediaController ?: return
@@ -833,7 +832,6 @@ open class PlayerActivity : AppCompatActivity() {
             if (controller.shouldPauseAtEndOfQueue()) {
                 hasPausedAtEndOfQueue = true
                 isPlaybackFinished = true
-                updateKeepScreenOnFlag()
                 return
             }
             hasPausedAtEndOfQueue = false
@@ -871,8 +869,14 @@ open class PlayerActivity : AppCompatActivity() {
         }
     }
 
+    // 播放意图存续期间保持常亮;暂停、播完或空闲时允许熄屏
     private fun updateKeepScreenOnFlag() {
-        if (mediaController?.currentMediaItem != null && !isPlaybackFinished) {
+        val controller = mediaController
+        val shouldKeepScreenOn = controller != null &&
+            controller.playWhenReady &&
+            controller.playbackState != Player.STATE_IDLE &&
+            controller.playbackState != Player.STATE_ENDED
+        if (shouldKeepScreenOn) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
