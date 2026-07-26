@@ -68,8 +68,8 @@ fun rememberVideoZoomAndContentScaleState(
 class VideoZoomAndContentScaleState(
     private val player: Player,
     initialContentScale: VideoContentScale,
-    private var isZoomGestureEnabled: Boolean = true,
-    private var isPanGestureEnabled: Boolean = true,
+    isZoomGestureEnabled: Boolean = true,
+    isPanGestureEnabled: Boolean = true,
     private val onEvent: (VideoZoomEvent) -> Unit,
     private val coroutineScope: CoroutineScope,
 ) {
@@ -95,8 +95,17 @@ class VideoZoomAndContentScaleState(
     var shouldShowContentScaleIndicator: Boolean by mutableStateOf(false)
         private set
 
+    private var isZoomGestureEnabled: Boolean by mutableStateOf(isZoomGestureEnabled)
+    private var isPanGestureEnabled: Boolean by mutableStateOf(isPanGestureEnabled)
+
+    val canPanHorizontally: Boolean
+        get() = canPanVideo() && maxPanX() > 0f
+
+    val canPanVertically: Boolean
+        get() = canPanVideo() && maxPanY() > 0f
+
     val canPanZoomedVideo: Boolean
-        get() = isZoomGestureEnabled && isPanGestureEnabled && hasPanBounds()
+        get() = canPanHorizontally || canPanVertically
 
     private var containerSize: Size by mutableStateOf(Size.Zero)
     private var baseContentSize: Size by mutableStateOf(Size.Zero)
@@ -241,7 +250,7 @@ class VideoZoomAndContentScaleState(
         onEvent(VideoZoomEvent.ZoomChanged(currentMediaItem, zoom))
     }
 
-    private fun hasPanBounds(): Boolean = maxPanX() > 0f || maxPanY() > 0f
+    private fun canPanVideo(): Boolean = isZoomGestureEnabled && isPanGestureEnabled
 
     private fun Offset.coerceInPanBounds(): Offset {
         val maxX = maxPanX()
