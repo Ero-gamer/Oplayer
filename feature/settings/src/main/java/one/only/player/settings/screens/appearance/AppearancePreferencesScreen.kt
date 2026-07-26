@@ -54,12 +54,14 @@ fun AppearancePreferencesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val activity = context as? Activity
-    val onPredictiveBackToggle: (Boolean) -> Unit = { isEnabled ->
+    val onPredictiveBackToggle: (Boolean) -> Unit = onPredictiveBackToggle@{ isEnabled ->
+        if (!PredictiveBackSupport.setEnabled(context.applicationInfo, isEnabled)) {
+            return@onPredictiveBackToggle
+        }
         viewModel.onEvent(
             AppearancePreferencesEvent.ToggleEnablePredictiveBack(
                 isEnabled = isEnabled,
                 onApplied = {
-                    PredictiveBackSupport.setEnabled(context.applicationInfo, isEnabled)
                     activity?.recreate()
                 },
             ),

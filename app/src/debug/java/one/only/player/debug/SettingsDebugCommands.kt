@@ -114,6 +114,9 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         "appearance.floating_navigation_bar_blur" -> updateApplicationBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldBlurFloatingNavigationBar = isEnabled)
         }
+        "appearance.predictive_back" -> updateApplicationBoolean(value) { preferences, isEnabled ->
+            preferences.copy(shouldEnablePredictiveBack = isEnabled)
+        }
         "media.mark_last_played" -> updateApplicationBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldMarkLastPlayedMedia = isEnabled)
         }
@@ -363,6 +366,7 @@ internal suspend fun DebugCommandEntryPoint.toggleSetting(target: String?) {
         "appearance.title_long_press_home" -> toggleApplication { it.copy(shouldNavigateHomeOnTitleLongPress = !it.shouldNavigateHomeOnTitleLongPress) }
         "appearance.floating_navigation_bar" -> toggleApplication { it.copy(shouldUseFloatingNavigationBar = !it.shouldUseFloatingNavigationBar) }
         "appearance.floating_navigation_bar_blur" -> toggleApplication { it.copy(shouldBlurFloatingNavigationBar = !it.shouldBlurFloatingNavigationBar) }
+        "appearance.predictive_back" -> toggleApplication { it.copy(shouldEnablePredictiveBack = !it.shouldEnablePredictiveBack) }
         "media.mark_last_played" -> toggleApplication { it.copy(shouldMarkLastPlayedMedia = !it.shouldMarkLastPlayedMedia) }
         "media.restore_last_played_in_folders" -> toggleApplication { it.copy(shouldRestoreLastPlayedMediaInFolders = !it.shouldRestoreLastPlayedMediaInFolders) }
         "media.ignore_nomedia" -> toggleApplication { it.copy(shouldIgnoreNoMediaFiles = !it.shouldIgnoreNoMediaFiles) }
