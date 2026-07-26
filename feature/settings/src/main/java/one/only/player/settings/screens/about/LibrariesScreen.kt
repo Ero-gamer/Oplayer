@@ -71,7 +71,6 @@ fun LibrariesScreen(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         if (libs == null) {
             Box(

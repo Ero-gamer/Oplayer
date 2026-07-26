@@ -299,6 +299,10 @@ open class PlayerActivity : AppCompatActivity() {
                     ThemeConfig.ON -> true
                 },
                 shouldUseDynamicColor = uiState.applicationPreferences.shouldUseDynamicColors,
+                shouldUseSystemDynamicColor = uiState.applicationPreferences.shouldUseSystemDynamicColor,
+                seedColor = uiState.applicationPreferences.themeSeedColor,
+                paletteStyle = uiState.applicationPreferences.themePaletteStyle,
+                colorSpec = uiState.applicationPreferences.themeColorSpec,
             ) {
                 MediaPlayerScreen(
                     modifier = Modifier.semantics {

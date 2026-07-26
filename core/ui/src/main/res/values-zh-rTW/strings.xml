@@ -12,7 +12,6 @@
     <string name="player_controls_play_pause">播放器 播放 暫停</string>
     <string name="title">標題</string>
     <string name="double_tap">雙輕觸手勢</string>
-    <string name="interface_name">介面</string>
     <string name="remember_audio_track">記住音軌</string>
     <string name="remember_subtitle_track">記住字幕</string>
     <string name="landscape_reverse">橫向翻轉</string>
@@ -67,7 +66,6 @@
     <string name="autoplay_settings">自動播放</string>
     <string name="resume_description">選擇是否從你停止時的進度再續播放影片</string>
     <string name="grant_permission">授予權限</string>
-    <string name="scan">掃描</string>
     <string name="resume">再續播放</string>
     <string name="player_name">播放器</string>
     <string name="yes">是</string>
@@ -91,9 +89,6 @@
     <string name="embedded_styles_desc">應用存在於字幕檔之中的嵌入式樣式，例如 ASS 等</string>
     <string name="subtitle_background_desc">啟用字幕背景</string>
     <string name="audio_track_settings">音軌</string>
-    <string name="audio_focus_and_devices">音訊焦點與外設</string>
-    <string name="volume_memory">音量記憶</string>
-    <string name="volume_processing">音量處理</string>
     <string name="preferred_audio_lang">優先的音訊語言</string>
     <string name="permission_request">權限請求</string>
     <string name="system_volume_panel_desc">當配戴耳機調整音量時，顯示系統音量面板</string>
@@ -116,8 +111,6 @@
     <string name="external_subtitle_font_import_failed">字幕字型匯入失敗</string>
     <string name="external_subtitle_font_clear_success">已清除匯入字幕字型</string>
     <string name="subtitle_loading">字幕載入</string>
-    <string name="subtitle_style_source">樣式來源</string>
-    <string name="subtitle_font_settings">字型</string>
     <string name="subtitle_appearance">字幕外觀</string>
     <string name="preferred_subtitle_lang">優先的字幕語言</string>
     <string name="a_z">A-Z</string>
@@ -185,7 +178,6 @@
     <string name="subtitle_text_encoding">字幕文字編碼</string>
     <string name="video">影片</string>
     <string name="playback">播放</string>
-    <string name="playback_behavior">播放行為</string>
     <string name="video_processing">畫面處理</string>
     <string name="video_filters">影片濾鏡</string>
     <string name="enable_video_filters">啟用影片濾鏡</string>
@@ -239,9 +231,9 @@
     <string name="manage_folders">管理資料夾</string>
     <string name="default_playback_speed">預設播放速度</string>
     <string name="subtitle_desc">字幕外觀、播放選項</string>
-    <string name="dynamic_theme_description">為應用程式主題套用系統桌布色彩</string>
+    <string name="dynamic_theme_description">開啟後使用系統桌布配色，關閉後使用 Miuix 原版配色</string>
     <string name="theme_color">主題色</string>
-    <string name="theme_color_description">選擇應用程式的強調色</string>
+    <string name="theme_color_description">使用系統桌布色彩或自訂主題色</string>
     <string name="theme_palette_style">調色板樣式</string>
     <string name="theme_palette_style_description">決定如何從種子色推導整套配色</string>
     <string name="palette_style_tonal_spot">柔和</string>
@@ -321,7 +313,6 @@
     <string name="control_buttons_alignment">控制按鈕對齊</string>
     <string name="player_control_labels">隱藏控制文字</string>
     <string name="player_control_labels_description">隱藏播放器控制按鈕下方的文字</string>
-    <string name="player_controls">播放器控制項</string>
     <string name="loop_mode_off">循環：停用</string>
     <string name="loop_mode_one">循環：單項</string>
     <string name="loop_mode_all">循環：全部</string>
@@ -329,7 +320,6 @@
     <string name="libraries">函式庫</string>
     <string name="project_repository">專案倉庫</string>
     <string name="telegram_group">Telegram 群組</string>
-    <string name="diagnostics">診斷</string>
     <string name="app_logs">應用程式日誌</string>
     <string name="app_logs_description">查看、分享、儲存並清空儲存在應用程式私有目錄中的日誌</string>
     <string name="share_logs">分享</string>
@@ -375,10 +365,6 @@
     <string name="delete_failed">檔案刪除失敗</string>
     <string name="gestures">手勢</string>
     <string name="swipe_gestures">滑動手勢</string>
-    <string name="tap_gestures">點擊手勢</string>
-    <string name="long_press_gestures">長按手勢</string>
-    <string name="zoom_and_pan_gestures">縮放和平移</string>
-    <string name="other_gestures">其他手勢</string>
     <string name="volume_gesture">音量手勢</string>
     <string name="volume_gesture_description">透過上下滑動調整音量</string>
     <string name="brightness_gesture">亮度手勢</string>
@@ -494,7 +480,6 @@
     <string name="delete_permanently">永久刪除</string>
     <string name="settings_backup_file_name">onlyplayer-settings.json</string>
     <string name="exclude">排除</string>
-    <string name="update_check">更新</string>
     <string name="check_for_updates">檢查更新</string>
     <string name="check_updates_on_startup">開啟時自動檢查</string>
     <string name="check_updates_on_startup_desc">開啟此頁面時自動檢查更新</string>

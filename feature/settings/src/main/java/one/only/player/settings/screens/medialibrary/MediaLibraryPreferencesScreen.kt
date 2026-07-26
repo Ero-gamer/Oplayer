@@ -26,10 +26,10 @@ import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.ListSectionTitle
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -115,7 +115,6 @@ private fun MediaLibraryPreferencesContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -124,6 +123,7 @@ private fun MediaLibraryPreferencesContent(
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)
                 .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
@@ -172,7 +172,6 @@ private fun MediaLibraryPreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.scan))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {
@@ -200,7 +199,6 @@ private fun MediaLibraryPreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.thumbnail))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {

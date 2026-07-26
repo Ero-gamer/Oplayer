@@ -332,7 +332,6 @@ internal fun CloudBrowseScreen(
                 )
             }
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -343,8 +342,7 @@ internal fun CloudBrowseScreen(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(MiuixTheme.colorScheme.background),
+                    .fillMaxSize(),
             ) {
                 val contentPadding = innerPadding.copy(top = 0.dp, start = 0.dp).withBottomFallback()
                 val refreshTexts = rememberPullToRefreshTexts()

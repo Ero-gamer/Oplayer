@@ -47,6 +47,7 @@ class AppearancePreferencesViewModel @Inject constructor(
             is AppearancePreferencesEvent.UpdateThemeConfig -> updateThemeConfig(event.themeConfig)
             is AppearancePreferencesEvent.UpdateAppLanguage -> updateAppLanguage(event.languageTag)
             is AppearancePreferencesEvent.UpdateThemeSeedColor -> updateThemeSeedColor(event.color)
+            AppearancePreferencesEvent.UseSystemDynamicColor -> useSystemDynamicColor()
             is AppearancePreferencesEvent.UpdatePaletteStyle -> updatePaletteStyle(event.style)
             is AppearancePreferencesEvent.UpdateColorSpec -> updateColorSpec(event.spec)
             AppearancePreferencesEvent.ToggleUseDynamicColors -> toggleUseDynamicColors()
@@ -89,7 +90,18 @@ class AppearancePreferencesViewModel @Inject constructor(
     private fun updateThemeSeedColor(color: Long) {
         viewModelScope.launch {
             preferencesRepository.updateApplicationPreferences {
-                it.copy(themeSeedColor = color)
+                it.copy(
+                    shouldUseSystemDynamicColor = false,
+                    themeSeedColor = color,
+                )
+            }
+        }
+    }
+
+    private fun useSystemDynamicColor() {
+        viewModelScope.launch {
+            preferencesRepository.updateApplicationPreferences {
+                it.copy(shouldUseSystemDynamicColor = true)
             }
         }
     }
@@ -178,6 +190,7 @@ sealed interface AppearancePreferencesEvent {
     data class UpdateThemeConfig(val themeConfig: ThemeConfig) : AppearancePreferencesEvent
     data class UpdateAppLanguage(val languageTag: String) : AppearancePreferencesEvent
     data class UpdateThemeSeedColor(val color: Long) : AppearancePreferencesEvent
+    data object UseSystemDynamicColor : AppearancePreferencesEvent
     data class UpdatePaletteStyle(val style: ThemePaletteStyle) : AppearancePreferencesEvent
     data class UpdateColorSpec(val spec: ThemeColorSpec) : AppearancePreferencesEvent
     data object ToggleUseDynamicColors : AppearancePreferencesEvent

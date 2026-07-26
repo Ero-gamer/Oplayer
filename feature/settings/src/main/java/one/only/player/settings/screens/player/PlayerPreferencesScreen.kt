@@ -36,7 +36,6 @@ import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.ListSectionTitle
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
@@ -44,6 +43,7 @@ import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.preview.DayNightPreview
@@ -102,7 +102,6 @@ private fun PlayerPreferencesContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -111,6 +110,7 @@ private fun PlayerPreferencesContent(
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)
                 .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
@@ -170,7 +170,6 @@ private fun PlayerPreferencesContent(
                 }
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.playback_behavior))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {
@@ -253,7 +252,6 @@ private fun PlayerPreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.player_controls))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {

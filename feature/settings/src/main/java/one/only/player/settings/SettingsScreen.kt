@@ -137,7 +137,6 @@ fun SettingsScreen(
                 }
             }
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier

@@ -10,6 +10,7 @@ data class ApplicationPreferences(
     val sortOrder: Sort.Order = Sort.Order.ASCENDING,
     val themeConfig: ThemeConfig = ThemeConfig.SYSTEM,
     val shouldUseDynamicColors: Boolean = true,
+    val shouldUseSystemDynamicColor: Boolean = true,
     val themeSeedColor: Long = DEFAULT_THEME_SEED_COLOR,
     val themePaletteStyle: ThemePaletteStyle = ThemePaletteStyle.TONAL_SPOT,
     val themeColorSpec: ThemeColorSpec = ThemeColorSpec.SPEC_2025,

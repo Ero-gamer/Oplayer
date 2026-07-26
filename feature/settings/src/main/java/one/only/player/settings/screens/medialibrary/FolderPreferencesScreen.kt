@@ -74,7 +74,6 @@ private fun FolderPreferencesContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         when (uiState.foldersDataState) {
             is DataState.Loading -> {

@@ -3,6 +3,7 @@ package one.only.player.settings.screens.appearance
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,8 +30,8 @@ import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
 import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.ListSectionTitle
 import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.theme.supportsDynamicTheming
 import one.only.player.settings.extensions.name
@@ -128,6 +129,7 @@ private fun AppearancePreferencesContent(
                 .padding(top = SettingsContentTopPadding)
                 .padding(horizontal = 16.dp),
             contentPadding = innerPadding,
+            verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
@@ -155,7 +157,6 @@ private fun AppearancePreferencesContent(
             }
 
             item {
-                ListSectionTitle(text = stringResource(id = R.string.theme_color))
                 Card(modifier = Modifier.fillMaxWidth()) {
                     if (supportsDynamicTheming()) {
                         SwitchPreference(
@@ -167,49 +168,65 @@ private fun AppearancePreferencesContent(
                             onCheckedChange = { onEvent(AppearancePreferencesEvent.ToggleUseDynamicColors) },
                         )
                     }
-                    if (!preferences.shouldUseDynamicColors) {
-                        val seedIndex = SeedColorPalette
-                            .indexOfFirst { it.value == preferences.themeSeedColor }
-                            .coerceAtLeast(0)
+                    if (preferences.shouldUseDynamicColors) {
+                        val seedIndex = if (preferences.shouldUseSystemDynamicColor) {
+                            0
+                        } else {
+                            SeedColorPalette
+                                .indexOfFirst { it.value == preferences.themeSeedColor }
+                                .coerceAtLeast(0) + 1
+                        }
                         OverlayDropdownPreference(
                             modifier = Modifier.testTag("item_settings_appearance_theme_color"),
                             title = stringResource(id = R.string.theme_color),
                             summary = stringResource(id = R.string.theme_color_description),
-                            startAction = { PrefColorDot(Color(preferences.themeSeedColor)) },
-                            items = SeedColorPalette.map { stringResource(id = it.labelRes) },
+                            startAction = {
+                                if (preferences.shouldUseSystemDynamicColor) {
+                                    PrefIcon(NextIcons.Appearance)
+                                } else {
+                                    PrefColorDot(Color(preferences.themeSeedColor))
+                                }
+                            },
+                            items = listOf(stringResource(id = R.string.system_default)) +
+                                SeedColorPalette.map { stringResource(id = it.labelRes) },
                             selectedIndex = seedIndex,
                             onSelectedIndexChange = { index ->
-                                onEvent(AppearancePreferencesEvent.UpdateThemeSeedColor(SeedColorPalette[index].value))
+                                if (index == 0) {
+                                    onEvent(AppearancePreferencesEvent.UseSystemDynamicColor)
+                                } else {
+                                    onEvent(AppearancePreferencesEvent.UpdateThemeSeedColor(SeedColorPalette[index - 1].value))
+                                }
                             },
                         )
                     }
-                    OverlayDropdownPreference(
-                        modifier = Modifier.testTag("dropdown_settings_appearance_palette_style"),
-                        title = stringResource(id = R.string.theme_palette_style),
-                        summary = stringResource(id = R.string.theme_palette_style_description),
-                        startAction = { PrefIcon(NextIcons.Style) },
-                        items = paletteStyles.map { it.name() },
-                        selectedIndex = paletteStyles.indexOf(preferences.themePaletteStyle).coerceAtLeast(0),
-                        onSelectedIndexChange = { index ->
-                            onEvent(AppearancePreferencesEvent.UpdatePaletteStyle(paletteStyles[index]))
-                        },
-                    )
-                    OverlayDropdownPreference(
-                        modifier = Modifier.testTag("dropdown_settings_appearance_color_spec"),
-                        title = stringResource(id = R.string.theme_color_spec),
-                        summary = stringResource(id = R.string.theme_color_spec_description),
-                        startAction = { PrefIcon(NextIcons.Contrast) },
-                        items = colorSpecs.map { it.name() },
-                        selectedIndex = colorSpecs.indexOf(preferences.themeColorSpec).coerceAtLeast(0),
-                        onSelectedIndexChange = { index ->
-                            onEvent(AppearancePreferencesEvent.UpdateColorSpec(colorSpecs[index]))
-                        },
-                    )
+                    if (preferences.shouldUseDynamicColors && !preferences.shouldUseSystemDynamicColor) {
+                        OverlayDropdownPreference(
+                            modifier = Modifier.testTag("dropdown_settings_appearance_palette_style"),
+                            title = stringResource(id = R.string.theme_palette_style),
+                            summary = stringResource(id = R.string.theme_palette_style_description),
+                            startAction = { PrefIcon(NextIcons.Style) },
+                            items = paletteStyles.map { it.name() },
+                            selectedIndex = paletteStyles.indexOf(preferences.themePaletteStyle).coerceAtLeast(0),
+                            onSelectedIndexChange = { index ->
+                                onEvent(AppearancePreferencesEvent.UpdatePaletteStyle(paletteStyles[index]))
+                            },
+                        )
+                        OverlayDropdownPreference(
+                            modifier = Modifier.testTag("dropdown_settings_appearance_color_spec"),
+                            title = stringResource(id = R.string.theme_color_spec),
+                            summary = stringResource(id = R.string.theme_color_spec_description),
+                            startAction = { PrefIcon(NextIcons.Contrast) },
+                            items = colorSpecs.map { it.name() },
+                            selectedIndex = colorSpecs.indexOf(preferences.themeColorSpec).coerceAtLeast(0),
+                            onSelectedIndexChange = { index ->
+                                onEvent(AppearancePreferencesEvent.UpdateColorSpec(colorSpecs[index]))
+                            },
+                        )
+                    }
                 }
             }
 
             item {
-                ListSectionTitle(text = stringResource(id = R.string.interface_name))
                 Card(modifier = Modifier.fillMaxWidth()) {
                     SwitchPreference(
                         modifier = Modifier.testTag("switch_settings_appearance_title_long_press_home"),
@@ -281,7 +298,7 @@ private fun PrefColorDot(color: Color) {
     )
 }
 
-// 预设主题色，未开启动态取色时供选择
+// 预设主题色，关闭系统壁纸取色时供选择
 private data class SeedColor(val labelRes: Int, val value: Long)
 
 private val SeedColorPalette = listOf(

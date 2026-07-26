@@ -207,6 +207,7 @@ class MainActivity : AppCompatActivity() {
             OnlyPlayerTheme(
                 shouldUseDarkTheme = shouldUseDarkTheme,
                 shouldUseDynamicColor = shouldUseDynamicColor,
+                shouldUseSystemDynamicColor = preferences?.shouldUseSystemDynamicColor != false,
                 seedColor = preferences?.themeSeedColor ?: DEFAULT_SEED_COLOR,
                 paletteStyle = preferences?.themePaletteStyle ?: ThemePaletteStyle.TONAL_SPOT,
                 colorSpec = preferences?.themeColorSpec ?: ThemeColorSpec.SPEC_2025,

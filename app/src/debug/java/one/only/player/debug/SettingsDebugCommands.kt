@@ -20,7 +20,9 @@ import one.only.player.core.model.Resume
 import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.model.SubtitleColor
 import one.only.player.core.model.SubtitleEdgeStyle
+import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
+import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.model.withVideoFilterAdjustment
 import one.only.player.core.model.withVideoSharpening
@@ -82,6 +84,26 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         }
         "appearance.dynamic_colors" -> updateApplicationBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldUseDynamicColors = isEnabled)
+        }
+        "appearance.system_dynamic_colors" -> updateApplicationBoolean(value) { preferences, isEnabled ->
+            preferences.copy(shouldUseSystemDynamicColor = isEnabled)
+        }
+        "appearance.theme_seed_color" -> {
+            val color = java.lang.Long.decode(value.requiredString(EXTRA_VALUE))
+            preferencesRepository().updateApplicationPreferences {
+                it.copy(
+                    shouldUseSystemDynamicColor = false,
+                    themeSeedColor = color,
+                )
+            }
+        }
+        "appearance.theme_palette_style" -> {
+            val paletteStyle = enumValue<ThemePaletteStyle>(value.requiredString(EXTRA_VALUE))
+            preferencesRepository().updateApplicationPreferences { it.copy(themePaletteStyle = paletteStyle) }
+        }
+        "appearance.theme_color_spec" -> {
+            val colorSpec = enumValue<ThemeColorSpec>(value.requiredString(EXTRA_VALUE))
+            preferencesRepository().updateApplicationPreferences { it.copy(themeColorSpec = colorSpec) }
         }
         "appearance.title_long_press_home" -> updateApplicationBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldNavigateHomeOnTitleLongPress = isEnabled)
@@ -337,6 +359,7 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
 internal suspend fun DebugCommandEntryPoint.toggleSetting(target: String?) {
     when (target) {
         "appearance.dynamic_colors" -> toggleApplication { it.copy(shouldUseDynamicColors = !it.shouldUseDynamicColors) }
+        "appearance.system_dynamic_colors" -> toggleApplication { it.copy(shouldUseSystemDynamicColor = !it.shouldUseSystemDynamicColor) }
         "appearance.title_long_press_home" -> toggleApplication { it.copy(shouldNavigateHomeOnTitleLongPress = !it.shouldNavigateHomeOnTitleLongPress) }
         "appearance.floating_navigation_bar" -> toggleApplication { it.copy(shouldUseFloatingNavigationBar = !it.shouldUseFloatingNavigationBar) }
         "appearance.floating_navigation_bar_blur" -> toggleApplication { it.copy(shouldBlurFloatingNavigationBar = !it.shouldBlurFloatingNavigationBar) }

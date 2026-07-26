@@ -186,7 +186,6 @@ internal fun FavoritesScreen(
             }
         },
         contentWindowInsets = WindowInsets.displayCutout,
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         androidx.compose.foundation.layout.Column(
             modifier = Modifier

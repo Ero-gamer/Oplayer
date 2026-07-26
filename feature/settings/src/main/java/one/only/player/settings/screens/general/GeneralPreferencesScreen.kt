@@ -119,7 +119,6 @@ private fun GeneralPreferencesContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier

@@ -25,7 +25,6 @@ import one.only.player.core.common.extensions.toString
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.ListSectionTitle
 import one.only.player.core.ui.components.NextDialogWithDoneAndCancelButtons
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
@@ -34,6 +33,7 @@ import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.preview.DayNightPreview
@@ -88,7 +88,6 @@ private fun GesturePreferencesContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -97,6 +96,7 @@ private fun GesturePreferencesContent(
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)
                 .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
@@ -186,7 +186,6 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.tap_gestures))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {
@@ -204,7 +203,6 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.long_press_gestures))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {
@@ -231,7 +229,6 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.zoom_and_pan_gestures))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {
@@ -256,7 +253,6 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            ListSectionTitle(text = stringResource(id = R.string.other_gestures))
             Column(
                 verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
             ) {

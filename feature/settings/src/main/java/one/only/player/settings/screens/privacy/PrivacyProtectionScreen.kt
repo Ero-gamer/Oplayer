@@ -68,7 +68,6 @@ private fun PrivacyProtectionContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier

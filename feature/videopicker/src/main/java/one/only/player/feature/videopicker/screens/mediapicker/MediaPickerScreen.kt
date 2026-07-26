@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -496,7 +495,6 @@ internal fun MediaPickerScreen(
             )
         },
         contentWindowInsets = WindowInsets.displayCutout,
-        containerColor = MiuixTheme.colorScheme.background,
     ) { scaffoldPadding ->
         Column(
             modifier = Modifier
@@ -506,8 +504,7 @@ internal fun MediaPickerScreen(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(MiuixTheme.colorScheme.background),
+                    .fillMaxSize(),
             ) {
                 PermissionMissingView(
                     isGranted = permissionState.isGranted,
@@ -516,7 +513,7 @@ internal fun MediaPickerScreen(
                     launchPermissionRequest = { permissionState.launchPermissionRequest() },
                 ) {
                     val activeDataState = if (isMoveMode) uiState.moveTargetDataState else uiState.mediaDataState
-                    val shouldShowRefreshIndicator = uiState.isRefreshing || activeDataState is DataState.Loading
+                    val shouldShowRefreshIndicator = uiState.isRefreshing
                     val updatedScaffoldPadding = scaffoldPadding.copy(top = 0.dp, start = 0.dp).withBottomFallback()
                     val refreshTexts = rememberPullToRefreshTexts()
                     PullToRefresh(
@@ -526,11 +523,15 @@ internal fun MediaPickerScreen(
                         refreshTexts = refreshTexts,
                     ) {
                         when (activeDataState) {
-                            DataState.Loading -> Box(modifier = Modifier.fillMaxSize())
+                            DataState.Loading -> Box(modifier = Modifier.fillMaxSize()) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .testTag("media_picker_loading"),
+                                )
+                            }
                             is DataState.Error -> Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(MiuixTheme.colorScheme.background),
+                                modifier = Modifier.fillMaxSize(),
                             ) {
                                 Text(
                                     text = stringResource(id = R.string.unknown_error),

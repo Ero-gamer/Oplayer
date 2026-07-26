@@ -32,6 +32,7 @@ import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SingleSelectablePreference
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -95,7 +96,6 @@ private fun ThumbnailPreferencesContent(
                 },
             )
         },
-        containerColor = MiuixTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -104,6 +104,7 @@ private fun ThumbnailPreferencesContent(
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)
                 .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
                 modifier = Modifier.selectableGroup(),
@@ -145,9 +146,7 @@ private fun ThumbnailPreferencesContent(
 
             PreferenceSlider(
                 isEnabled = preferences.thumbnailGenerationStrategy != ThumbnailGenerationStrategy.FIRST_FRAME,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .testTag("item_settings_thumbnail_frame_position"),
+                modifier = Modifier.testTag("item_settings_thumbnail_frame_position"),
                 sliderModifier = Modifier.testTag("slider_settings_thumbnail_frame_position"),
                 title = stringResource(R.string.frame_position),
                 description = stringResource(R.string.frame_position_value, frameSliderValue),

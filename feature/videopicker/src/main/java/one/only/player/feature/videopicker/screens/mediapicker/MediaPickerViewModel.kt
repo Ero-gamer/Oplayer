@@ -66,10 +66,11 @@ class MediaPickerViewModel @Inject constructor(
 
     private val initialPreferences = preferencesRepository.applicationPreferences.value
     private val initialPlayerPreferences = preferencesRepository.playerPreferences.value
+    private val initialHasAllFilesAccess = hasManageExternalStorageAccess()
     private val initialMediaDataState: DataState<Folder?> = snapshotCache.get(
         folderPath = folderPath,
         preferences = initialPreferences,
-        hasAllFilesAccess = hasManageExternalStorageAccess(),
+        hasAllFilesAccess = initialHasAllFilesAccess,
     )
         ?.takeIf { screenMode == MediaPickerScreenMode.LIBRARY }
         ?.let { folder -> DataState.Success(folder) }
@@ -88,6 +89,20 @@ class MediaPickerViewModel @Inject constructor(
     val uiState = uiStateInternal.asStateFlow()
 
     init {
+        if (initialMediaDataState is DataState.Loading && screenMode == MediaPickerScreenMode.LIBRARY) {
+            viewModelScope.launch {
+                val folder = snapshotCache.awaitGet(
+                    folderPath = folderPath,
+                    preferences = initialPreferences,
+                    hasAllFilesAccess = initialHasAllFilesAccess,
+                ) ?: return@launch
+                uiStateInternal.update { currentState ->
+                    if (currentState.mediaDataState !is DataState.Loading) return@update currentState
+                    currentState.copy(mediaDataState = DataState.Success(folder))
+                }
+            }
+        }
+
         viewModelScope.launch {
             getSortedMediaUseCase.invoke(
                 folderPath = folderPath,

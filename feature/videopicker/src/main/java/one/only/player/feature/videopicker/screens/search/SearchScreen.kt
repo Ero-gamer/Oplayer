@@ -256,7 +256,6 @@ internal fun SearchScreen(
             }
         },
         contentWindowInsets = WindowInsets.displayCutout,
-        containerColor = MiuixTheme.colorScheme.background,
     ) { scaffoldPadding ->
         Column(
             modifier = Modifier
