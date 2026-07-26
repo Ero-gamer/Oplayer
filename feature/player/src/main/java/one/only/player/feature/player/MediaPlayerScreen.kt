@@ -312,6 +312,9 @@ internal fun MediaPlayerScreen(
     LaunchedEffect(pictureInPictureState.isInPictureInPictureMode) {
         if (pictureInPictureState.isInPictureInPictureMode) {
             controlsVisibilityState.hideControls()
+            brightnessState.suspendBrightnessOverride()
+        } else {
+            brightnessState.resumeBrightnessOverride()
         }
     }
 
