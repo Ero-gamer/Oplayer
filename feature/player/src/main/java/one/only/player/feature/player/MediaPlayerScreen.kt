@@ -1160,7 +1160,7 @@ internal fun MediaPlayerScreen(
                                             if (isCustomizingControls) {
                                                 toggleControlVisibility(PlayerControl.SCALE)
                                             } else {
-                                                openOverlayPanel(OverlayView.VIDEO_CONTENT_SCALE)
+                                                videoZoomAndContentScaleState.switchToNextVideoContentScale()
                                             }
                                         },
                                         onVideoContentScaleLongClick = {
@@ -1408,7 +1408,7 @@ internal fun MediaPlayerScreen(
                                             if (isCustomizingControls) {
                                                 toggleControlVisibility(PlayerControl.SCALE)
                                             } else {
-                                                openOverlayPanel(OverlayView.VIDEO_CONTENT_SCALE)
+                                                videoZoomAndContentScaleState.switchToNextVideoContentScale()
                                             }
                                         },
                                         onVideoContentScaleLongClick = {
