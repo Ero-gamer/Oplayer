@@ -105,7 +105,8 @@ fun RootScaffold(
                 .fillMaxSize()
                 .then(if (floatingBlurBackdrop != null) Modifier.layerBackdrop(floatingBlurBackdrop) else Modifier),
             state = rootNavigationState.pagerState,
-            beyondViewportPageCount = RootDestination.entries.lastIndex,
+            // 首帧只组合首页，优先显示已缓存的媒体内容。
+            beyondViewportPageCount = 0,
             key = { page -> RootDestination.entries[page] },
         ) { page ->
             CompositionLocalProvider(LocalRootBottomBarPadding provides bottomBarPadding) {

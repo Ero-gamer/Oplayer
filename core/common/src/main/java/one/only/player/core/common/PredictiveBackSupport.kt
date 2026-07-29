@@ -2,7 +2,6 @@ package one.only.player.core.common
 
 import android.content.pm.ApplicationInfo
 import android.os.Build
-import java.io.File
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 /**
@@ -11,14 +10,6 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
  */
 object PredictiveBackSupport {
     private const val TAG = "PredictiveBackSupport"
-    private const val PREFS_RELATIVE_PATH = "files/datastore/app_preferences.json"
-    private val PREDICTIVE_BACK_PATTERN =
-        "\"shouldEnablePredictiveBack\"\\s*:\\s*(true|false)".toRegex()
-
-    fun applyFromPersistedPreferences(dataDir: String, applicationInfo: ApplicationInfo) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
-        setEnabled(applicationInfo, readPersisted(dataDir))
-    }
 
     fun setEnabled(applicationInfo: ApplicationInfo, isEnabled: Boolean): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return false
@@ -35,17 +26,5 @@ object PredictiveBackSupport {
         }.onFailure {
             Logger.error(TAG, "切换预测性返回失败", it)
         }.isSuccess
-    }
-
-    private fun readPersisted(dataDir: String): Boolean {
-        val preferencesFile = File(dataDir, PREFS_RELATIVE_PATH)
-        if (!preferencesFile.exists()) return false
-        return runCatching { preferencesFile.readText() }
-            .getOrNull()
-            ?.let(PREDICTIVE_BACK_PATTERN::find)
-            ?.groupValues
-            ?.getOrNull(1)
-            ?.toBooleanStrictOrNull()
-            ?: false
     }
 }

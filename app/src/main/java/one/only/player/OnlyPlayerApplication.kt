@@ -4,6 +4,7 @@ import android.app.Application
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
+import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import one.only.player.core.common.AppThemeModeManager
@@ -18,22 +19,23 @@ class OnlyPlayerApplication :
     SingletonImageLoader.Factory {
 
     @Inject
-    lateinit var imageLoader: ImageLoader
+    lateinit var imageLoader: Lazy<ImageLoader>
 
     override fun onCreate() {
         super.onCreate()
         AppForegroundTracker.register(this)
+        val startupPreferences = StartupPreferencesCache.initialize(dataDir = applicationInfo.dataDir)
         AppThemeModeManager.applyPlatformToCurrent(
             context = applicationContext,
-            mode = readPersistedThemeConfig(dataDir = applicationInfo.dataDir).toAppThemeMode(),
+            mode = startupPreferences.themeConfig.toAppThemeMode(),
         )
-        PredictiveBackSupport.applyFromPersistedPreferences(
-            dataDir = applicationInfo.dataDir,
+        PredictiveBackSupport.setEnabled(
             applicationInfo = applicationInfo,
+            isEnabled = startupPreferences.shouldEnablePredictiveBack,
         )
         Logger.initialize(this)
         Thread.setDefaultUncaughtExceptionHandler(GlobalExceptionHandler(applicationContext, CrashActivity::class.java))
     }
 
-    override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader
+    override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader.get()
 }

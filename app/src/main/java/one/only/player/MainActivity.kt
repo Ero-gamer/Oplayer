@@ -3,14 +3,12 @@ package one.only.player
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.SystemClock
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,11 +34,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.File
 import javax.inject.Inject
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.only.player.core.common.AppThemeMode
 import one.only.player.core.common.createManageExternalStorageAccessIntent
 import one.only.player.core.common.extensions.applyPrivacyProtection
 import one.only.player.core.common.extensions.resolvePrivacyPreviewScrim
@@ -103,16 +98,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    companion object {
-        private const val TAG = "MainActivity"
-        private const val AUTO_REFRESH_INTERVAL_MILLIS = 30_000L
-        private const val STARTUP_SPLASH_MIN_DURATION_MILLIS = 450L
-
-        // 进程级时间戳，Activity 重建后不会重置，进程死亡后归零触发全量刷新
-        @Volatile
-        private var lastAutoRefreshAt = 0L
-    }
-
     @Inject
     lateinit var synchronizer: MediaSynchronizer
 
@@ -131,31 +116,25 @@ class MainActivity : AppCompatActivity() {
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        val persistedThemeConfig = readPersistedThemeConfig(dataDir = applicationInfo.dataDir)
-        val bootstrapShouldUseDynamicColors = readPersistedShouldUseDynamicColors(dataDir = applicationInfo.dataDir)
+        val persistedStartupPreferences = StartupPreferencesCache.consume(dataDir = applicationInfo.dataDir)
         val bootstrapTheme = resolveBootstrapTheme(
-            themeConfig = persistedThemeConfig,
+            themeConfig = persistedStartupPreferences.themeConfig,
             isSystemDarkTheme = isSystemDarkTheme(resources.configuration),
         )
         setTheme(resolveBootstrapSplashThemeStyle(shouldUseDarkTheme = bootstrapTheme.shouldUseDarkTheme))
-        val splashScreenStartedAt = SystemClock.elapsedRealtime()
-        val splashScreen = installSplashScreen()
-        splashScreen.setOnExitAnimationListener { it.remove() }
+        installSplashScreen().setOnExitAnimationListener { it.remove() }
         super.onCreate(savedInstanceState)
-        val bootstrapShouldHideInRecents = readPersistedHideInRecents(dataDir = applicationInfo.dataDir)
         applyPrivacyProtection(
             shouldPreventScreenshots = viewModel.currentPreferences.shouldPreventScreenshots,
             shouldHideInRecents = viewModel.currentPreferences.shouldHideInRecents,
         )
         mediaService.initialize(this@MainActivity)
         applySystemBars(
-            shouldHideInRecents = bootstrapShouldHideInRecents,
+            shouldHideInRecents = persistedStartupPreferences.shouldHideInRecents,
             shouldUseDarkTheme = bootstrapTheme.shouldUseDarkTheme,
         )
 
         var uiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
-        var isStartupSplashReady by mutableStateOf(false)
-
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
@@ -164,9 +143,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        splashScreen.setKeepOnScreenCondition {
-            SystemClock.elapsedRealtime() - splashScreenStartedAt < STARTUP_SPLASH_MIN_DURATION_MILLIS
-        }
         consumeDebugIntent(intent)
 
         setContent {
@@ -176,19 +152,12 @@ class MainActivity : AppCompatActivity() {
             )
             val shouldUseDynamicColor = shouldUseDynamicTheming(
                 uiState = uiState,
-                bootstrapShouldUseDynamicColors = bootstrapShouldUseDynamicColors,
+                bootstrapShouldUseDynamicColors = persistedStartupPreferences.shouldUseDynamicColors,
             )
 
             val preferences = (uiState as? MainActivityUiState.Success)?.preferences
             val shouldPreventScreenshots = preferences?.shouldPreventScreenshots == true
             val shouldHideInRecents = preferences?.shouldHideInRecents == true
-            val shouldShowStartupSplash = uiState == MainActivityUiState.Loading || !isStartupSplashReady
-
-            LaunchedEffect(Unit) {
-                delay(STARTUP_SPLASH_MIN_DURATION_MILLIS)
-                isStartupSplashReady = true
-            }
-
             LaunchedEffect(shouldPreventScreenshots, shouldHideInRecents) {
                 if (preferences == null) return@LaunchedEffect
                 this@MainActivity.applyPrivacyProtection(
@@ -216,29 +185,11 @@ class MainActivity : AppCompatActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MiuixTheme.colorScheme.surface,
                 ) {
-                    if (shouldShowStartupSplash) {
-                        StartupSplashScreen()
-                    } else {
-                        MainAppContent(
-                            shouldUseFloatingNavigationBar = preferences?.shouldUseFloatingNavigationBar == true,
-                            shouldBlurFloatingNavigationBar = preferences?.shouldBlurFloatingNavigationBar != false,
-                            onPermissionGranted = {
-                                synchronizer.startSync()
-                                lastAutoRefreshAt = SystemClock.elapsedRealtime()
-                            },
-                            onResumeWithPermission = {
-                                val now = SystemClock.elapsedRealtime()
-                                if (lastAutoRefreshAt == 0L) {
-                                    lastAutoRefreshAt = now
-                                } else if (now - lastAutoRefreshAt >= AUTO_REFRESH_INTERVAL_MILLIS) {
-                                    lifecycleScope.launch {
-                                        synchronizer.refresh()
-                                        lastAutoRefreshAt = SystemClock.elapsedRealtime()
-                                    }
-                                }
-                            },
-                        )
-                    }
+                    MainAppContent(
+                        shouldUseFloatingNavigationBar = preferences?.shouldUseFloatingNavigationBar == true,
+                        shouldBlurFloatingNavigationBar = preferences?.shouldBlurFloatingNavigationBar != false,
+                        onMediaAccessAvailable = synchronizer::startSync,
+                    )
                 }
             }
         }
@@ -351,8 +302,7 @@ class MainActivity : AppCompatActivity() {
     private fun MainAppContent(
         shouldUseFloatingNavigationBar: Boolean,
         shouldBlurFloatingNavigationBar: Boolean,
-        onPermissionGranted: () -> Unit,
-        onResumeWithPermission: () -> Unit,
+        onMediaAccessAvailable: () -> Unit,
     ) {
         val storagePermissionState = rememberRuntimePermissionState(permission = storagePermission)
         var hasAllFilesAccess by remember {
@@ -365,7 +315,7 @@ class MainActivity : AppCompatActivity() {
 
         LaunchedEffect(storagePermissionState.isGranted, hasAllFilesAccess) {
             if (!storagePermissionState.isGranted || !hasAllFilesAccess) return@LaunchedEffect
-            onPermissionGranted()
+            onMediaAccessAvailable()
         }
 
         LifecycleEventEffect(event = Lifecycle.Event.ON_RESUME) {
@@ -373,7 +323,7 @@ class MainActivity : AppCompatActivity() {
             val hasAccess = hasManageExternalStorageAccess()
             hasAllFilesAccess = hasAccess
             if (!hasAccess) return@LifecycleEventEffect
-            onResumeWithPermission()
+            onMediaAccessAvailable()
         }
 
         NavigationBarColorEffect(
@@ -498,52 +448,6 @@ internal fun resolveBootstrapTheme(
     ThemeConfig.ON -> BootstrapThemeResolution(shouldUseDarkTheme = true)
 }
 
-internal fun ThemeConfig.toAppThemeMode(): AppThemeMode = when (this) {
-    ThemeConfig.SYSTEM -> AppThemeMode.FOLLOW_SYSTEM
-    ThemeConfig.OFF -> AppThemeMode.LIGHT
-    ThemeConfig.ON -> AppThemeMode.DARK
-}
-
-internal fun readPersistedThemeConfig(dataDir: String): ThemeConfig {
-    val preferencesFile = File(dataDir, "files/datastore/app_preferences.json")
-    if (!preferencesFile.exists()) return ThemeConfig.SYSTEM
-
-    val rawConfig = runCatching { preferencesFile.readText() }
-        .getOrNull()
-        ?.let(THEME_CONFIG_PATTERN::find)
-        ?.groupValues
-        ?.getOrNull(1)
-        ?: return ThemeConfig.SYSTEM
-
-    return ThemeConfig.entries.firstOrNull { it.name == rawConfig } ?: ThemeConfig.SYSTEM
-}
-
-internal fun readPersistedHideInRecents(dataDir: String): Boolean {
-    val preferencesFile = File(dataDir, "files/datastore/app_preferences.json")
-    if (!preferencesFile.exists()) return false
-
-    return runCatching { preferencesFile.readText() }
-        .getOrNull()
-        ?.let(HIDE_IN_RECENTS_PATTERN::find)
-        ?.groupValues
-        ?.getOrNull(1)
-        ?.toBooleanStrictOrNull()
-        ?: false
-}
-
-internal fun readPersistedShouldUseDynamicColors(dataDir: String): Boolean {
-    val preferencesFile = File(dataDir, "files/datastore/app_preferences.json")
-    if (!preferencesFile.exists()) return true
-
-    return runCatching { preferencesFile.readText() }
-        .getOrNull()
-        ?.let(DYNAMIC_COLORS_PATTERN::find)
-        ?.groupValues
-        ?.getOrNull(1)
-        ?.toBooleanStrictOrNull()
-        ?: true
-}
-
 private fun resolveBootstrapSplashThemeStyle(shouldUseDarkTheme: Boolean): Int = if (shouldUseDarkTheme) {
     one.only.player.R.style.Theme_OnlyPlayer_Splash_Dark
 } else {
@@ -551,10 +455,6 @@ private fun resolveBootstrapSplashThemeStyle(shouldUseDarkTheme: Boolean): Int =
 }
 
 private fun isSystemDarkTheme(configuration: Configuration): Boolean = (configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-
-private val THEME_CONFIG_PATTERN = "\"themeConfig\"\\s*:\\s*\"([A-Z_]+)\"".toRegex()
-private val HIDE_IN_RECENTS_PATTERN = "\"shouldHideInRecents\"\\s*:\\s*(true|false)".toRegex()
-private val DYNAMIC_COLORS_PATTERN = "\"shouldUseDynamicColors\"\\s*:\\s*(true|false)".toRegex()
 
 @Composable
 fun shouldUseDarkTheme(
@@ -576,18 +476,6 @@ fun shouldUseDynamicTheming(
 ): Boolean = when (uiState) {
     MainActivityUiState.Loading -> bootstrapShouldUseDynamicColors
     is MainActivityUiState.Success -> uiState.preferences.shouldUseDynamicColors
-}
-
-@Composable
-private fun StartupSplashScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .semantics {
-                testTagsAsResourceId = true
-            }
-            .testTag("startup_splash"),
-    )
 }
 
 @Composable
