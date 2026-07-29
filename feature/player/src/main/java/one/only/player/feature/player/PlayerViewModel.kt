@@ -158,6 +158,9 @@ class PlayerViewModel @Inject constructor(
         ?.takeIf { it.mediaKey == mediaKey }
         ?.bitmap
 
+    // 新媒体首帧到位前用于避免背景黑闪。
+    fun latestAmbienceFrame(): Bitmap? = ambienceFrame?.bitmap
+
     fun updateAmbienceFrame(
         mediaKey: String?,
         bitmap: Bitmap,

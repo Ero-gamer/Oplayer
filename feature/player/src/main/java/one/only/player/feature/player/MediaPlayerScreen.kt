@@ -168,10 +168,10 @@ import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 
 private const val TAG = "MediaPlayerScreen"
 private const val AMBIENCE_FRAME_CAPTURE_MAX_SIZE = 240
-private const val AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS = 300L
+private const val AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS = 100L
 private const val AMBIENCE_FRAME_CAPTURE_PAUSED_INTERVAL_MS = 1_000L
 private const val AMBIENCE_FRAME_CAPTURE_BUFFERING_RETRY_MS = 250L
-private const val AMBIENCE_FRAME_NEAR_BLACK_CONFIRM_COUNT = 3
+private const val AMBIENCE_FRAME_NEAR_BLACK_CONFIRM_COUNT = 10
 private const val AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA = 6f
 private const val AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA = 18f
 private const val AMBIENCE_VISIBLE_ALPHA_THRESHOLD = 16
@@ -957,7 +957,8 @@ internal fun MediaPlayerScreen(
                         isPlaying = mediaPresentationState.isPlaying,
                         isBuffering = mediaPresentationState.isBuffering,
                         positionMs = mediaPresentationState.position,
-                        cachedFrameBitmap = viewModel.ambienceFrameFor(ambienceMediaKey),
+                        cachedFrameBitmap = viewModel.ambienceFrameFor(ambienceMediaKey)
+                            ?: viewModel.latestAmbienceFrame(),
                         onFrameCaptured = viewModel::updateAmbienceFrame,
                     )
                 }
@@ -1878,7 +1879,7 @@ private fun AmbienceBackground(
     val currentIsBuffering = rememberUpdatedState(isBuffering)
     val currentIsPlaying = rememberUpdatedState(isPlaying)
     val currentPositionMs = rememberUpdatedState(positionMs)
-    var frameBitmap by remember(mediaKey) { mutableStateOf(cachedFrameBitmap) }
+    var frameBitmap by remember { mutableStateOf(cachedFrameBitmap) }
 
     DisposableEffect(mediaKey) {
         Logger.info(TAG, "Ambience background mounted media=$mediaKey")
@@ -1904,6 +1905,7 @@ private fun AmbienceBackground(
         var consecutiveNearBlackFrameCount = 0
         var isDisplayedFrameNearBlack = false
         var didLogBuffering = false
+        var didLogNearBlackFrame = false
         var didLogWaitingForRect = false
         var shouldLogNextSuccess = true
         while (true) {
@@ -1960,29 +1962,37 @@ private fun AmbienceBackground(
                     }
 
                     if (shouldUpdateFrame) {
+                        didLogNearBlackFrame = false
                         frameBitmap = result.bitmap
                         onFrameCaptured(mediaKey, result.bitmap)
                         isDisplayedFrameNearBlack = isNearBlackFrame
+                        if (isNearBlackFrame) {
+                            Logger.info(
+                                TAG,
+                                "Ambience capture accepted stable near-black frame media=$mediaKey count=$captureCount nearBlackCount=$consecutiveNearBlackFrameCount rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value}",
+                            )
+                        } else if (shouldLogNextSuccess || captureCount % 10 == 0) {
+                            Logger.info(
+                                TAG,
+                                "Ambience capture success media=$mediaKey count=$captureCount source=${result.sourceDebug} rect=${sourceRect.ambienceDebugString()} capture=${result.size.width}x${result.size.height} avgLuma=${result.luma.average} maxLuma=${result.luma.max} visible=${result.luma.visiblePixelCount} positionMs=${currentPositionMs.value}",
+                            )
+                        }
                     } else {
                         result.bitmap.recycle()
-                        if (!isDisplayedFrameNearBlack) {
+                        if (isNearBlackFrame && !isDisplayedFrameNearBlack && !didLogNearBlackFrame) {
                             Logger.info(
                                 TAG,
                                 "Ambience capture skipped media=$mediaKey count=$captureCount reason=unconfirmed_near_black_frame nearBlackCount=$consecutiveNearBlackFrameCount rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameBitmap != null}",
                             )
                         }
                     }
-
-                    if (shouldUpdateFrame && (shouldLogNextSuccess || captureCount % 10 == 0)) {
-                        Logger.info(
-                            TAG,
-                            "Ambience capture success media=$mediaKey count=$captureCount source=${result.sourceDebug} rect=${sourceRect.ambienceDebugString()} capture=${result.size.width}x${result.size.height} avgLuma=${result.luma.average} maxLuma=${result.luma.max} visible=${result.luma.visiblePixelCount} positionMs=${currentPositionMs.value}",
-                        )
-                    }
+                    if (isNearBlackFrame && !isDisplayedFrameNearBlack) didLogNearBlackFrame = true
                     shouldLogNextSuccess = !shouldUpdateFrame
                 }
 
                 is AmbienceFrameCaptureResult.Failure -> {
+                    if (!isDisplayedFrameNearBlack) consecutiveNearBlackFrameCount = 0
+                    didLogNearBlackFrame = false
                     shouldLogNextSuccess = true
                     Logger.info(
                         TAG,
