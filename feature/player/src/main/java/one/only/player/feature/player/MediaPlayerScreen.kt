@@ -5,12 +5,9 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Rect as AndroidRect
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.PixelCopy
 import android.view.SurfaceView
@@ -22,7 +19,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -61,7 +57,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -74,7 +69,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -92,13 +86,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import java.util.Locale
 import kotlin.coroutines.resume
-import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
@@ -175,22 +167,14 @@ import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 
 private const val TAG = "MediaPlayerScreen"
-private const val AMBIENCE_ARTWORK_SAMPLE_SIZE = 32
-private const val AMBIENCE_FRAME_CAPTURE_MAX_SIZE = 360
-private const val AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS = 700L
-private const val AMBIENCE_FRAME_CAPTURE_PAUSED_INTERVAL_MS = 1_500L
+private const val AMBIENCE_FRAME_CAPTURE_MAX_SIZE = 240
+private const val AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS = 300L
+private const val AMBIENCE_FRAME_CAPTURE_PAUSED_INTERVAL_MS = 1_000L
 private const val AMBIENCE_FRAME_CAPTURE_BUFFERING_RETRY_MS = 250L
-private const val AMBIENCE_FRAME_CAPTURE_SEEK_HOLD_MS = 900L
-private const val AMBIENCE_FRAME_CAPTURE_SEEK_DELTA_MS = 2_000L
-private const val AMBIENCE_FRAME_CROSSFADE_MS = 600
+private const val AMBIENCE_FRAME_NEAR_BLACK_CONFIRM_COUNT = 3
 private const val AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA = 6f
 private const val AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA = 18f
 private const val AMBIENCE_VISIBLE_ALPHA_THRESHOLD = 16
-private const val AMBIENCE_NEAR_BLACK_AVERAGE_LUMA = 10f
-private const val AMBIENCE_NEAR_BLACK_MAX_LUMA = 28f
-private const val AMBIENCE_NEAR_BLACK_AVERAGE_CHROMA = 8f
-private const val AMBIENCE_NEAR_BLACK_BRIGHT_PIXEL_RATIO = 0.02f
-private const val AMBIENCE_BRIGHT_LUMA = 42f
 
 val LocalControlsVisibilityState = compositionLocalOf<ControlsVisibilityState?> { null }
 val LocalPlayerIconStyle = compositionLocalOf { PlayerIconStyle.TONAL }
@@ -225,6 +209,7 @@ internal fun MediaPlayerScreen(
     player: Player?,
     viewModel: PlayerViewModel,
     playerPreferences: PlayerPreferences,
+    isAmbienceModeEnabled: Boolean,
     externalSubtitleFontSource: ExternalSubtitleFontSource?,
     modifier: Modifier = Modifier,
     onSelectSubtitleClick: () -> Unit,
@@ -403,7 +388,6 @@ internal fun MediaPlayerScreen(
     var shouldShowOverlay by remember { mutableStateOf(false) }
     var videoFiltersInitialPreferences by remember { mutableStateOf<PlayerPreferences?>(null) }
     var subtitleStylePreviewPreferences by remember { mutableStateOf<PlayerPreferences?>(null) }
-    var isAmbienceModeEnabled by remember { mutableStateOf(false) }
     var isVideoMirrored by remember { mutableStateOf(false) }
     val activePlayerPreferences = subtitleStylePreviewPreferences ?: playerPreferences
     val videoFiltersUnavailableMessage = stringResource(coreUiR.string.video_filters_unavailable_software_decoder)
@@ -496,7 +480,7 @@ internal fun MediaPlayerScreen(
         shouldShowControls: Boolean = true,
     ) {
         Logger.info(TAG, "Ambience mode set enabled=$isEnabled showControls=$shouldShowControls")
-        isAmbienceModeEnabled = isEnabled
+        viewModel.updateAmbienceModeEnabled(isEnabled)
         if (shouldShowControls) {
             controlsVisibilityState.showControls()
         }
@@ -963,16 +947,18 @@ internal fun MediaPlayerScreen(
                         ?.let { with(LocalDensity.current) { it.toDp() } }
                         ?: 0.dp,
                 ) + 16.dp
-                if (isAmbienceModeEnabled) {
+                val shouldRenderAmbienceBackground = isAmbienceModeEnabled && player.canUseTextureViewForAmbience()
+                if (shouldRenderAmbienceBackground) {
+                    val ambienceMediaKey = player.currentAmbienceMediaKey()
                     AmbienceBackground(
-                        artworkData = metadataState.artworkData,
-                        artworkUri = metadataState.artworkUri,
-                        mediaKey = player.currentMediaItem?.mediaId,
+                        mediaKey = ambienceMediaKey,
                         videoViewRect = pictureInPictureState.videoViewRect,
                         hasRenderedFirstFrame = mediaPresentationState.hasRenderedFirstFrame,
                         isPlaying = mediaPresentationState.isPlaying,
                         isBuffering = mediaPresentationState.isBuffering,
                         positionMs = mediaPresentationState.position,
+                        cachedFrameBitmap = viewModel.ambienceFrameFor(ambienceMediaKey),
+                        onFrameCaptured = viewModel::updateAmbienceFrame,
                     )
                 }
 
@@ -1000,7 +986,8 @@ internal fun MediaPlayerScreen(
                         externalSubtitleFontSource = externalSubtitleFontSource,
                     ),
                     decoderPriority = playerPreferences.decoderPriority,
-                    shouldUseTextureView = isVideoMirrored,
+                    // 氛围背景只在可安全抓帧的视频上使用 TextureView，避免影响受保护和 HDR 视频的主画面。
+                    shouldUseTextureView = isVideoMirrored || shouldRenderAmbienceBackground,
                     isVideoMirrored = isVideoMirrored,
                 )
 
@@ -1870,14 +1857,14 @@ fun InfoView(
 
 @Composable
 private fun AmbienceBackground(
-    artworkData: ByteArray?,
-    artworkUri: Uri?,
     mediaKey: String?,
     videoViewRect: AndroidRect?,
     hasRenderedFirstFrame: Boolean,
     isPlaying: Boolean,
     isBuffering: Boolean,
     positionMs: Long,
+    cachedFrameBitmap: Bitmap?,
+    onFrameCaptured: (String?, Bitmap) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -1887,66 +1874,58 @@ private fun AmbienceBackground(
     val captureRect = remember(videoViewRect, rootView.width, rootView.height) {
         videoViewRect?.coerceToWindowBounds(rootView)
     }
+    val currentCaptureRect = rememberUpdatedState(captureRect)
     val currentIsBuffering = rememberUpdatedState(isBuffering)
+    val currentIsPlaying = rememberUpdatedState(isPlaying)
     val currentPositionMs = rememberUpdatedState(positionMs)
-    var frameImage by remember(mediaKey) { mutableStateOf<ImageBitmap?>(null) }
-    var previousPositionMs by remember(mediaKey) { mutableLongStateOf(positionMs) }
-    var captureHoldUntilMs by remember(mediaKey) { mutableLongStateOf(0L) }
-    val currentCaptureHoldUntilMs = rememberUpdatedState(captureHoldUntilMs)
-    val shouldUseFallbackArtwork = remember(artworkData) {
-        artworkData?.isNearBlackAmbienceArtwork() == true
-    }
-    val model = when {
-        artworkData != null && !shouldUseFallbackArtwork -> artworkData
-        shouldUseFallbackArtwork -> R.drawable.artwork_default
-        artworkUri != null -> artworkUri
-        else -> R.drawable.artwork_default
-    }
+    var frameBitmap by remember(mediaKey) { mutableStateOf(cachedFrameBitmap) }
 
     DisposableEffect(mediaKey) {
         Logger.info(TAG, "Ambience background mounted media=$mediaKey")
         onDispose {
-            Logger.info(TAG, "Ambience background disposed media=$mediaKey hasImage=${frameImage != null}")
+            Logger.info(TAG, "Ambience background disposed media=$mediaKey hasImage=${frameBitmap != null}")
         }
     }
 
-    LaunchedEffect(positionMs) {
-        val previous = previousPositionMs
-        previousPositionMs = positionMs
-
-        val deltaMs = abs(positionMs - previous)
-        if (previous <= 0L || deltaMs < AMBIENCE_FRAME_CAPTURE_SEEK_DELTA_MS) return@LaunchedEffect
-
-        captureHoldUntilMs = SystemClock.elapsedRealtime() + AMBIENCE_FRAME_CAPTURE_SEEK_HOLD_MS
+    LaunchedEffect(mediaKey, rootView, window, hasRenderedFirstFrame) {
         Logger.info(
             TAG,
-            "Ambience capture hold after seek media=$mediaKey fromMs=$previous toMs=$positionMs deltaMs=$deltaMs holdMs=$AMBIENCE_FRAME_CAPTURE_SEEK_HOLD_MS keepImage=${frameImage != null}",
+            "Ambience capture effect start media=$mediaKey rect=${captureRect?.ambienceDebugString()} hasFrame=$hasRenderedFirstFrame playing=${currentIsPlaying.value} buffering=${currentIsBuffering.value} hasImage=${frameBitmap != null} root=${rootView.width}x${rootView.height}",
         )
-    }
-
-    LaunchedEffect(rootView, window, captureRect, hasRenderedFirstFrame, isPlaying) {
-        Logger.info(
-            TAG,
-            "Ambience capture effect start media=$mediaKey rect=${captureRect?.ambienceDebugString()} hasFrame=$hasRenderedFirstFrame playing=$isPlaying buffering=${currentIsBuffering.value} hasImage=${frameImage != null} root=${rootView.width}x${rootView.height}",
-        )
-        if (captureRect == null || !hasRenderedFirstFrame) {
+        if (!hasRenderedFirstFrame) {
             Logger.info(
                 TAG,
-                "Ambience capture waiting media=$mediaKey window=${window != null} rect=${captureRect?.ambienceDebugString()} hasFrame=$hasRenderedFirstFrame keepImage=${frameImage != null}",
+                "Ambience capture waiting media=$mediaKey window=${window != null} rect=${captureRect?.ambienceDebugString()} hasFrame=$hasRenderedFirstFrame keepImage=${frameBitmap != null}",
             )
             return@LaunchedEffect
         }
 
         var captureCount = 0
+        var consecutiveNearBlackFrameCount = 0
+        var isDisplayedFrameNearBlack = false
         var didLogBuffering = false
-        var didLogHolding = false
+        var didLogWaitingForRect = false
         var shouldLogNextSuccess = true
         while (true) {
+            val sourceRect = currentCaptureRect.value
+            if (sourceRect == null) {
+                if (!didLogWaitingForRect) {
+                    Logger.info(
+                        TAG,
+                        "Ambience capture waiting media=$mediaKey window=${window != null} rect=null hasFrame=true keepImage=${frameBitmap != null}",
+                    )
+                }
+                didLogWaitingForRect = true
+                delay(AMBIENCE_FRAME_CAPTURE_BUFFERING_RETRY_MS)
+                continue
+            }
+
+            didLogWaitingForRect = false
             if (currentIsBuffering.value) {
                 if (!didLogBuffering) {
                     Logger.info(
                         TAG,
-                        "Ambience capture paused for buffering media=$mediaKey rect=${captureRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameImage != null}",
+                        "Ambience capture paused for buffering media=$mediaKey rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameBitmap != null}",
                     )
                 }
                 didLogBuffering = true
@@ -1956,50 +1935,63 @@ private fun AmbienceBackground(
             }
 
             didLogBuffering = false
-            val holdRemainingMs = currentCaptureHoldUntilMs.value - SystemClock.elapsedRealtime()
-            if (holdRemainingMs > 0L) {
-                if (!didLogHolding) {
-                    Logger.info(
-                        TAG,
-                        "Ambience capture paused after seek media=$mediaKey remainMs=$holdRemainingMs rect=${captureRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameImage != null}",
-                    )
-                }
-                didLogHolding = true
-                shouldLogNextSuccess = true
-                delay(minOf(holdRemainingMs, AMBIENCE_FRAME_CAPTURE_BUFFERING_RETRY_MS))
-                continue
-            }
-
-            didLogHolding = false
             captureCount++
             when (
                 val result = capturePlayerFrame(
                     rootView = rootView,
                     window = window,
-                    sourceRect = captureRect,
+                    sourceRect = sourceRect,
                 )
             ) {
                 is AmbienceFrameCaptureResult.Success -> {
-                    frameImage = result.image
-                    if (shouldLogNextSuccess || captureCount % 10 == 0) {
+                    val isNearBlackFrame = result.luma.isNearBlackAmbienceFrame()
+                    val shouldUpdateFrame = when {
+                        !isNearBlackFrame -> {
+                            consecutiveNearBlackFrameCount = 0
+                            isDisplayedFrameNearBlack = false
+                            true
+                        }
+
+                        isDisplayedFrameNearBlack -> false
+                        else -> {
+                            consecutiveNearBlackFrameCount++
+                            consecutiveNearBlackFrameCount >= AMBIENCE_FRAME_NEAR_BLACK_CONFIRM_COUNT
+                        }
+                    }
+
+                    if (shouldUpdateFrame) {
+                        frameBitmap = result.bitmap
+                        onFrameCaptured(mediaKey, result.bitmap)
+                        isDisplayedFrameNearBlack = isNearBlackFrame
+                    } else {
+                        result.bitmap.recycle()
+                        if (!isDisplayedFrameNearBlack) {
+                            Logger.info(
+                                TAG,
+                                "Ambience capture skipped media=$mediaKey count=$captureCount reason=unconfirmed_near_black_frame nearBlackCount=$consecutiveNearBlackFrameCount rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameBitmap != null}",
+                            )
+                        }
+                    }
+
+                    if (shouldUpdateFrame && (shouldLogNextSuccess || captureCount % 10 == 0)) {
                         Logger.info(
                             TAG,
-                            "Ambience capture success media=$mediaKey count=$captureCount source=${result.sourceDebug} rect=${captureRect.ambienceDebugString()} capture=${result.size.width}x${result.size.height} avgLuma=${result.luma.average} maxLuma=${result.luma.max} visible=${result.luma.visiblePixelCount} positionMs=${currentPositionMs.value}",
+                            "Ambience capture success media=$mediaKey count=$captureCount source=${result.sourceDebug} rect=${sourceRect.ambienceDebugString()} capture=${result.size.width}x${result.size.height} avgLuma=${result.luma.average} maxLuma=${result.luma.max} visible=${result.luma.visiblePixelCount} positionMs=${currentPositionMs.value}",
                         )
                     }
-                    shouldLogNextSuccess = false
+                    shouldLogNextSuccess = !shouldUpdateFrame
                 }
 
                 is AmbienceFrameCaptureResult.Failure -> {
                     shouldLogNextSuccess = true
                     Logger.info(
                         TAG,
-                        "Ambience capture skipped media=$mediaKey count=$captureCount reason=${result.reason} source=${result.sourceDebug} pixelCopy=${result.pixelCopyResult} avgLuma=${result.luma?.average} maxLuma=${result.luma?.max} visible=${result.luma?.visiblePixelCount} rect=${captureRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameImage != null}",
+                        "Ambience capture skipped media=$mediaKey count=$captureCount reason=${result.reason} source=${result.sourceDebug} pixelCopy=${result.pixelCopyResult} rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameBitmap != null}",
                     )
                 }
             }
             delay(
-                if (isPlaying) {
+                if (currentIsPlaying.value) {
                     AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS
                 } else {
                     AMBIENCE_FRAME_CAPTURE_PAUSED_INTERVAL_MS
@@ -2008,36 +2000,16 @@ private fun AmbienceBackground(
         }
     }
 
-    Crossfade(
-        targetState = frameImage,
-        animationSpec = tween(durationMillis = AMBIENCE_FRAME_CROSSFADE_MS),
-        label = "AmbienceFrameCrossfade",
-    ) { currentFrameImage ->
-        if (currentFrameImage != null) {
-            Image(
-                bitmap = currentFrameImage,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = modifier
-                    .fillMaxSize()
-                    .blur(48.dp),
-                alpha = 0.9f,
-            )
-        } else {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(model)
-                    .build(),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                placeholder = painterResource(R.drawable.artwork_default),
-                error = painterResource(R.drawable.artwork_default),
-                modifier = modifier
-                    .fillMaxSize()
-                    .blur(48.dp),
-                alpha = 0.9f,
-            )
-        }
+    frameBitmap?.let { currentFrameBitmap ->
+        Image(
+            bitmap = currentFrameBitmap.asImageBitmap(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier
+                .fillMaxSize()
+                .blur(48.dp),
+            alpha = 0.9f,
+        )
     }
     Box(
         modifier = modifier
@@ -2111,7 +2083,7 @@ private suspend fun captureSurfaceViewFrame(
                         )
                         if (continuation.isActive) {
                             continuation.resume(captureResult)
-                        } else if (captureResult is AmbienceFrameCaptureResult.Success) {
+                        } else {
                             bitmap.recycle()
                         }
                     }
@@ -2152,6 +2124,12 @@ private fun captureTextureViewFrame(
     if (!textureView.canCaptureAmbienceFrame()) {
         return AmbienceFrameCaptureResult.Failure(
             reason = "render_view_not_ready",
+            sourceDebug = sourceDebug,
+        )
+    }
+    if (!textureView.isAvailable) {
+        return AmbienceFrameCaptureResult.Failure(
+            reason = "texture_not_available",
             sourceDebug = sourceDebug,
         )
     }
@@ -2208,7 +2186,7 @@ private suspend fun captureWindowFrame(
                         )
                         if (continuation.isActive) {
                             continuation.resume(captureResult)
-                        } else if (captureResult is AmbienceFrameCaptureResult.Success) {
+                        } else {
                             bitmap.recycle()
                         }
                     }
@@ -2244,7 +2222,7 @@ private suspend fun captureWindowFrame(
 
 private sealed interface AmbienceFrameCaptureResult {
     data class Success(
-        val image: ImageBitmap,
+        val bitmap: Bitmap,
         val size: AmbienceCaptureSize,
         val luma: AmbienceFrameLuma,
         val sourceDebug: String,
@@ -2254,7 +2232,6 @@ private sealed interface AmbienceFrameCaptureResult {
         val reason: String,
         val sourceDebug: String,
         val pixelCopyResult: Int? = null,
-        val luma: AmbienceFrameLuma? = null,
     ) : AmbienceFrameCaptureResult
 }
 
@@ -2274,17 +2251,8 @@ private fun Bitmap.toAmbienceCaptureResult(
     captureSize: AmbienceCaptureSize,
 ): AmbienceFrameCaptureResult {
     val luma = ambienceFrameLuma()
-    if (luma.isNearBlackAmbienceFrame()) {
-        recycle()
-        return AmbienceFrameCaptureResult.Failure(
-            reason = "near_black_frame",
-            sourceDebug = sourceDebug,
-            luma = luma,
-        )
-    }
-
     return AmbienceFrameCaptureResult.Success(
-        image = asImageBitmap(),
+        bitmap = this,
         size = captureSize,
         luma = luma,
         sourceDebug = sourceDebug,
@@ -2371,6 +2339,25 @@ private fun Bitmap.ambienceFrameLuma(): AmbienceFrameLuma {
 private fun AmbienceFrameLuma.isNearBlackAmbienceFrame(): Boolean = visiblePixelCount == 0 ||
     (average <= AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA && max <= AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA)
 
+private fun Player.canUseTextureViewForAmbience(): Boolean {
+    if (currentMediaItem?.localConfiguration?.drmConfiguration != null) return false
+
+    val videoFormat = currentTracks.groups
+        .firstOrNull { it.type == C.TRACK_TYPE_VIDEO }
+        ?.getTrackFormat(0)
+        ?: return false
+    if (videoFormat.drmInitData != null) return false
+
+    val colorTransfer = videoFormat.colorInfo?.colorTransfer
+    return colorTransfer != C.COLOR_TRANSFER_ST2084 && colorTransfer != C.COLOR_TRANSFER_HLG
+}
+
+private fun Player.currentAmbienceMediaKey(): String {
+    val mediaItem = currentMediaItem
+    val uri = mediaItem?.localConfiguration?.uri ?: mediaItem?.requestMetadata?.mediaUri
+    return "$currentMediaItemIndex:${mediaItem?.mediaId}:$uri"
+}
+
 private fun AndroidRect.coerceToWindowBounds(view: View): AndroidRect? {
     val windowWidth = view.width
     val windowHeight = view.height
@@ -2389,76 +2376,6 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
-}
-
-private fun ByteArray.isNearBlackAmbienceArtwork(): Boolean {
-    val boundsOptions = BitmapFactory.Options().apply {
-        inJustDecodeBounds = true
-    }
-    BitmapFactory.decodeByteArray(this, 0, size, boundsOptions)
-    val width = boundsOptions.outWidth
-    val height = boundsOptions.outHeight
-    if (width <= 0 || height <= 0) return false
-
-    val bitmap = BitmapFactory.decodeByteArray(
-        this,
-        0,
-        size,
-        BitmapFactory.Options().apply {
-            inSampleSize = ambienceArtworkSampleSize(width, height)
-        },
-    ) ?: return false
-
-    return try {
-        var visiblePixelCount = 0
-        var brightPixelCount = 0
-        var totalLuma = 0f
-        var totalChroma = 0f
-        var maxLuma = 0f
-        val pixels = IntArray(bitmap.width)
-
-        for (y in 0 until bitmap.height) {
-            bitmap.getPixels(pixels, 0, bitmap.width, 0, y, bitmap.width, 1)
-            for (pixel in pixels) {
-                val alpha = pixel ushr 24
-                if (alpha <= AMBIENCE_VISIBLE_ALPHA_THRESHOLD) continue
-
-                val red = pixel shr 16 and 0xff
-                val green = pixel shr 8 and 0xff
-                val blue = pixel and 0xff
-                val luma = red * 0.299f + green * 0.587f + blue * 0.114f
-                val chroma = maxOf(red, green, blue) - minOf(red, green, blue)
-
-                visiblePixelCount++
-                totalLuma += luma
-                totalChroma += chroma
-                maxLuma = maxOf(maxLuma, luma)
-                if (luma >= AMBIENCE_BRIGHT_LUMA) brightPixelCount++
-            }
-        }
-
-        if (visiblePixelCount == 0) return true
-
-        val averageLuma = totalLuma / visiblePixelCount
-        val averageChroma = totalChroma / visiblePixelCount
-        val brightPixelRatio = brightPixelCount.toFloat() / visiblePixelCount
-        averageLuma <= AMBIENCE_NEAR_BLACK_AVERAGE_LUMA &&
-            averageChroma <= AMBIENCE_NEAR_BLACK_AVERAGE_CHROMA &&
-            (maxLuma <= AMBIENCE_NEAR_BLACK_MAX_LUMA || brightPixelRatio <= AMBIENCE_NEAR_BLACK_BRIGHT_PIXEL_RATIO)
-    } finally {
-        bitmap.recycle()
-    }
-}
-
-private fun ambienceArtworkSampleSize(
-    width: Int,
-    height: Int,
-): Int {
-    var sampleSize = 1
-    while (width / sampleSize > AMBIENCE_ARTWORK_SAMPLE_SIZE || height / sampleSize > AMBIENCE_ARTWORK_SAMPLE_SIZE) {
-        sampleSize *= 2
-    }
-    return sampleSize
 }
 
 @Composable

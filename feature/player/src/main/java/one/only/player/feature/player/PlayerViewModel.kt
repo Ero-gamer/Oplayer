@@ -1,7 +1,9 @@
 package one.only.player.feature.player
 
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.Stable
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -54,9 +56,15 @@ private fun Float.normalizeVideoFilter(
 internal fun normalizeVideoSharpening(value: Float): Float = value
     .normalizeVideoFilter(PlayerPreferences.DEFAULT_VIDEO_SHARPENING, PlayerPreferences.MAX_VIDEO_SHARPENING)
 
+private data class AmbienceFrame(
+    val mediaKey: String,
+    val bitmap: Bitmap,
+)
+
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val mediaRepository: MediaRepository,
     private val playbackMarkRepository: PlaybackMarkRepository,
     private val preferencesRepository: PreferencesRepository,
@@ -66,6 +74,7 @@ class PlayerViewModel @Inject constructor(
 
     private companion object {
         const val TAG = "PlayerViewModel"
+        const val AMBIENCE_MODE_ENABLED_KEY = "ambience_mode_enabled"
     }
 
     var shouldPlayWhenReady: Boolean = true
@@ -76,10 +85,14 @@ class PlayerViewModel @Inject constructor(
             applicationPreferences = preferencesRepository.applicationPreferences.value,
             shouldPreventScreenshots = preferencesRepository.applicationPreferences.value.shouldPreventScreenshots,
             shouldHideInRecents = preferencesRepository.applicationPreferences.value.shouldHideInRecents,
+            isAmbienceModeEnabled = savedStateHandle[AMBIENCE_MODE_ENABLED_KEY] ?: false,
         ),
     )
     val uiState = internalUiState.asStateFlow()
     private val playbackMarkMediaUri = MutableStateFlow<String?>(null)
+
+    // 仅保留当前媒体有效帧，供界面重建后继续显示。
+    private var ambienceFrame: AmbienceFrame? = null
     private var playbackMarkMediaUriRequestId = 0L
     val playbackMarks = playbackMarkMediaUri
         .flatMapLatest { mediaUri ->
@@ -133,6 +146,24 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences { it.copy(playerBrightness = value) }
         }
+    }
+
+    fun updateAmbienceModeEnabled(isEnabled: Boolean) {
+        if (!isEnabled) ambienceFrame = null
+        savedStateHandle[AMBIENCE_MODE_ENABLED_KEY] = isEnabled
+        internalUiState.update { it.copy(isAmbienceModeEnabled = isEnabled) }
+    }
+
+    fun ambienceFrameFor(mediaKey: String?): Bitmap? = ambienceFrame
+        ?.takeIf { it.mediaKey == mediaKey }
+        ?.bitmap
+
+    fun updateAmbienceFrame(
+        mediaKey: String?,
+        bitmap: Bitmap,
+    ) {
+        if (mediaKey == null) return
+        ambienceFrame = AmbienceFrame(mediaKey = mediaKey, bitmap = bitmap)
     }
 
     fun updatePlayerVolume(percentage: Int) {
@@ -371,6 +402,7 @@ data class PlayerUiState(
     val applicationPreferences: ApplicationPreferences = ApplicationPreferences(),
     val shouldPreventScreenshots: Boolean = false,
     val shouldHideInRecents: Boolean = false,
+    val isAmbienceModeEnabled: Boolean = false,
     val externalSubtitleFontSource: ExternalSubtitleFontSource? = null,
 )
 
