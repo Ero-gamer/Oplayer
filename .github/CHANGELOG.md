@@ -1,12 +1,10 @@
-- 支持点按画面缩放按钮依次切换缩放模式，长按仍可打开完整设置
-- 保持视频播放期间屏幕常亮，并在暂停、播完或退出后恢复系统休眠
-- 允许在画中画播放期间通过系统设置调节亮度，返回全屏后恢复播放器亮度
+- 让氛围模式直接使用视频画面作为背景，缩小视频后仍可正常显示
+- 熄屏恢复后保留氛围背景，并减少切换画面时的黑屏闪烁
 
 <details>
 <summary>English Version</summary>
 
-- Cycle through video scale modes by tapping the scale button while keeping the full settings available on long press
-- Keep the screen awake during video playback and restore the system timeout after pausing, finishing, or exiting
-- Allow brightness changes through system settings during picture-in-picture playback and restore the player brightness in fullscreen
+- Use video frames directly for ambience backgrounds so they remain visible when the video is scaled down
+- Preserve ambience backgrounds after the screen wakes and reduce black flashes during scene changes
 
 </details>
