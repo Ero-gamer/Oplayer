@@ -158,6 +158,14 @@ class MediaPickerViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            moveSelectionStore.resolution.collect { resolution ->
+                uiStateInternal.update { currentState ->
+                    currentState.copy(moveSelectionResolution = resolution)
+                }
+            }
+        }
     }
 
     fun onEvent(event: MediaPickerUiEvent) {
@@ -266,7 +274,7 @@ class MediaPickerViewModel @Inject constructor(
 
     private fun cancelMoveSelection() {
         if (uiStateInternal.value.isMovingSelection) return
-        moveSelectionStore.clear()
+        moveSelectionStore.cancel()
     }
 
     private fun cancelRemainingMoveSelection() {
@@ -332,7 +340,7 @@ class MediaPickerViewModel @Inject constructor(
             }
             val summary = videoSummary + folderSummary
             if (summary.movedCount > 0 || summary.partiallyMovedCount > 0) {
-                moveSelectionStore.clear()
+                moveSelectionStore.complete()
             }
             uiStateInternal.update { currentState ->
                 currentState.copy(
@@ -484,6 +492,7 @@ data class MediaPickerUiState(
     val isMovingSelection: Boolean = false,
     val moveProgress: MediaMoveProgress? = null,
     val moveResult: MediaMoveSummary? = null,
+    val moveSelectionResolution: MediaPickerMoveSelectionResolution? = null,
     val deleteResult: MediaPickerDeleteResult? = null,
 )
 
@@ -549,12 +558,26 @@ private fun String.normalizedMovePath(): String = canonicalPathOrSelf().replace(
 class MediaPickerMoveSelectionStore @Inject constructor() {
     private val selectionInternal = MutableStateFlow<MediaPickerMoveSelection?>(null)
     val selection = selectionInternal.asStateFlow()
+    private val resolutionInternal = MutableStateFlow<MediaPickerMoveSelectionResolution?>(null)
+    val resolution = resolutionInternal.asStateFlow()
 
     fun set(selection: MediaPickerMoveSelection) {
+        resolutionInternal.value = null
         selectionInternal.value = selection.takeUnless(MediaPickerMoveSelection::isEmpty)
     }
 
-    fun clear() {
+    fun cancel() {
         selectionInternal.value = null
+        resolutionInternal.value = MediaPickerMoveSelectionResolution.Canceled
     }
+
+    fun complete() {
+        selectionInternal.value = null
+        resolutionInternal.value = MediaPickerMoveSelectionResolution.Completed
+    }
+}
+
+enum class MediaPickerMoveSelectionResolution {
+    Canceled,
+    Completed,
 }

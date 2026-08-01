@@ -384,7 +384,6 @@ internal fun MediaPickerScreen(
                                             folderPaths = selectionManager.selectedFolders.map { it.path },
                                         ),
                                     )
-                                    selectionManager.exitSelectionMode()
                                     onMoveSelectionStarted()
                                 },
                                 onFavoriteAction = {
@@ -659,6 +658,18 @@ internal fun MediaPickerScreen(
     ) {
         onEvent(MediaPickerUiEvent.CancelMoveSelection)
         onMoveSelectionClosed()
+    }
+
+    LaunchedEffect(uiState.moveSelectionResolution) {
+        when (uiState.moveSelectionResolution) {
+            MediaPickerMoveSelectionResolution.Canceled -> {
+                if (selectionManager.selectedVideos.isNotEmpty() || selectionManager.selectedFolders.isNotEmpty()) {
+                    selectionManager.enterSelectionMode()
+                }
+            }
+            MediaPickerMoveSelectionResolution.Completed -> selectionManager.exitSelectionMode()
+            null -> Unit
+        }
     }
 
     if (shouldShowQuickSettingsDialog) {

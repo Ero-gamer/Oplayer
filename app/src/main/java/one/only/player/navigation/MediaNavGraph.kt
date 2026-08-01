@@ -17,6 +17,7 @@ import one.only.player.feature.player.PlayerActivity
 import one.only.player.feature.player.PortraitPlayerActivity
 import one.only.player.feature.player.extensions.toActivityOrientation
 import one.only.player.feature.player.service.PlayerService
+import one.only.player.feature.videopicker.navigation.MediaPickerRoute as MediaPickerDestination
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
 import one.only.player.feature.videopicker.navigation.mediaPickerScreen
 import one.only.player.feature.videopicker.navigation.navigateToMediaPickerScreen
@@ -55,7 +56,7 @@ fun MediaRootPage(
         onFavoritesClick = { onRootSelected(RootDestination.FAVORITES) },
         onExitAppClick = { context.exitApp() },
         onMoveSelectionStarted = navController::openMoveTarget,
-        onMoveSelectionClosed = {},
+        onMoveSelectionClosed = navController::closeMoveTarget,
     )
 }
 
@@ -110,12 +111,11 @@ fun NavGraphBuilder.mediaDetailNavGraph(
 }
 
 private fun NavHostController.openMoveTarget() {
-    popBackStack(RootPagerRoute, inclusive = false)
     navigateToMoveTargetScreen()
 }
 
 private fun NavHostController.closeMoveTarget() {
-    popBackStack(RootPagerRoute, inclusive = false)
+    popBackStack(MediaPickerDestination(), inclusive = true)
 }
 
 private fun Context.exitApp() {
