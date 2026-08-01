@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -93,9 +94,11 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.ScrollBehavior
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -174,6 +177,7 @@ internal fun MediaPickerScreen(
     val selectionManager = rememberSelectionManager()
     val permissionState = rememberRuntimePermissionState(permission = storagePermission)
     val lazyGridState = rememberLazyGridState()
+    val scrollBehavior = MiuixScrollBehavior()
     val context = LocalContext.current
     var restoredPlaybackAnchor by rememberSaveable { mutableStateOf<String?>(null) }
     val selectVideoFileLauncher = rememberLauncherForActivityResult(
@@ -264,6 +268,7 @@ internal fun MediaPickerScreen(
                 shouldUseLargeTitle = shouldUseLargeTopBar,
                 largeTitlePadding = TopAppBarDefaults.TitlePadding,
                 smallTitlePadding = 16.dp,
+                scrollBehavior = scrollBehavior,
                 isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
                 onTitleLongPress = onNavigateHome,
                 navigationIcon = {
@@ -498,6 +503,7 @@ internal fun MediaPickerScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(top = scaffoldPadding.calculateTopPadding())
                 .padding(start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current)),
         ) {
@@ -746,6 +752,7 @@ private fun MediaPickerTopAppBar(
     shouldUseLargeTitle: Boolean,
     largeTitlePadding: Dp,
     smallTitlePadding: Dp,
+    scrollBehavior: ScrollBehavior,
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
     navigationIcon: @Composable () -> Unit,
@@ -755,6 +762,7 @@ private fun MediaPickerTopAppBar(
         TopAppBar(
             title = title,
             titlePadding = largeTitlePadding,
+            scrollBehavior = scrollBehavior,
             navigationIcon = navigationIcon,
             actions = actions,
         )
