@@ -1,8 +1,8 @@
-- 修复主页树状目录滚动时大标题不会收起的问题
+- 视频滤镜对话框底部按钮改为等宽并排铺满一行
 
 <details>
 <summary>English Version</summary>
 
-- Fix the large title on the home folder tree so it collapses while scrolling
+- Make the video filters dialog buttons evenly spaced and fill the bottom row
 
 </details>
