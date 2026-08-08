@@ -922,7 +922,7 @@ private fun RemoteFileInfoLoadingDialog(
                 CircularProgressIndicator()
             }
         },
-        confirmButton = {},
+        confirmButton = null,
         modifier = Modifier.testTag("remote_file_info_loading_dialog"),
     )
 }

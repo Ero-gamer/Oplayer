@@ -27,6 +27,6 @@ fun OptionsDialog(
             )
         },
         dismissButton = { CancelButton(onClick = onDismissClick) },
-        confirmButton = { },
+        confirmButton = null,
     )
 }

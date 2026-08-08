@@ -33,6 +33,7 @@ import one.only.player.core.model.withVideoSharpening
 import one.only.player.core.model.withVideoSharpeningFilterEnabled
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.NextIcons
+import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -68,13 +69,14 @@ fun VideoFiltersDialog(
                     onClick = confirmAndDismiss,
                 )
             },
-            dismissButton = {
-                TextButton(
-                    modifier = Modifier.testTag("btn_reset_video_filters"),
+            additionalButton = {
+                MiuixTextButton(
+                    text = stringResource(R.string.reset),
                     onClick = resetFilters,
-                ) {
-                    Text(text = stringResource(R.string.reset))
-                }
+                    modifier = Modifier.testTag("btn_reset_video_filters"),
+                )
+            },
+            dismissButton = {
                 CancelButton(
                     modifier = Modifier.testTag("btn_cancel_video_filters"),
                     onClick = restoreAndDismiss,

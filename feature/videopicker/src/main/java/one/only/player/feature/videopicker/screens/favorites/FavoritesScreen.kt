@@ -375,7 +375,7 @@ private fun MoveFavoriteDialog(
                 }
             }
         },
-        confirmButton = {},
+        confirmButton = null,
         dismissButton = { CancelButton(onClick = onDismiss) },
     )
 }

@@ -1,6 +1,7 @@
 package one.only.player.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,8 +21,9 @@ fun NextDialog(
     title: String,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    confirmButton: @Composable () -> Unit,
+    confirmButton: @Composable (() -> Unit)? = null,
     dismissButton: @Composable (() -> Unit)? = null,
+    additionalButton: @Composable (() -> Unit)? = null,
 ) {
     val configuration = LocalConfiguration.current
 
@@ -41,6 +43,7 @@ fun NextDialog(
             NextDialogButtonRow(
                 confirmButton = confirmButton,
                 dismissButton = dismissButton,
+                additionalButton = additionalButton,
             )
         }
     }
@@ -64,18 +67,28 @@ fun NextDialogWithDoneAndCancelButtons(
 
 @Composable
 private fun NextDialogButtonRow(
-    confirmButton: @Composable () -> Unit,
+    confirmButton: @Composable (() -> Unit)?,
     dismissButton: @Composable (() -> Unit)?,
+    additionalButton: @Composable (() -> Unit)?,
 ) {
+    val buttons = listOfNotNull(additionalButton, dismissButton, confirmButton)
+    if (buttons.isEmpty()) return
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        dismissButton?.invoke()
-        confirmButton()
+        buttons.forEach { button ->
+            Box(
+                modifier = Modifier.weight(1f),
+                propagateMinConstraints = true,
+            ) {
+                button()
+            }
+        }
     }
 }
 
