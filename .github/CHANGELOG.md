@@ -1,8 +1,8 @@
-- 视频滤镜对话框底部按钮改为等宽并排铺满一行
+- 修复打开本地文件夹后无法滚动到列表底部的问题
 
 <details>
 <summary>English Version</summary>
 
-- Make the video filters dialog buttons evenly spaced and fill the bottom row
+- Fix local folder lists not scrolling to the bottom
 
 </details>
