@@ -1,12 +1,14 @@
-- 优化氛围模式在拖动跳转和自动切换视频时的抓帧时机，减少卡顿并及时刷新背景
-- 阻止文件移动进行中通过返回操作意外中断任务，并在取消未开始的移动时保留原选择
-- 缩短双击跳转提示的停留时间
+- 新增章节预览面板，显示章节名称、时间范围和起始画面缩略图，并突出当前章节
+- 支持从现代菜单或旧式控制器打开章节列表，点击章节即可跳转，长列表会自动跟随当前章节
+- 支持双指左右滑动切换上一章或下一章，并显示清晰的章节切换提示
+- 改进 MP4 和 MKV 章节识别，切换视频时及时刷新章节状态
 
 <details>
 <summary>English Version</summary>
 
-- Improve ambience frame capture during seek gestures and automatic video transitions to reduce stutter and refresh the background promptly
-- Prevent back actions from interrupting active file moves and preserve the original selection when canceling before any item is moved
-- Shorten the time the double-tap seek indicator remains visible
+- Add a chapter preview panel with chapter names, time ranges, starting-frame thumbnails, and a clear current-chapter highlight
+- Open the chapter list from the modern menu or legacy controls, jump by tapping a chapter, and automatically follow the current chapter in long lists
+- Switch to the previous or next chapter with a two-finger horizontal swipe and show clear chapter feedback
+- Improve MP4 and MKV chapter detection and refresh chapter state promptly when switching videos
 
 </details>
