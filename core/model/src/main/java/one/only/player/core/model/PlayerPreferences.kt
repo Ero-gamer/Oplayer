@@ -221,6 +221,7 @@ enum class PlayerControl {
     LOCK,
     MUTE,
     MARK,
+    CHAPTERS,
     SCALE,
     DECODER,
     AMBIENCE_MODE,

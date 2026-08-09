@@ -128,6 +128,12 @@ internal val PLAYER_ACTION_METHODS = setOf(
     "player.background",
     "player.show_sleep_timer",
     "player.show_marks",
+    "player.show_chapters",
+    "player.chapter.seek",
+    "player.chapter.next",
+    "player.chapter.previous",
+    "player.chapter.swipe_next",
+    "player.chapter.swipe_previous",
     "player.mark.add",
     "player.mark.list",
     "player.mark.seek",
@@ -145,6 +151,7 @@ internal val PLAYER_GET_METHODS = setOf(
     "player.duration",
     "player.cues",
     "player.video_format",
+    "player.chapters",
 )
 
 internal val UI_PLAYER_ACTIONS = setOf(
@@ -170,6 +177,9 @@ internal val UI_PLAYER_ACTIONS = setOf(
     PlayerDebugCommandBridge.ACTION_BACKGROUND,
     PlayerDebugCommandBridge.ACTION_SHOW_SLEEP_TIMER,
     PlayerDebugCommandBridge.ACTION_SHOW_MARKS,
+    PlayerDebugCommandBridge.ACTION_SHOW_CHAPTERS,
+    PlayerDebugCommandBridge.ACTION_CHAPTER_SWIPE_NEXT,
+    PlayerDebugCommandBridge.ACTION_CHAPTER_SWIPE_PREVIOUS,
     PlayerDebugCommandBridge.ACTION_MARK_ADD,
     PlayerDebugCommandBridge.ACTION_MARK_LIST,
     PlayerDebugCommandBridge.ACTION_MARK_SEEK,

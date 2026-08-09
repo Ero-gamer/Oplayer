@@ -120,10 +120,12 @@ import one.only.player.feature.player.extensions.noRippleClickable
 import one.only.player.feature.player.extensions.seekByRequestedOffset
 import one.only.player.feature.player.extensions.seekToRequestedPosition
 import one.only.player.feature.player.input.PlayerKeyboardController
+import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.service.previewVideoFilters
 import one.only.player.feature.player.state.ControlsVisibilityState
 import one.only.player.feature.player.state.VerticalGesture
 import one.only.player.feature.player.state.rememberBrightnessState
+import one.only.player.feature.player.state.rememberChaptersState
 import one.only.player.feature.player.state.rememberControlsVisibilityState
 import one.only.player.feature.player.state.rememberErrorState
 import one.only.player.feature.player.state.rememberMediaPresentationState
@@ -139,6 +141,9 @@ import one.only.player.feature.player.state.rememberVolumeState
 import one.only.player.feature.player.state.seekAmountFormatted
 import one.only.player.feature.player.state.seekToPositionFormated
 import one.only.player.feature.player.ui.AudioTrackSelectorContent
+import one.only.player.feature.player.ui.ChapterSwipeDirection
+import one.only.player.feature.player.ui.ChapterSwitchIndicator
+import one.only.player.feature.player.ui.ChaptersContent
 import one.only.player.feature.player.ui.DecoderPrioritySelectorContent
 import one.only.player.feature.player.ui.DoubleTapIndicator
 import one.only.player.feature.player.ui.LoopModeSelectorContent
@@ -177,6 +182,7 @@ private const val AMBIENCE_FRAME_NEAR_BLACK_CONFIRM_COUNT = 10
 private const val AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA = 6f
 private const val AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA = 18f
 private const val AMBIENCE_VISIBLE_ALPHA_THRESHOLD = 16
+private const val CHAPTER_SWITCH_FEEDBACK_DURATION_MS = 1_400L
 
 val LocalControlsVisibilityState = compositionLocalOf<ControlsVisibilityState?> { null }
 val LocalPlayerIconStyle = compositionLocalOf { PlayerIconStyle.TONAL }
@@ -230,6 +236,7 @@ internal fun MediaPlayerScreen(
     player ?: return
     val playbackMarks by viewModel.playbackMarks.collectAsStateWithLifecycle()
     val metadataState = rememberMetadataState(player)
+    val chaptersState = rememberChaptersState(player)
     val mediaPresentationState = rememberMediaPresentationState(player)
     val controlsVisibilityState = rememberControlsVisibilityState(
         player = player,
@@ -278,7 +285,14 @@ internal fun MediaPlayerScreen(
     var restoredVolumeMediaItemIndex by remember { mutableIntStateOf(Int.MIN_VALUE) }
     var lastSavedVolumePercentage by remember { mutableIntStateOf(volumeState.volumePercentage) }
     var pendingRestoredVolumePercentage by remember { mutableStateOf<Int?>(null) }
+    var chapterSwitchFeedback by remember { mutableStateOf<VideoChapter?>(null) }
     val errorState = rememberErrorState(player = player)
+
+    LaunchedEffect(chapterSwitchFeedback) {
+        if (chapterSwitchFeedback == null) return@LaunchedEffect
+        delay(CHAPTER_SWITCH_FEEDBACK_DURATION_MS)
+        chapterSwitchFeedback = null
+    }
 
     DisposableEffect(player) {
         viewModel.updatePlaybackMarkMediaItem(player.currentMediaItem)
@@ -413,6 +427,7 @@ internal fun MediaPlayerScreen(
         OverlayView.SLEEP_TIMER -> MenuRoute.SleepTimer
         OverlayView.DECODER_PRIORITY -> MenuRoute.Decoder
         OverlayView.PLAYBACK_MARKS -> MenuRoute.PlaybackMarks
+        OverlayView.CHAPTERS -> MenuRoute.Chapters
         OverlayView.LOOP_MODE -> MenuRoute.LoopMode
         OverlayView.SHUFFLE_MODE -> MenuRoute.ShuffleMode
         OverlayView.CONTROL_LOCK -> MenuRoute.ControlLock
@@ -460,6 +475,21 @@ internal fun MediaPlayerScreen(
         player.seekToRequestedPosition(mark.positionMs)
         dismissOverlay()
         controlsVisibilityState.showControls()
+    }
+
+    fun seekToChapter(chapter: VideoChapter) {
+        chaptersState.seekTo(chapter.index)
+        dismissOverlay()
+        controlsVisibilityState.showControls()
+    }
+
+    fun switchChapter(direction: ChapterSwipeDirection): Boolean {
+        val chapter = when (direction) {
+            ChapterSwipeDirection.PREVIOUS -> chaptersState.seekToPrevious(mediaPresentationState.position)
+            ChapterSwipeDirection.NEXT -> chaptersState.seekToNext(mediaPresentationState.position)
+        } ?: return false
+        chapterSwitchFeedback = chapter
+        return true
     }
 
     fun setControlsLocked(isLocked: Boolean) {
@@ -860,6 +890,16 @@ internal fun MediaPlayerScreen(
 
             PlayerDebugCommandBridge.ACTION_SHOW_MARKS -> openOverlayPanel(OverlayView.PLAYBACK_MARKS)
 
+            PlayerDebugCommandBridge.ACTION_SHOW_CHAPTERS -> openOverlayPanel(OverlayView.CHAPTERS)
+
+            PlayerDebugCommandBridge.ACTION_CHAPTER_SWIPE_NEXT -> {
+                if (!switchChapter(ChapterSwipeDirection.NEXT)) return false
+            }
+
+            PlayerDebugCommandBridge.ACTION_CHAPTER_SWIPE_PREVIOUS -> {
+                if (!switchChapter(ChapterSwipeDirection.PREVIOUS)) return false
+            }
+
             PlayerDebugCommandBridge.ACTION_MARK_ADD -> {
                 val didAdd = runBlocking {
                     viewModel.addPlaybackMarkNow(
@@ -992,6 +1032,8 @@ internal fun MediaPlayerScreen(
                     decoderPriority = playerPreferences.decoderPriority,
                     shouldUseTextureView = isVideoMirrored,
                     isVideoMirrored = isVideoMirrored,
+                    isChapterSwipeEnabled = chaptersState.chapters.size > 1,
+                    onChapterSwipe = { direction -> switchChapter(direction) },
                 )
 
                 AnimatedVisibility(
@@ -1021,6 +1063,19 @@ internal fun MediaPlayerScreen(
                     )
                 }
                 DoubleTapIndicator(tapGestureState = tapGestureState)
+
+                AnimatedVisibility(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = longPressOverlayTopPadding),
+                    visible = chapterSwitchFeedback != null,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    chapterSwitchFeedback?.let { chapter ->
+                        ChapterSwitchIndicator(chapter = chapter)
+                    }
+                }
 
                 if (longPressOverlayUiState != null) {
                     LongPressSpeedOverlay(
@@ -1073,6 +1128,7 @@ internal fun MediaPlayerScreen(
                                         visiblePlayerControls = visiblePlayerControls,
                                         videoContentScale = videoZoomAndContentScaleState.videoContentScale,
                                         isPipSupported = pictureInPictureState.isPipSupported,
+                                        hasChapters = chaptersState.chapters.isNotEmpty(),
                                         isTakingScreenshot = isTakingScreenshot,
                                         itemBounds = playerControlItemBounds,
                                         zoneBounds = playerControlZoneBounds,
@@ -1147,6 +1203,13 @@ internal fun MediaPlayerScreen(
                                                 toggleControlVisibility(PlayerControl.MARK)
                                             } else {
                                                 openOverlayPanel(OverlayView.PLAYBACK_MARKS)
+                                            }
+                                        },
+                                        onChaptersClick = {
+                                            if (isCustomizingControls) {
+                                                toggleControlVisibility(PlayerControl.CHAPTERS)
+                                            } else {
+                                                openOverlayPanel(OverlayView.CHAPTERS)
                                             }
                                         },
                                         onVideoContentScaleClick = {
@@ -1286,6 +1349,7 @@ internal fun MediaPlayerScreen(
                                         controlButtonsPosition = playerPreferences.controlButtonsPosition,
                                         videoContentScale = videoZoomAndContentScaleState.videoContentScale,
                                         isPipSupported = pictureInPictureState.isPipSupported,
+                                        hasChapters = chaptersState.chapters.isNotEmpty(),
                                         pendingSeekPosition = seekGestureState.pendingSeekPosition,
                                         itemBounds = playerControlItemBounds,
                                         zoneBounds = playerControlZoneBounds,
@@ -1397,6 +1461,13 @@ internal fun MediaPlayerScreen(
                                                 openOverlayPanel(OverlayView.PLAYBACK_MARKS)
                                             }
                                         },
+                                        onChaptersClick = {
+                                            if (isCustomizingControls) {
+                                                toggleControlVisibility(PlayerControl.CHAPTERS)
+                                            } else {
+                                                openOverlayPanel(OverlayView.CHAPTERS)
+                                            }
+                                        },
                                         onVideoContentScaleClick = {
                                             if (isCustomizingControls) {
                                                 toggleControlVisibility(PlayerControl.SCALE)
@@ -1463,6 +1534,7 @@ internal fun MediaPlayerScreen(
                                 player = player,
                                 videoContentScale = videoZoomAndContentScaleState.videoContentScale,
                                 isPipSupported = pictureInPictureState.isPipSupported,
+                                hasChapters = chaptersState.chapters.isNotEmpty(),
                                 isCustomizingControls = true,
                                 visiblePlayerControls = visiblePlayerControls,
                                 onPlaylistClick = { },
@@ -1473,6 +1545,7 @@ internal fun MediaPlayerScreen(
                                 isMuted = volumeState.isMuted,
                                 onMuteClick = { },
                                 onPlaybackMarksClick = { },
+                                onChaptersClick = { },
                                 onVideoContentScaleClick = { },
                                 onVideoContentScaleLongClick = { },
                                 onDecoderClick = { },
@@ -1576,6 +1649,7 @@ internal fun MediaPlayerScreen(
                         MenuRoute.Root -> MenuRootContent(
                             isPipSupported = pictureInPictureState.isPipSupported,
                             isTakingScreenshot = isTakingScreenshot,
+                            hasChapters = chaptersState.chapters.isNotEmpty(),
                             onNavigate = ::navigateToMenuRoute,
                             onPictureInPictureClick = {
                                 if (!pictureInPictureState.hasPipPermission) {
@@ -1701,6 +1775,15 @@ internal fun MediaPlayerScreen(
                             onDeleteMarkClick = { mark -> viewModel.deletePlaybackMark(mark.id) },
                         )
 
+                        MenuRoute.Chapters -> ChaptersContent(
+                            modifier = Modifier.testTag("panel_chapters"),
+                            isVisible = true,
+                            chapters = chaptersState.chapters,
+                            positionMs = mediaPresentationState.position,
+                            mediaUri = chaptersState.mediaUri,
+                            onChapterClick = ::seekToChapter,
+                        )
+
                         MenuRoute.LoopMode -> LoopModeSelectorContent(
                             player = player,
                             onDismiss = ::dismissOverlay,
@@ -1747,6 +1830,10 @@ internal fun MediaPlayerScreen(
                     onAddPlaybackMarkClick = ::addPlaybackMark,
                     onPlaybackMarkClick = ::seekToPlaybackMark,
                     onDeletePlaybackMarkClick = { mark -> viewModel.deletePlaybackMark(mark.id) },
+                    chapters = chaptersState.chapters,
+                    chapterPositionMs = mediaPresentationState.position,
+                    chapterMediaUri = chaptersState.mediaUri,
+                    onChapterClick = ::seekToChapter,
                     onControlLockChanged = ::setControlsLocked,
                     onMuteChanged = ::setMuted,
                     onAmbienceModeChanged = { isEnabled -> setAmbienceModeEnabled(isEnabled) },
@@ -1828,6 +1915,7 @@ private fun titleForMenuRoute(route: MenuRoute?): String = when (route) {
     MenuRoute.SleepTimer -> stringResource(coreUiR.string.sleep_timer)
     MenuRoute.Decoder -> stringResource(coreUiR.string.decoder_priority)
     MenuRoute.PlaybackMarks -> stringResource(coreUiR.string.playback_marks)
+    MenuRoute.Chapters -> stringResource(coreUiR.string.chapters)
     MenuRoute.LoopMode -> stringResource(coreUiR.string.loop_mode)
     MenuRoute.ShuffleMode -> stringResource(coreUiR.string.shuffle)
 }

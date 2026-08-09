@@ -41,6 +41,7 @@ import one.only.player.feature.player.state.TapGestureState
 import one.only.player.feature.player.state.VideoZoomAndContentScaleState
 import one.only.player.feature.player.state.VolumeAndBrightnessGestureState
 import one.only.player.feature.player.state.rememberTracksState
+import one.only.player.feature.player.ui.ChapterSwipeDirection
 import one.only.player.feature.player.ui.PlayerGestures
 import one.only.player.feature.player.ui.ShutterView
 import one.only.player.feature.player.ui.SubtitleConfiguration
@@ -62,6 +63,8 @@ fun PlayerContentFrame(
     isGesturesEnabled: Boolean = true,
     shouldUseTextureView: Boolean = false,
     isVideoMirrored: Boolean = false,
+    isChapterSwipeEnabled: Boolean = false,
+    onChapterSwipe: (ChapterSwipeDirection) -> Unit = {},
 ) {
     // decoder 切换重建 SurfaceView，重新绑定视频输出
     var surfaceRefreshKey by remember { mutableIntStateOf(0) }
@@ -204,6 +207,8 @@ fun PlayerContentFrame(
         seekGestureState = seekGestureState,
         videoZoomAndContentScaleState = videoZoomAndContentScaleState,
         volumeAndBrightnessGestureState = volumeAndBrightnessGestureState,
+        isChapterSwipeEnabled = isChapterSwipeEnabled,
+        onChapterSwipe = onChapterSwipe,
         isEnabled = isGesturesEnabled,
     )
 

@@ -18,8 +18,11 @@ import kotlinx.coroutines.withTimeout
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.feature.player.PlayerDebugCommandBridge
 import one.only.player.feature.player.extensions.isApproximateSeekEnabled
+import one.only.player.feature.player.model.VideoChapter
+import one.only.player.feature.player.model.currentChapterIndex
 import one.only.player.feature.player.service.CustomCommands
 import one.only.player.feature.player.service.PlayerService
+import one.only.player.feature.player.service.getVideoChapters
 import one.only.player.feature.player.service.getVideoFormatDebugInfo
 import one.only.player.feature.player.service.setTransientPlaybackSpeed
 
@@ -43,6 +46,15 @@ internal fun Context.runPlayerAction(
                     "previous" -> controller.seekToPreviousMediaItem()
                     "seek_to" -> controller.awaitSeekTo(value.requiredLongMillis(EXTRA_VALUE))
                     "seek_by" -> controller.awaitSeekTo((controller.currentPosition + value.requiredLongMillis(EXTRA_VALUE)).coerceAtLeast(0L))
+                    "chapter.seek" -> controller.awaitSeekTo(
+                        controller.requireVideoChapter(value.requiredInt(EXTRA_VALUE)).startTimeMs,
+                    )
+                    "chapter.next" -> controller.awaitSeekTo(
+                        controller.requireAdjacentVideoChapter(offset = 1).startTimeMs,
+                    )
+                    "chapter.previous" -> controller.awaitSeekTo(
+                        controller.requireAdjacentVideoChapter(offset = -1).startTimeMs,
+                    )
                     "long_press_speed" -> runLongPressSpeed(controller, value)
                     "stop" -> controller.stop()
                     "shuffle" -> controller.shuffleModeEnabled = value.getBoolean(EXTRA_ENABLED, !controller.shuffleModeEnabled)
@@ -107,6 +119,10 @@ internal fun Context.runPlayerGet(target: String): Bundle {
                         command = command,
                         target = target,
                     )
+                    "chapters" -> controller.chaptersDebugBundle(
+                        command = command,
+                        target = target,
+                    )
                     else -> error("Unknown player info target: $target")
                 }
             }
@@ -159,6 +175,42 @@ private suspend fun MediaController.awaitMediaReady(): Boolean {
         delay(SEEK_SETTLE_POLL_INTERVAL_MS)
     }
     return false
+}
+
+private suspend fun MediaController.requireVideoChapter(index: Int): VideoChapter {
+    if (!awaitMediaReady()) error("Player is not ready for chapters")
+    return getVideoChapters().getOrNull(index) ?: error("Chapter index out of range: $index")
+}
+
+private suspend fun MediaController.requireAdjacentVideoChapter(offset: Int): VideoChapter {
+    if (!awaitMediaReady()) error("Player is not ready for chapters")
+    val chapters = getVideoChapters()
+    val currentIndex = chapters.currentChapterIndex(currentPosition.safeTime())
+    val targetIndex = when {
+        currentIndex != null -> currentIndex + offset
+        offset > 0 -> 0
+        else -> error("No previous chapter")
+    }
+    return chapters.getOrNull(targetIndex) ?: error("No chapter at index: $targetIndex")
+}
+
+private suspend fun MediaController.chaptersDebugBundle(
+    command: String,
+    target: String,
+): Bundle {
+    if (!awaitMediaReady()) error("Player is not ready for chapters")
+    val chapters = getVideoChapters()
+    return debugResult(
+        isOk = true,
+        message = chapters.joinToString(separator = " | ") { chapter ->
+            "${chapter.index}@${chapter.startTimeMs}@${chapter.endTimeMs}@${chapter.title.orEmpty()}"
+        },
+        command = command,
+        target = target,
+        value = chapters.size.toString(),
+        durationMs = duration.safeTime(),
+        positionMs = currentPosition.safeTime(),
+    )
 }
 
 private suspend fun MediaController.awaitSettledSeek(

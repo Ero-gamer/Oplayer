@@ -1,5 +1,6 @@
 package one.only.player.feature.player.subtitle
 
+import android.util.SparseArray
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
@@ -65,6 +66,10 @@ internal class NormalizingAssMatroskaExtractor(
                 assHandler.setVideoSize(track.width, track.height)
                 super.endMasterElement(id)
             }
+            ID_EDITION_ENTRY -> {
+                super.endMasterElement(id)
+                publishUpdatedTrackFormats()
+            }
             ID_ATTACHED_FILE -> clearAttachment()
             else -> super.endMasterElement(id)
         }
@@ -121,11 +126,20 @@ internal class NormalizingAssMatroskaExtractor(
         currentAttachmentMime = null
     }
 
+    private fun publishUpdatedTrackFormats() {
+        val tracks = tracksField.get(this) as SparseArray<*>
+        for (index in 0 until tracks.size()) {
+            val track = tracks.valueAt(index) as Track
+            track.output.format(track.format)
+        }
+    }
+
     internal fun getSubtitleSample(): ParsableByteArray = subtitleSample
 
     companion object {
         private const val ID_EBML = 0x1A45DFA3
         private const val ID_VIDEO = 0xE0
+        private const val ID_EDITION_ENTRY = 0x45B9
         private const val ID_ATTACHMENTS = 0x1941A469
         private const val ID_ATTACHED_FILE = 0x61A7
         private const val ID_FILE_NAME = 0x466E
@@ -154,6 +168,10 @@ internal class NormalizingAssMatroskaExtractor(
         }
 
         private val subtitleSampleField: Field = MatroskaExtractor::class.java.getDeclaredField("subtitleSample").apply {
+            isAccessible = true
+        }
+
+        private val tracksField: Field = MatroskaExtractor::class.java.getDeclaredField("tracks").apply {
             isAccessible = true
         }
     }

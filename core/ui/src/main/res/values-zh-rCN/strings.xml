@@ -549,5 +549,11 @@
     <string name="playback_marks">播放标记</string>
     <string name="add_playback_mark">添加标记</string>
     <string name="no_playback_marks">暂无标记</string>
+    <string name="chapters">章节</string>
+    <string name="no_chapters">当前视频没有章节</string>
+    <string name="chapter_number">第 %1$d 章</string>
+    <string name="chapter_time_range">%1$s - %2$s</string>
+    <string name="chapter_preview_content_description">%1$s 的预览图</string>
+    <string name="current_chapter">当前章节</string>
     <string name="delete_mark">删除标记</string>
 </resources>

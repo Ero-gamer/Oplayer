@@ -7,6 +7,8 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import kotlinx.coroutines.guava.await
 import one.only.player.core.model.PlayerPreferences
+import one.only.player.feature.player.model.VideoChapter
+import one.only.player.feature.player.model.toVideoChapter
 
 enum class CustomCommands(val customAction: String) {
     ADD_SUBTITLE_TRACK(customAction = "ADD_SUBTITLE_TRACK"),
@@ -27,6 +29,7 @@ enum class CustomCommands(val customAction: String) {
     PREVIEW_VIDEO_FILTERS(customAction = "PREVIEW_VIDEO_FILTERS"),
     SET_AMBIENCE_MODE_ENABLED(customAction = "SET_AMBIENCE_MODE_ENABLED"),
     GET_VIDEO_FORMAT(customAction = "GET_VIDEO_FORMAT"),
+    GET_VIDEO_CHAPTERS(customAction = "GET_VIDEO_CHAPTERS"),
     ;
 
     val sessionCommand = SessionCommand(customAction, Bundle.EMPTY)
@@ -70,6 +73,7 @@ enum class CustomCommands(val customAction: String) {
         const val IS_VIDEO_HDR_KEY = "is_video_hdr"
         const val IS_VIDEO_EFFECTS_AVAILABLE_KEY = "is_video_effects_available"
         const val IS_VIDEO_EFFECTS_ACTIVE_KEY = "is_video_effects_active"
+        const val VIDEO_CHAPTERS_KEY = "video_chapters"
     }
 }
 
@@ -189,6 +193,16 @@ suspend fun MediaController.getVideoFormatDebugInfo(): SessionResult = sendCusto
     CustomCommands.GET_VIDEO_FORMAT.sessionCommand,
     Bundle.EMPTY,
 ).await()
+
+@Suppress("DEPRECATION")
+suspend fun MediaController.getVideoChapters(): List<VideoChapter> {
+    val result = sendCustomCommand(CustomCommands.GET_VIDEO_CHAPTERS.sessionCommand, Bundle.EMPTY).await()
+    if (result.resultCode != SessionResult.RESULT_SUCCESS) return emptyList()
+    return result.extras
+        .getParcelableArrayList<Bundle>(CustomCommands.VIDEO_CHAPTERS_KEY)
+        .orEmpty()
+        .map(Bundle::toVideoChapter)
+}
 
 suspend fun MediaController.getLoudnessGain(): Int {
     val result = sendCustomCommand(CustomCommands.GET_LOUDNESS_GAIN.sessionCommand, Bundle.EMPTY)

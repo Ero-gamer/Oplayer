@@ -27,6 +27,7 @@ import one.only.player.core.ui.designsystem.NextIcons
 fun MenuRootContent(
     isPipSupported: Boolean,
     isTakingScreenshot: Boolean,
+    hasChapters: Boolean,
     onNavigate: (MenuRoute) -> Unit,
     onPictureInPictureClick: () -> Unit,
     onScreenshotClick: () -> Unit,
@@ -51,6 +52,14 @@ fun MenuRootContent(
             testTag = "menu_item_audio",
             onClick = { onNavigate(MenuRoute.Audio) },
         )
+        if (hasChapters) {
+            MenuItemRow(
+                icon = NextIcons.PlaylistPlay,
+                text = stringResource(R.string.chapters),
+                testTag = "menu_item_chapters",
+                onClick = { onNavigate(MenuRoute.Chapters) },
+            )
+        }
         MenuItemRow(
             icon = NextIcons.Frame,
             text = stringResource(R.string.video_zoom),

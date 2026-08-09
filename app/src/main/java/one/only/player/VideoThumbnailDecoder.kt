@@ -36,6 +36,7 @@ import one.only.player.core.media.container.MpegTsProgramMapPidFix
 import one.only.player.core.media.container.detectMpegTsProgramMapPidFix
 import one.only.player.core.media.container.patchMpegTsProgramMapPid
 import one.only.player.core.media.container.toMpegTsPidHex
+import one.only.player.feature.player.ui.ChapterThumbnailPositionMsExtra
 
 private const val MPEG_TS_PACKET_SIZE_BYTES = 188
 
@@ -252,7 +253,8 @@ class VideoThumbnailDecoder(
         }
         logThumbnail { "diskCache miss strategy=${strategy.logName} key=$key" }
 
-        val shouldSkipArtwork = shouldSkipEmbeddedArtwork()
+        val shouldUseRequestedFrame = strategy is ThumbnailStrategy.FrameAtTime
+        val shouldSkipArtwork = shouldUseRequestedFrame || shouldSkipEmbeddedArtwork()
         var mpegTsProgramMapPidFix = if (mimeType.isMpegTsMimeType()) {
             detectMpegTsProgramMapPidFix()
         } else {
@@ -475,6 +477,11 @@ class VideoThumbnailDecoder(
                         val timeMs = (duration * strategy.percentage).toLong()
                         mediaInfo.getFrameAtMillis(timeMs).also { frame ->
                             logThumbnail { "mediaInfo frameAt timeMs=$timeMs result=${frame != null} key=$key" }
+                        }
+                    }
+                    is ThumbnailStrategy.FrameAtTime -> {
+                        mediaInfo.getFrameAtMillis(strategy.timeMs).also { frame ->
+                            logThumbnail { "mediaInfo frameAt timeMs=${strategy.timeMs} result=${frame != null} key=$key" }
                         }
                     }
                     is ThumbnailStrategy.Hybrid -> {
@@ -728,7 +735,9 @@ class VideoThumbnailDecoder(
         ): Decoder? {
             logThumbnail { "factory create mimeType=${result.mimeType}" }
             if (!isApplicable(result.mimeType)) return null
-            val strategy = thumbnailStrategy()
+            val strategy = options.extras[ChapterThumbnailPositionMsExtra]
+                ?.let(ThumbnailStrategy::FrameAtTime)
+                ?: thumbnailStrategy()
             logThumbnail { "factory strategy=${strategy.logName}" }
             return VideoThumbnailDecoder(
                 source = result.source,
@@ -848,6 +857,7 @@ private class PatchedMpegTsMediaDataSource(
 sealed class ThumbnailStrategy {
     data object FirstFrame : ThumbnailStrategy()
     data class FrameAtPercentage(val percentage: Float = 0.5f) : ThumbnailStrategy()
+    data class FrameAtTime(val timeMs: Long) : ThumbnailStrategy()
     data class Hybrid(val percentage: Float = 0.5f) : ThumbnailStrategy()
 }
 
@@ -855,6 +865,7 @@ private val ThumbnailStrategy.logName: String
     get() = when (this) {
         ThumbnailStrategy.FirstFrame -> "firstFrame"
         is ThumbnailStrategy.FrameAtPercentage -> "frameAt:$percentage"
+        is ThumbnailStrategy.FrameAtTime -> "frameAtMs:$timeMs"
         is ThumbnailStrategy.Hybrid -> "hybrid:$percentage"
     }
 
@@ -862,12 +873,14 @@ private val ThumbnailStrategy.cacheKey: String
     get() = when (this) {
         ThumbnailStrategy.FirstFrame -> "first"
         is ThumbnailStrategy.FrameAtPercentage -> "frameAt:$percentage"
+        is ThumbnailStrategy.FrameAtTime -> "frameAtMs:$timeMs"
         is ThumbnailStrategy.Hybrid -> "hybrid:$percentage"
     }
 
 private fun ThumbnailStrategy.primaryTimeMs(duration: Long): Long = when (this) {
     ThumbnailStrategy.FirstFrame -> 0L
     is ThumbnailStrategy.FrameAtPercentage -> (duration * percentage).toLong()
+    is ThumbnailStrategy.FrameAtTime -> timeMs
     is ThumbnailStrategy.Hybrid -> (duration * percentage).toLong()
 }
 

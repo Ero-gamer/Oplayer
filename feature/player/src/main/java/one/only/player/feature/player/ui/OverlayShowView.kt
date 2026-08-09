@@ -14,6 +14,7 @@ import one.only.player.core.model.VideoContentScale
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.VideoFiltersPanel
 import one.only.player.feature.player.extensions.noRippleClickable
+import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.state.SleepTimerState
 import one.only.player.feature.player.state.SubtitleOptionsEvent
 
@@ -44,6 +45,10 @@ fun BoxScope.OverlayShowView(
     onAddPlaybackMarkClick: () -> Unit = {},
     onPlaybackMarkClick: (PlaybackMark) -> Unit = {},
     onDeletePlaybackMarkClick: (PlaybackMark) -> Unit = {},
+    chapters: List<VideoChapter> = emptyList(),
+    chapterPositionMs: Long = 0L,
+    chapterMediaUri: android.net.Uri? = null,
+    onChapterClick: (VideoChapter) -> Unit = {},
     onControlLockChanged: (Boolean) -> Unit = {},
     onMuteChanged: (Boolean) -> Unit = {},
     onAmbienceModeChanged: (Boolean) -> Unit = {},
@@ -124,6 +129,14 @@ fun BoxScope.OverlayShowView(
         onAddMarkClick = onAddPlaybackMarkClick,
         onMarkClick = onPlaybackMarkClick,
         onDeleteMarkClick = onDeletePlaybackMarkClick,
+    )
+
+    ChaptersView(
+        shouldShow = overlayView == OverlayView.CHAPTERS,
+        chapters = chapters,
+        positionMs = chapterPositionMs,
+        mediaUri = chapterMediaUri,
+        onChapterClick = onChapterClick,
     )
 
     LoopModeSelectorView(
@@ -241,6 +254,7 @@ enum class OverlayView {
     SLEEP_TIMER,
     DECODER_PRIORITY,
     PLAYBACK_MARKS,
+    CHAPTERS,
     LOOP_MODE,
     SHUFFLE_MODE,
     CONTROL_LOCK,

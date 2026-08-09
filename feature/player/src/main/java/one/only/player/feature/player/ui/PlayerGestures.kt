@@ -15,6 +15,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
+import kotlin.math.abs
 import kotlin.time.Duration
 import one.only.player.feature.player.extensions.detectCustomHorizontalDragGestures
 import one.only.player.feature.player.extensions.detectCustomTransformGestures
@@ -35,6 +36,8 @@ fun PlayerGestures(
     seekGestureState: SeekGestureState,
     videoZoomAndContentScaleState: VideoZoomAndContentScaleState,
     volumeAndBrightnessGestureState: VolumeAndBrightnessGestureState,
+    isChapterSwipeEnabled: Boolean = false,
+    onChapterSwipe: (ChapterSwipeDirection) -> Unit = {},
     isEnabled: Boolean = true,
 ) {
     BoxWithConstraints {
@@ -225,14 +228,26 @@ fun PlayerGestures(
                     isEnabled,
                     controlsVisibilityState.isControlsLocked,
                     pictureInPictureState.isInPictureInPictureMode,
+                    isChapterSwipeEnabled,
                 ) {
                     if (!isEnabled) return@pointerInput
                     if (controlsVisibilityState.isControlsLocked) return@pointerInput
                     if (pictureInPictureState.isInPictureInPictureMode) return@pointerInput
 
+                    var accumulatedPan = Offset.Zero
+                    var accumulatedZoom = 1f
+                    var accumulatedRotation = 0f
                     detectCustomTransformGestures(
-                        onGesture = { _, panChange, zoomChange, _ ->
+                        onGestureStart = {
+                            accumulatedPan = Offset.Zero
+                            accumulatedZoom = 1f
+                            accumulatedRotation = 0f
+                        },
+                        onGesture = { _, panChange, zoomChange, rotationChange ->
                             if (tapGestureState.isLongPressGestureInAction) return@detectCustomTransformGestures
+                            accumulatedPan += panChange
+                            accumulatedZoom *= zoomChange
+                            accumulatedRotation += rotationChange
                             videoZoomAndContentScaleState.onZoomPanGesture(
                                 constraints = this@BoxWithConstraints.constraints,
                                 panChange = panChange,
@@ -240,6 +255,23 @@ fun PlayerGestures(
                             )
                         },
                         onGestureEnd = {
+                            val horizontalDistance = abs(accumulatedPan.x)
+                            val verticalDistance = abs(accumulatedPan.y)
+                            val minimumDistance = size.width * CHAPTER_SWIPE_DISTANCE_FRACTION
+                            val isHorizontalSwipe = horizontalDistance >= minimumDistance &&
+                                horizontalDistance >= verticalDistance * CHAPTER_SWIPE_DIRECTION_RATIO
+                            val hasNoMeaningfulScale = abs(accumulatedZoom - 1f) <= CHAPTER_SWIPE_MAX_SCALE_DELTA
+                            val hasNoMeaningfulRotation = abs(accumulatedRotation) <= CHAPTER_SWIPE_MAX_ROTATION_DEGREES
+                            val canSwitchChapter = isChapterSwipeEnabled &&
+                                videoZoomAndContentScaleState.zoom <= CHAPTER_SWIPE_MAX_ACTIVE_ZOOM &&
+                                isHorizontalSwipe &&
+                                hasNoMeaningfulScale &&
+                                hasNoMeaningfulRotation
+                            if (canSwitchChapter) {
+                                onChapterSwipe(
+                                    if (accumulatedPan.x < 0f) ChapterSwipeDirection.NEXT else ChapterSwipeDirection.PREVIOUS,
+                                )
+                            }
                             videoZoomAndContentScaleState.onZoomPanGestureEnd()
                         },
                     )
@@ -255,3 +287,13 @@ private fun Offset.isInPanGestureArea(size: IntSize): Boolean {
 
 private const val PAN_GESTURE_START_FRACTION = 0.25f
 private const val PAN_GESTURE_END_FRACTION = 0.75f
+private const val CHAPTER_SWIPE_DISTANCE_FRACTION = 0.12f
+private const val CHAPTER_SWIPE_DIRECTION_RATIO = 1.5f
+private const val CHAPTER_SWIPE_MAX_SCALE_DELTA = 0.06f
+private const val CHAPTER_SWIPE_MAX_ROTATION_DEGREES = 8f
+private const val CHAPTER_SWIPE_MAX_ACTIVE_ZOOM = 1.02f
+
+enum class ChapterSwipeDirection {
+    PREVIOUS,
+    NEXT,
+}

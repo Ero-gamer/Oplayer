@@ -54,6 +54,7 @@ fun ControlsTopView(
     visiblePlayerControls: Set<PlayerControl>,
     videoContentScale: VideoContentScale,
     isPipSupported: Boolean,
+    hasChapters: Boolean,
     isTakingScreenshot: Boolean,
     itemBounds: MutableMap<PlayerControl, Rect>,
     zoneBounds: MutableMap<PlayerControlZone, Rect>,
@@ -75,6 +76,7 @@ fun ControlsTopView(
     isMuted: Boolean = false,
     onMuteClick: () -> Unit = {},
     onPlaybackMarksClick: () -> Unit = {},
+    onChaptersClick: () -> Unit = {},
     onVideoContentScaleClick: () -> Unit = {},
     onVideoContentScaleLongClick: () -> Unit = {},
     onDecoderClick: () -> Unit = {},
@@ -93,8 +95,14 @@ fun ControlsTopView(
 ) {
     val systemBarsPadding = WindowInsets.systemBars.union(WindowInsets.displayCutout).asPaddingValues()
     val isLandscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-    val maxVisibleCount = if (isLandscape) 6 else 4
-    val buttonSlotWidth = if (isCustomizingControls) 72.dp else 48.dp
+    val shouldUseCompactButtonSlots = shouldHideLabels && !isCustomizingControls
+    val maxVisibleCount = when {
+        isLandscape && shouldUseCompactButtonSlots -> 6
+        isLandscape -> 5
+        shouldUseCompactButtonSlots -> 4
+        else -> 3
+    }
+    val buttonSlotWidth = if (shouldUseCompactButtonSlots) 48.dp else 96.dp
     val maxRowWidth = buttonSlotWidth * maxVisibleCount
 
     @Composable
@@ -170,6 +178,7 @@ fun ControlsTopView(
                             player = player,
                             videoContentScale = videoContentScale,
                             isPipSupported = isPipSupported,
+                            hasChapters = hasChapters,
                             isCustomizingControls = isCustomizingControls,
                             shouldHideLabel = shouldHideLabels,
                             visiblePlayerControls = visiblePlayerControls,
@@ -181,6 +190,7 @@ fun ControlsTopView(
                             onLockControlsClick = onLockControlsClick,
                             onMuteClick = onMuteClick,
                             onPlaybackMarksClick = onPlaybackMarksClick,
+                            onChaptersClick = onChaptersClick,
                             onVideoContentScaleClick = onVideoContentScaleClick,
                             onVideoContentScaleLongClick = onVideoContentScaleLongClick,
                             onDecoderClick = onDecoderClick,

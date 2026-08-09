@@ -552,5 +552,11 @@
     <string name="playback_marks">Playback marks</string>
     <string name="add_playback_mark">Add mark</string>
     <string name="no_playback_marks">No marks yet</string>
+    <string name="chapters">Chapters</string>
+    <string name="no_chapters">No chapters in this video</string>
+    <string name="chapter_number">Chapter %1$d</string>
+    <string name="chapter_time_range">%1$s - %2$s</string>
+    <string name="chapter_preview_content_description">Preview for %1$s</string>
+    <string name="current_chapter">Current chapter</string>
     <string name="delete_mark">Delete mark</string>
 </resources>

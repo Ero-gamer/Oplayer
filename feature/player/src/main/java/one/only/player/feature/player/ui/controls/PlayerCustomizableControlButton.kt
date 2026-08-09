@@ -27,6 +27,7 @@ internal fun PlayerCustomizableControlButton(
     player: Player,
     videoContentScale: VideoContentScale,
     isPipSupported: Boolean,
+    hasChapters: Boolean,
     isCustomizingControls: Boolean,
     visiblePlayerControls: Set<PlayerControl>,
     isBeingDragged: Boolean = false,
@@ -40,6 +41,7 @@ internal fun PlayerCustomizableControlButton(
     onLockControlsClick: () -> Unit,
     onMuteClick: () -> Unit,
     onPlaybackMarksClick: () -> Unit,
+    onChaptersClick: () -> Unit,
     onVideoContentScaleClick: () -> Unit,
     onVideoContentScaleLongClick: () -> Unit,
     onDecoderClick: () -> Unit,
@@ -58,6 +60,7 @@ internal fun PlayerCustomizableControlButton(
 ) {
     if (!isCustomizingControls && control !in visiblePlayerControls) return
     if (!isCustomizingControls && control == PlayerControl.PIP && !isPipSupported) return
+    if (!isCustomizingControls && control == PlayerControl.CHAPTERS && !hasChapters) return
 
     val isSelected = isCustomizingControls && control in visiblePlayerControls
     val isPlaceholder = isBeingDragged || isOutlineOnly
@@ -181,6 +184,23 @@ internal fun PlayerCustomizableControlButton(
                 Icon(
                     imageVector = NextIcons.History,
                     contentDescription = "btn_playback_marks",
+                )
+            }
+        }
+
+        PlayerControl.CHAPTERS -> {
+            PlayerButton(
+                modifier = buttonModifier,
+                onClick = onChaptersClick,
+                isSelected = isSelected,
+                label = label,
+                shouldDimWhenUnselected = isCustomizingControls,
+                shouldShowCustomizeFrame = isCustomizingControls,
+                isOutlineOnly = isPlaceholder,
+            ) {
+                Icon(
+                    imageVector = NextIcons.PlaylistPlay,
+                    contentDescription = "btn_chapters",
                 )
             }
         }
@@ -422,6 +442,8 @@ private fun PlayerControl.label(isMuted: Boolean): String = when (this) {
     PlayerControl.MUTE -> stringResource(if (isMuted) R.string.controls_unmute else R.string.controls_mute)
 
     PlayerControl.MARK -> stringResource(R.string.controls_mark)
+
+    PlayerControl.CHAPTERS -> stringResource(R.string.chapters)
 
     PlayerControl.SCALE -> stringResource(R.string.video_zoom)
 

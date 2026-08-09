@@ -78,6 +78,7 @@ class PlayerControlsLayout(
     companion object {
         val topRightControls: List<PlayerControl> = listOf(
             PlayerControl.PLAYLIST,
+            PlayerControl.CHAPTERS,
             PlayerControl.PLAYBACK_SPEED,
             PlayerControl.AUDIO,
             PlayerControl.SUBTITLE,
@@ -102,11 +103,12 @@ class PlayerControlsLayout(
         val customizableControls: Set<PlayerControl> =
             (topRightControls + bottomLeftControls).toSet()
 
-        internal const val CURRENT_VERSION = 3
+        internal const val CURRENT_VERSION = 4
 
         private val introducedControlVersions: Map<PlayerControl, Int> = mapOf(
             PlayerControl.MUTE to 2,
             PlayerControl.MARK to 3,
+            PlayerControl.CHAPTERS to 4,
         )
 
         fun defaultEntries(): List<PlayerControlLayoutEntry> = buildList {

@@ -129,6 +129,8 @@ import one.only.player.feature.player.extensions.subtitleTrackIndex
 import one.only.player.feature.player.extensions.switchTrack
 import one.only.player.feature.player.extensions.uriToSubtitleConfiguration
 import one.only.player.feature.player.extensions.videoZoom
+import one.only.player.feature.player.model.extractVideoChapters
+import one.only.player.feature.player.model.toBundle
 import one.only.player.feature.player.service.artwork.PlaybackArtworkLoader
 import one.only.player.feature.player.service.audio.AudioEffectsCoordinator
 import one.only.player.feature.player.service.decoder.NormalizingRenderersFactory
@@ -1525,6 +1527,19 @@ class PlayerService : MediaSessionService() {
                             putBoolean(CustomCommands.IS_VIDEO_HDR_KEY, videoEffectsCoordinator.isCurrentHdr)
                             putBoolean(CustomCommands.IS_VIDEO_EFFECTS_AVAILABLE_KEY, videoEffectsCoordinator.isAvailable())
                             putBoolean(CustomCommands.IS_VIDEO_EFFECTS_ACTIVE_KEY, videoEffectsCoordinator.isEffectActive)
+                        },
+                    )
+                }
+
+                CustomCommands.GET_VIDEO_CHAPTERS -> {
+                    val chapters = mediaSession?.player?.extractVideoChapters().orEmpty()
+                    return@future SessionResult(
+                        SessionResult.RESULT_SUCCESS,
+                        Bundle().apply {
+                            putParcelableArrayList(
+                                CustomCommands.VIDEO_CHAPTERS_KEY,
+                                ArrayList(chapters.map { chapter -> chapter.toBundle() }),
+                            )
                         },
                     )
                 }
