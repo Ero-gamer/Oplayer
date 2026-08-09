@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -199,11 +198,13 @@ class TapGestureState(
     private fun resetDoubleTapSeekState() {
         resetJob?.cancel()
         resetJob = coroutineScope.launch {
-            delay(750.milliseconds)
+            delay(DOUBLE_TAP_SEEK_INDICATOR_HIDE_DELAY_MS)
             seekMillis = 0L
         }
     }
 }
+
+private const val DOUBLE_TAP_SEEK_INDICATOR_HIDE_DELAY_MS = 300L
 
 internal fun resolveLongPressVariableSpeed(
     baseSpeed: Float,

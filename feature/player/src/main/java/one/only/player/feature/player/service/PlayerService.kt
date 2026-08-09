@@ -1332,12 +1332,18 @@ class PlayerService : MediaSessionService() {
             controller: MediaSession.ControllerInfo,
         ): MediaSession.ConnectionResult {
             val connectionResult = super.onConnect(session, controller)
+            val availablePlayerCommands = connectionResult.availablePlayerCommands
+                .buildUpon()
+                .apply {
+                    if (controller.packageName == packageName) addAllCommands()
+                }
+                .build()
             return MediaSession.ConnectionResult.accept(
                 connectionResult.availableSessionCommands
                     .buildUpon()
                     .addSessionCommands(customCommands)
                     .build(),
-                connectionResult.availablePlayerCommands,
+                availablePlayerCommands,
             )
         }
 

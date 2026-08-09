@@ -81,20 +81,20 @@ private fun DoubleTapSeekTriangles(
     isForward: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val animationDuration = 750L
+    val animationStepDuration = 50
 
     val alpha1 = remember { Animatable(0f) }
     val alpha2 = remember { Animatable(0f) }
     val alpha3 = remember { Animatable(0f) }
 
-    LaunchedEffect(animationDuration) {
+    LaunchedEffect(Unit) {
         while (true) {
-            alpha1.animateTo(1f, animationSpec = tween((animationDuration / 5).toInt()))
-            alpha2.animateTo(1f, animationSpec = tween((animationDuration / 5).toInt()))
-            alpha3.animateTo(1f, animationSpec = tween((animationDuration / 5).toInt()))
-            alpha1.animateTo(0f, animationSpec = tween((animationDuration / 5).toInt()))
-            alpha2.animateTo(0f, animationSpec = tween((animationDuration / 5).toInt()))
-            alpha3.animateTo(0f, animationSpec = tween((animationDuration / 5).toInt()))
+            alpha1.animateTo(1f, animationSpec = tween(animationStepDuration))
+            alpha2.animateTo(1f, animationSpec = tween(animationStepDuration))
+            alpha3.animateTo(1f, animationSpec = tween(animationStepDuration))
+            alpha1.animateTo(0f, animationSpec = tween(animationStepDuration))
+            alpha2.animateTo(0f, animationSpec = tween(animationStepDuration))
+            alpha3.animateTo(0f, animationSpec = tween(animationStepDuration))
         }
     }
 

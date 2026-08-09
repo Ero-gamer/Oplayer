@@ -168,9 +168,11 @@ import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 
 private const val TAG = "MediaPlayerScreen"
 private const val AMBIENCE_FRAME_CAPTURE_MAX_SIZE = 240
-private const val AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS = 100L
+private const val AMBIENCE_FRAME_CAPTURE_PLAYING_INTERVAL_MS = 300L
 private const val AMBIENCE_FRAME_CAPTURE_PAUSED_INTERVAL_MS = 1_000L
 private const val AMBIENCE_FRAME_CAPTURE_BUFFERING_RETRY_MS = 250L
+private const val AMBIENCE_FRAME_CAPTURE_MEDIA_TRANSITION_DELAY_MS = 350L
+private const val AMBIENCE_FRAME_CAPTURE_SEEK_RESUME_DELAY_MS = 350L
 private const val AMBIENCE_FRAME_NEAR_BLACK_CONFIRM_COUNT = 10
 private const val AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA = 6f
 private const val AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA = 18f
@@ -956,6 +958,7 @@ internal fun MediaPlayerScreen(
                         hasRenderedFirstFrame = mediaPresentationState.hasRenderedFirstFrame,
                         isPlaying = mediaPresentationState.isPlaying,
                         isBuffering = mediaPresentationState.isBuffering,
+                        isSeeking = seekGestureState.isSeeking,
                         positionMs = mediaPresentationState.position,
                         cachedFrameBitmap = viewModel.ambienceFrameFor(ambienceMediaKey)
                             ?: viewModel.latestAmbienceFrame(),
@@ -987,8 +990,7 @@ internal fun MediaPlayerScreen(
                         externalSubtitleFontSource = externalSubtitleFontSource,
                     ),
                     decoderPriority = playerPreferences.decoderPriority,
-                    // 氛围背景只在可安全抓帧的视频上使用 TextureView，避免影响受保护和 HDR 视频的主画面。
-                    shouldUseTextureView = isVideoMirrored || shouldRenderAmbienceBackground,
+                    shouldUseTextureView = isVideoMirrored,
                     isVideoMirrored = isVideoMirrored,
                 )
 
@@ -1863,6 +1865,7 @@ private fun AmbienceBackground(
     hasRenderedFirstFrame: Boolean,
     isPlaying: Boolean,
     isBuffering: Boolean,
+    isSeeking: Boolean,
     positionMs: Long,
     cachedFrameBitmap: Bitmap?,
     onFrameCaptured: (String?, Bitmap) -> Unit,
@@ -1879,7 +1882,20 @@ private fun AmbienceBackground(
     val currentIsBuffering = rememberUpdatedState(isBuffering)
     val currentIsPlaying = rememberUpdatedState(isPlaying)
     val currentPositionMs = rememberUpdatedState(positionMs)
-    var frameBitmap by remember { mutableStateOf(cachedFrameBitmap) }
+    var shouldPauseForSeek by remember { mutableStateOf(isSeeking) }
+    val currentShouldPauseForSeek = rememberUpdatedState(shouldPauseForSeek)
+    var frameBitmap by remember(mediaKey) { mutableStateOf(cachedFrameBitmap) }
+
+    LaunchedEffect(isSeeking) {
+        if (isSeeking) {
+            shouldPauseForSeek = true
+            return@LaunchedEffect
+        }
+        if (!shouldPauseForSeek) return@LaunchedEffect
+
+        delay(AMBIENCE_FRAME_CAPTURE_SEEK_RESUME_DELAY_MS)
+        shouldPauseForSeek = false
+    }
 
     DisposableEffect(mediaKey) {
         Logger.info(TAG, "Ambience background mounted media=$mediaKey")
@@ -1896,9 +1912,9 @@ private fun AmbienceBackground(
         if (!hasRenderedFirstFrame) {
             Logger.info(
                 TAG,
-                "Ambience capture waiting media=$mediaKey window=${window != null} rect=${captureRect?.ambienceDebugString()} hasFrame=$hasRenderedFirstFrame keepImage=${frameBitmap != null}",
+                "Ambience capture delayed for media transition media=$mediaKey window=${window != null} rect=${captureRect?.ambienceDebugString()} keepImage=${frameBitmap != null}",
             )
-            return@LaunchedEffect
+            delay(AMBIENCE_FRAME_CAPTURE_MEDIA_TRANSITION_DELAY_MS)
         }
 
         var captureCount = 0
@@ -1914,7 +1930,7 @@ private fun AmbienceBackground(
                 if (!didLogWaitingForRect) {
                     Logger.info(
                         TAG,
-                        "Ambience capture waiting media=$mediaKey window=${window != null} rect=null hasFrame=true keepImage=${frameBitmap != null}",
+                        "Ambience capture waiting media=$mediaKey window=${window != null} rect=null hasFrame=$hasRenderedFirstFrame keepImage=${frameBitmap != null}",
                     )
                 }
                 didLogWaitingForRect = true
@@ -1923,11 +1939,12 @@ private fun AmbienceBackground(
             }
 
             didLogWaitingForRect = false
-            if (currentIsBuffering.value) {
+            if (currentIsBuffering.value || currentShouldPauseForSeek.value) {
                 if (!didLogBuffering) {
+                    val reason = if (currentShouldPauseForSeek.value) "seek" else "buffering"
                     Logger.info(
                         TAG,
-                        "Ambience capture paused for buffering media=$mediaKey rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameBitmap != null}",
+                        "Ambience capture paused for $reason media=$mediaKey rect=${sourceRect.ambienceDebugString()} positionMs=${currentPositionMs.value} keepImage=${frameBitmap != null}",
                     )
                 }
                 didLogBuffering = true

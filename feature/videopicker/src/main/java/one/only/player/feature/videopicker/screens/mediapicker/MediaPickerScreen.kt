@@ -287,7 +287,13 @@ internal fun MediaPickerScreen(
                         }
                     } else if (uiState.folderName != null || isRecycleBinMode) {
                         IconButton(
-                            onClick = onNavigateUp,
+                            onClick = {
+                                if (isMoveMode && uiState.isMovingSelection) {
+                                    shouldShowMoveProgressDialog = true
+                                } else {
+                                    onNavigateUp()
+                                }
+                            },
                             modifier = Modifier
                                 .padding(start = 12.dp)
                                 .testTag("btn_media_picker_back"),
@@ -663,6 +669,10 @@ internal fun MediaPickerScreen(
 
     BackHandler(enabled = selectionManager.isInSelectionMode) {
         selectionManager.exitSelectionMode()
+    }
+
+    BackHandler(enabled = isMoveMode && uiState.isMovingSelection) {
+        shouldShowMoveProgressDialog = true
     }
 
     BackHandler(

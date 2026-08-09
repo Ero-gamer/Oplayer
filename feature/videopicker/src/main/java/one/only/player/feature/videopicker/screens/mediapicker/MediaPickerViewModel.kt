@@ -339,8 +339,9 @@ class MediaPickerViewModel @Inject constructor(
                 )
             }
             val summary = videoSummary + folderSummary
-            if (summary.movedCount > 0 || summary.partiallyMovedCount > 0) {
-                moveSelectionStore.complete()
+            when {
+                summary.movedCount > 0 || summary.partiallyMovedCount > 0 -> moveSelectionStore.complete()
+                summary.canceledCount > 0 -> moveSelectionStore.cancel()
             }
             uiStateInternal.update { currentState ->
                 currentState.copy(
