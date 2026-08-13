@@ -39,7 +39,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -337,7 +336,6 @@ internal fun CloudBrowseScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(top = innerPadding.calculateTopPadding())
                 .padding(start = innerPadding.calculateStartPadding(LocalLayoutDirection.current)),
         ) {
@@ -351,6 +349,7 @@ internal fun CloudBrowseScreen(
                     modifier = Modifier.fillMaxSize(),
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = { onEvent(CloudBrowseEvent.Retry) },
+                    topAppBarScrollBehavior = scrollBehavior.takeIf { !isInSelectionMode },
                     refreshTexts = refreshTexts,
                 ) {
                     when {
