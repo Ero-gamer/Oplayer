@@ -1,7 +1,9 @@
 package one.only.player.feature.player.ui
 
 import androidx.annotation.OptIn
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,8 +32,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,7 +48,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import one.only.player.core.common.Utils
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextSegmentedListItem
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.feature.player.state.rememberPlaylistState
 import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
@@ -83,7 +86,6 @@ fun PlaylistContent(
     player: Player,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
-    val tokens = rememberPlayerPanelTokens()
     val playlistState = rememberPlaylistState(player)
     val playlistEntries = playlistState.playlist.toPlaylistEntries()
     val lazyListState = rememberLazyListState()
@@ -107,8 +109,8 @@ fun PlaylistContent(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
-            contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(tokens.itemSpacing),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             itemsIndexed(
                 items = playlistEntries,
@@ -121,8 +123,7 @@ fun PlaylistContent(
                     val isCurrentItem = index == playlistState.currentMediaItemIndex
                     PlaylistItemView(
                         mediaItem = entry.mediaItem,
-                        isFirstItem = index == 0,
-                        isLastItem = index == playlistEntries.lastIndex,
+                        itemIndex = index,
                         isCurrentItem = isCurrentItem,
                         canDelete = playlistEntries.size > 1,
                         onClick = { playlistState.seekToItem(index) },
@@ -155,8 +156,7 @@ private fun List<MediaItem>.toPlaylistEntries(): List<PlaylistEntry> {
 @Composable
 private fun ReorderableCollectionItemScope.PlaylistItemView(
     mediaItem: MediaItem,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
+    itemIndex: Int,
     isCurrentItem: Boolean,
     canDelete: Boolean,
     onClick: () -> Unit,
@@ -165,15 +165,18 @@ private fun ReorderableCollectionItemScope.PlaylistItemView(
     val interactionSource = remember { MutableInteractionSource() }
     val hapticFeedback = LocalHapticFeedback.current
     val tokens = rememberPlayerPanelTokens()
+    val cardShape = RoundedCornerShape(16.dp)
+    val cardColor = if (isCurrentItem) tokens.itemSelectedColor else tokens.itemColor
     val contentColor = if (isCurrentItem) tokens.itemSelectedContentColor else tokens.itemContentColor
     val secondaryColor = if (isCurrentItem) {
-        tokens.itemSelectedContentColor.copy(alpha = 0.7f)
+        tokens.itemSelectedContentColor.copy(alpha = 0.75f)
     } else {
         tokens.secondaryContentColor
     }
-    NextSegmentedListItem(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
+            .testTag("playlist_item_$itemIndex")
             .draggableHandle(
                 onDragStarted = {
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
@@ -183,54 +186,47 @@ private fun ReorderableCollectionItemScope.PlaylistItemView(
                 },
                 interactionSource = interactionSource,
                 dragGestureDetector = DragGestureDetector.LongPress,
-            ),
-        isSelected = isCurrentItem,
-        contentPadding = PaddingValues(8.dp),
-        interactionSource = interactionSource,
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
-        containerColor = tokens.itemColor,
-        selectedContainerColor = tokens.itemSelectedColor,
-        onClick = onClick,
-        leadingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            )
+            .clip(cardShape)
+            .background(cardColor)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = onClick,
+            )
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        MiuixIcon(
+            painter = painterResource(R.drawable.ic_drag_handle),
+            contentDescription = stringResource(R.string.reorder),
+            tint = secondaryColor,
+        )
+        ThumbnailView(
+            mediaItem = mediaItem,
+            modifier = Modifier
+                .width(min(100.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f)),
+        )
+        MiuixText(
+            text = mediaItem.mediaMetadata.title?.toString() ?: stringResource(R.string.unknown),
+            maxLines = 2,
+            style = MiuixTheme.textStyles.body1,
+            fontWeight = if (isCurrentItem) FontWeight.SemiBold else FontWeight.Medium,
+            overflow = TextOverflow.Ellipsis,
+            color = contentColor,
+            modifier = Modifier.weight(1f),
+        )
+        if (canDelete) {
+            MiuixIconButton(onClick = onDelete) {
                 MiuixIcon(
-                    painter = painterResource(R.drawable.ic_drag_handle),
-                    contentDescription = stringResource(R.string.reorder),
+                    painter = painterResource(R.drawable.ic_close),
+                    contentDescription = stringResource(R.string.remove),
                     tint = secondaryColor,
                 )
-
-                ThumbnailView(
-                    mediaItem = mediaItem,
-                    modifier = Modifier
-                        .width(min(100.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f)),
-                )
             }
-        },
-        content = {
-            MiuixText(
-                text = mediaItem.mediaMetadata.title?.toString() ?: stringResource(R.string.unknown),
-                maxLines = 2,
-                style = MiuixTheme.textStyles.body1,
-                overflow = TextOverflow.Ellipsis,
-                color = contentColor,
-            )
-        },
-        trailingContent = {
-            if (canDelete) {
-                MiuixIconButton(onClick = onDelete) {
-                    MiuixIcon(
-                        painter = painterResource(R.drawable.ic_close),
-                        contentDescription = stringResource(R.string.remove),
-                        tint = secondaryColor,
-                    )
-                }
-            }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -242,7 +238,7 @@ private fun ThumbnailView(
     val tokens = rememberPlayerPanelTokens()
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(10.dp))
             .background(tokens.contentColor.copy(alpha = 0.1f))
             .aspectRatio(16f / 10f),
     ) {

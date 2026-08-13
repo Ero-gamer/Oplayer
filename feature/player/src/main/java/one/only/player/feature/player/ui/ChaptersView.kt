@@ -2,21 +2,24 @@ package one.only.player.feature.player.ui
 
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
@@ -43,7 +46,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import kotlin.time.Duration.Companion.milliseconds
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextSegmentedListItem
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.model.VideoChapter
@@ -109,14 +111,13 @@ fun ChaptersContent(
         return
     }
 
-    val tokens = rememberPlayerPanelTokens()
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .testTag("chapter_list"),
         state = listState,
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(tokens.itemSpacing),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         itemsIndexed(
             items = chapters,
@@ -127,8 +128,6 @@ fun ChaptersContent(
                 positionMs = positionMs,
                 mediaUri = mediaUri,
                 isCurrentChapter = index == currentChapterIndex,
-                isFirstItem = index == 0,
-                isLastItem = index == chapters.lastIndex,
                 onClick = { onChapterClick(chapter) },
             )
         }
@@ -141,53 +140,50 @@ private fun ChapterItem(
     positionMs: Long,
     mediaUri: Uri?,
     isCurrentChapter: Boolean,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     onClick: () -> Unit,
 ) {
     val tokens = rememberPlayerPanelTokens()
     val chapterNumber = stringResource(R.string.chapter_number, chapter.index + 1)
+    val cardShape = RoundedCornerShape(16.dp)
+    val cardColor = if (isCurrentChapter) tokens.itemSelectedColor else tokens.itemColor
     val contentColor = if (isCurrentChapter) tokens.itemSelectedContentColor else tokens.itemContentColor
     val secondaryColor = if (isCurrentChapter) {
-        tokens.itemSelectedContentColor.copy(alpha = 0.7f)
+        tokens.itemSelectedContentColor.copy(alpha = 0.75f)
     } else {
         tokens.secondaryContentColor
     }
-    NextSegmentedListItem(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .testTag("chapter_item_${chapter.index}"),
-        isSelected = isCurrentChapter,
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
-        contentPadding = PaddingValues(8.dp),
-        containerColor = tokens.itemColor,
-        selectedContainerColor = tokens.itemSelectedColor,
-        onClick = onClick,
-        leadingContent = {
-            ChapterThumbnail(
-                chapter = chapter,
-                positionMs = positionMs,
-                mediaUri = mediaUri,
-                isCurrentChapter = isCurrentChapter,
-                contentDescription = stringResource(
-                    R.string.chapter_preview_content_description,
-                    chapter.title ?: chapterNumber,
-                ),
-            )
-        },
-        overlineContent = if (chapter.title != null) {
-            {
+            .testTag("chapter_item_${chapter.index}")
+            .clip(cardShape)
+            .background(cardColor)
+            .clickable(onClick = onClick)
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        ChapterThumbnail(
+            chapter = chapter,
+            positionMs = positionMs,
+            mediaUri = mediaUri,
+            isCurrentChapter = isCurrentChapter,
+            contentDescription = stringResource(
+                R.string.chapter_preview_content_description,
+                chapter.title ?: chapterNumber,
+            ),
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            if (chapter.title != null) {
                 MiuixText(
                     text = chapterNumber,
                     style = MiuixTheme.textStyles.footnote2,
                     color = secondaryColor,
                 )
             }
-        } else {
-            null
-        },
-        content = {
             MiuixText(
                 text = chapter.title ?: chapterNumber,
                 maxLines = 2,
@@ -196,8 +192,6 @@ private fun ChapterItem(
                 fontWeight = if (isCurrentChapter) FontWeight.SemiBold else FontWeight.Medium,
                 color = contentColor,
             )
-        },
-        supportingContent = {
             MiuixText(
                 text = stringResource(
                     R.string.chapter_time_range,
@@ -207,17 +201,24 @@ private fun ChapterItem(
                 style = MiuixTheme.textStyles.footnote1,
                 color = secondaryColor,
             )
-        },
-        trailingContent = {
-            if (isCurrentChapter) {
+        }
+        if (isCurrentChapter) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(tokens.itemSelectedContentColor.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center,
+            ) {
                 MiuixIcon(
                     imageVector = NextIcons.Play,
                     contentDescription = stringResource(R.string.current_chapter),
                     tint = tokens.itemSelectedContentColor,
+                    modifier = Modifier.size(16.dp),
                 )
             }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -230,7 +231,7 @@ private fun ChapterThumbnail(
 ) {
     val context = LocalContext.current
     val tokens = rememberPlayerPanelTokens()
-    val shape = RoundedCornerShape(8.dp)
+    val shape = RoundedCornerShape(10.dp)
     val width = min(112.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f)
     val cacheKey = remember(mediaUri, chapter.startTimeMs) {
         "$mediaUri#chapter=${chapter.startTimeMs}"
@@ -248,19 +249,13 @@ private fun ChapterThumbnail(
                 .build()
         }
     }
-    val borderModifier = if (isCurrentChapter) {
-        Modifier.border(2.dp, tokens.accentColor, shape)
-    } else {
-        Modifier
-    }
 
     Box(
         modifier = Modifier
             .width(width)
             .aspectRatio(16f / 9f)
             .clip(shape)
-            .background(tokens.contentColor.copy(alpha = 0.1f))
-            .then(borderModifier),
+            .background(tokens.contentColor.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center,
     ) {
         MiuixIcon(
@@ -289,14 +284,17 @@ private fun ChapterThumbnail(
         if (isCurrentChapter && chapter.endTimeMs > chapter.startTimeMs) {
             val progress = ((positionMs - chapter.startTimeMs).toFloat() / (chapter.endTimeMs - chapter.startTimeMs))
                 .coerceIn(0f, 1f)
+            // 选中卡片已填充强调色，进度条改用白色配暗轨道，保证在任意画面上可见。
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .height(3.dp),
-                color = tokens.accentColor,
-                trackColor = Color.Transparent,
+                color = tokens.itemSelectedContentColor,
+                trackColor = Color.Black.copy(alpha = 0.4f),
+                gapSize = 0.dp,
+                drawStopIndicator = {},
             )
         }
     }
