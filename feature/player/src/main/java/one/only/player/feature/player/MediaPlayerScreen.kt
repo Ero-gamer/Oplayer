@@ -1027,6 +1027,7 @@ internal fun MediaPlayerScreen(
                         shadowStrength = activePlayerPreferences.subtitleShadowStrength,
                         bottomPaddingFraction = activePlayerPreferences.subtitleBottomPaddingFraction,
                         shouldApplyEmbeddedStyles = activePlayerPreferences.shouldApplyEmbeddedStyles,
+                        subtitleScale = activePlayerPreferences.subtitleScale,
                         externalSubtitleFontSource = externalSubtitleFontSource,
                     ),
                     decoderPriority = playerPreferences.decoderPriority,
@@ -1895,7 +1896,8 @@ private fun PlayerPreferences.hasSameSubtitleStyle(other: PlayerPreferences): Bo
     subtitleEdgeStyle == other.subtitleEdgeStyle &&
     subtitleOutlineThickness == other.subtitleOutlineThickness &&
     subtitleShadowStrength == other.subtitleShadowStrength &&
-    subtitleBottomPaddingFraction == other.subtitleBottomPaddingFraction
+    subtitleBottomPaddingFraction == other.subtitleBottomPaddingFraction &&
+    subtitleScale == other.subtitleScale
 
 private fun Float.isDefaultVideoZoom(): Boolean = kotlin.math.abs(this - 1f) < 0.0001f
 

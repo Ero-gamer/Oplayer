@@ -92,6 +92,27 @@ fun SubtitleStylePanel(
                 )
             },
         )
+        PreferenceSlider(
+            modifier = Modifier.testTag("item_settings_subtitle_scale"),
+            sliderModifier = Modifier.testTag("slider_settings_subtitle_scale"),
+            title = stringResource(id = R.string.subtitle_scale),
+            description = preferences.subtitleScale.toSubtitleScaleDisplayText(),
+            icon = NextIcons.Pinch,
+            value = preferences.subtitleScale,
+            valueRange = SUBTITLE_SCALE_RANGE,
+            onValueChange = { onPreferencesChange(preferences.copy(subtitleScale = it.roundToStep(PlayerPreferences.SUBTITLE_SCALE_STEP))) },
+            trailingContent = {
+                NextResetIconButton(
+                    modifier = Modifier.testTag("btn_reset_settings_subtitle_scale"),
+                    contentDescription = stringResource(id = R.string.reset_subtitle_scale),
+                    onClick = {
+                        onPreferencesChange(
+                            preferences.copy(subtitleScale = PlayerPreferences.DEFAULT_SUBTITLE_SCALE),
+                        )
+                    },
+                )
+            },
+        )
         PreferenceSwitch(
             modifier = Modifier.testTag("switch_settings_subtitle_background"),
             title = stringResource(id = R.string.subtitle_background),
@@ -201,12 +222,15 @@ private fun Float.toDisplayText(): String = String.format(Locale.US, "%.1f", thi
 
 private fun Float.toSubtitlePositionDisplayText(): String = String.format(Locale.US, "%.1f%%", this * 100)
 
+private fun Float.toSubtitleScaleDisplayText(): String = String.format(Locale.US, "%.0f%%", this * 100)
+
 private fun Float.roundToStep(step: Float): Float {
     val scale = (1f / step).roundToInt().toFloat()
     return (this * scale).roundToInt() / scale
 }
 
 private val SUBTITLE_TEXT_SIZE_RANGE = PlayerPreferences.MIN_SUBTITLE_TEXT_SIZE..PlayerPreferences.MAX_SUBTITLE_TEXT_SIZE
+private val SUBTITLE_SCALE_RANGE = PlayerPreferences.MIN_SUBTITLE_SCALE..PlayerPreferences.MAX_SUBTITLE_SCALE
 private val SUBTITLE_OUTLINE_THICKNESS_RANGE = PlayerPreferences.MIN_SUBTITLE_OUTLINE_THICKNESS..PlayerPreferences.MAX_SUBTITLE_OUTLINE_THICKNESS
 private val SUBTITLE_SHADOW_STRENGTH_RANGE = PlayerPreferences.MIN_SUBTITLE_SHADOW_STRENGTH..PlayerPreferences.MAX_SUBTITLE_SHADOW_STRENGTH
 private val SUBTITLE_POSITION_RANGE = PlayerPreferences.MIN_SUBTITLE_BOTTOM_PADDING_FRACTION..PlayerPreferences.MAX_SUBTITLE_BOTTOM_PADDING_FRACTION

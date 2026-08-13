@@ -80,6 +80,7 @@ commons-net = { module = "commons-net:commons-net", version.ref = "commonsNet" }
 github-albfernandez-juniversalchardet = { module = "com.github.albfernandez:juniversalchardet", version.ref = "universalChardet" }
 github-anilbeesetti-nextlib-media3ext = { module = "io.github.anilbeesetti:nextlib-media3ext", version.ref = "nextlib" }
 github-anilbeesetti-nextlib-mediainfo = { module = "io.github.anilbeesetti:nextlib-mediainfo", version.ref = "nextlib" }
+github-peerless2012-ass-kt = { module = "io.github.peerless2012:ass-kt", version.ref = "libassAndroid" }
 github-peerless2012-ass-media = { module = "io.github.peerless2012:ass-media", version.ref = "libassAndroid" }
 google-android-material = { module = "com.google.android.material:material", version.ref = "androidMaterial" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version.ref = "hiddenapibypass" }

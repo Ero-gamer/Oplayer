@@ -90,6 +90,7 @@ data class PlayerPreferences(
     val subtitleShadowStrength: Float = DEFAULT_SUBTITLE_SHADOW_STRENGTH,
     val subtitleBottomPaddingFraction: Float = DEFAULT_SUBTITLE_BOTTOM_PADDING_FRACTION,
     val shouldApplyEmbeddedStyles: Boolean = true,
+    val subtitleScale: Float = DEFAULT_SUBTITLE_SCALE,
 
     // 解码偏好
     val decoderPriority: DecoderPriority = DecoderPriority.AUTOMATIC,
@@ -135,6 +136,10 @@ data class PlayerPreferences(
         const val MIN_SUBTITLE_BOTTOM_PADDING_FRACTION = 0f
         const val MAX_SUBTITLE_BOTTOM_PADDING_FRACTION = 0.4f
         const val SUBTITLE_BOTTOM_PADDING_FRACTION_STEP = 0.001f
+        const val DEFAULT_SUBTITLE_SCALE = 1f
+        const val MIN_SUBTITLE_SCALE = 0.5f
+        const val MAX_SUBTITLE_SCALE = 3f
+        const val SUBTITLE_SCALE_STEP = 0.05f
         const val DEFAULT_CONTROLLER_AUTO_HIDE_TIMEOUT = 4
         const val DEFAULT_PLAYER_VOLUME_PERCENTAGE = 100
         const val MAX_PLAYER_VOLUME_PERCENTAGE = 200
@@ -154,6 +159,7 @@ fun PlayerPreferences.withSubtitleStyleFrom(preferences: PlayerPreferences): Pla
     subtitleOutlineThickness = preferences.subtitleOutlineThickness,
     subtitleShadowStrength = preferences.subtitleShadowStrength,
     subtitleBottomPaddingFraction = preferences.subtitleBottomPaddingFraction,
+    subtitleScale = preferences.subtitleScale,
 )
 
 fun PlayerPreferences.withVideoFiltersFrom(preferences: PlayerPreferences): PlayerPreferences = copy(

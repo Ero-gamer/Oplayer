@@ -106,13 +106,20 @@ fun SubtitleView(
             }
 
             if (isAssSubtitleSelected) {
-                assHandler?.let(subtitleView::syncAssSupport)
-                    ?: subtitleView.clearAssSupport()
+                assHandler?.let { handler ->
+                    subtitleView.syncAssSupport(handler)
+                    handler.render?.setFontScale(configuration.subtitleScale)
+                } ?: subtitleView.clearAssSupport()
                 subtitleView.setCues(emptyList())
                 container.advancedSubtitleView.visibility = View.GONE
             } else {
                 subtitleView.clearAssSupport()
-                subtitleView.setCues(cuesState.cues.takeUnless { shouldUseAdvancedTextSubtitle }.orEmpty())
+                subtitleView.setCues(
+                    cuesState.cues
+                        .takeUnless { shouldUseAdvancedTextSubtitle }
+                        .orEmpty()
+                        .withBitmapCueScale(configuration.subtitleScale),
+                )
                 container.applyAdvancedSubtitle(
                     cues = cuesState.cues,
                     configuration = configuration,
@@ -137,6 +144,7 @@ data class SubtitleConfiguration(
     val shadowStrength: Float,
     val bottomPaddingFraction: Float,
     val shouldApplyEmbeddedStyles: Boolean,
+    val subtitleScale: Float,
     val externalSubtitleFontSource: ExternalSubtitleFontSource?,
 )
 
@@ -339,6 +347,50 @@ private fun SubtitleConfiguration.shouldUseAdvancedEdgeStyle(): Boolean = when (
     SubtitleEdgeStyle.OUTLINE -> outlineThickness != PlayerPreferences.DEFAULT_SUBTITLE_OUTLINE_THICKNESS
     SubtitleEdgeStyle.DROP_SHADOW -> shadowStrength != PlayerPreferences.DEFAULT_SUBTITLE_SHADOW_STRENGTH
     SubtitleEdgeStyle.OUTLINE_AND_DROP_SHADOW -> true
+}
+
+private fun List<Cue>.withBitmapCueScale(scale: Float): List<Cue> {
+    if (scale == PlayerPreferences.DEFAULT_SUBTITLE_SCALE) return this
+    if (isEmpty()) return this
+    return map { cue -> if (cue.bitmap == null) cue else cue.scaledBitmapCue(scale) }
+}
+
+/**
+ * Scales a bitmap cue (e.g. PGS) around its anchor center so the subtitle
+ * grows or shrinks in place instead of drifting towards a corner.
+ */
+private fun Cue.scaledBitmapCue(scale: Float): Cue {
+    val builder = buildUpon()
+
+    if (size != Cue.DIMEN_UNSET) {
+        val scaledSize = (size * scale).coerceAtMost(1f)
+        builder.setSize(scaledSize)
+        if (position != Cue.DIMEN_UNSET) {
+            val centeredPosition = position + size * (1f - scale) * positionAnchor.toAnchorCenteringFraction()
+            builder.setPosition(centeredPosition.coerceIn(0f, (1f - scaledSize).coerceAtLeast(0f)))
+        }
+    }
+
+    if (bitmapHeight != Cue.DIMEN_UNSET) {
+        val scaledBitmapHeight = (bitmapHeight * scale).coerceAtMost(1f)
+        builder.setBitmapHeight(scaledBitmapHeight)
+        if (line != Cue.DIMEN_UNSET && lineType == Cue.LINE_TYPE_FRACTION) {
+            val centeredLine = line + bitmapHeight * (1f - scale) * lineAnchor.toAnchorCenteringFraction()
+            builder.setLine(
+                centeredLine.coerceIn(0f, (1f - scaledBitmapHeight).coerceAtLeast(0f)),
+                Cue.LINE_TYPE_FRACTION,
+            )
+        }
+    }
+
+    return builder.build()
+}
+
+// Media3's SubtitlePainter treats ANCHOR_TYPE_UNSET like ANCHOR_TYPE_START when drawing bitmap cues.
+private fun Int.toAnchorCenteringFraction(): Float = when (this) {
+    Cue.ANCHOR_TYPE_MIDDLE -> 0f
+    Cue.ANCHOR_TYPE_END -> -0.5f
+    else -> 0.5f
 }
 
 private fun List<Cue>.canUseTextSubtitleStyle(): Boolean = size == 1 && first().isDefaultTextCue()

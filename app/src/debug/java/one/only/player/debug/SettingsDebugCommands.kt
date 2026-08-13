@@ -352,6 +352,9 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         "subtitle.bottom_padding" -> updatePlayerFloat(value) { preferences, floatValue ->
             preferences.copy(subtitleBottomPaddingFraction = floatValue.coerceIn(PlayerPreferences.MIN_SUBTITLE_BOTTOM_PADDING_FRACTION, PlayerPreferences.MAX_SUBTITLE_BOTTOM_PADDING_FRACTION))
         }
+        "subtitle.scale" -> updatePlayerFloat(value) { preferences, floatValue ->
+            preferences.copy(subtitleScale = floatValue.coerceIn(PlayerPreferences.MIN_SUBTITLE_SCALE, PlayerPreferences.MAX_SUBTITLE_SCALE))
+        }
         "privacy.prevent_screenshots" -> updateApplicationBoolean(value) { preferences, isEnabled -> preferences.copy(shouldPreventScreenshots = isEnabled) }
         "privacy.hide_in_recents" -> updateApplicationBoolean(value) { preferences, isEnabled -> preferences.copy(shouldHideInRecents = isEnabled) }
         "about.check_updates_on_startup" -> updateApplicationBoolean(value) { preferences, isEnabled -> preferences.copy(shouldCheckForUpdatesOnStartup = isEnabled) }
