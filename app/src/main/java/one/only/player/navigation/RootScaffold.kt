@@ -45,6 +45,7 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -71,6 +72,7 @@ fun RootScaffold(
     modifier: Modifier = Modifier,
     shouldUseFloatingNavigationBar: Boolean = false,
     shouldBlurFloatingNavigationBar: Boolean = true,
+    shouldShowBottomBar: Boolean = true,
     content: @Composable (RootDestination) -> Unit,
 ) {
     val currentPage = rootNavigationState.pagerState.currentPage
@@ -81,23 +83,26 @@ fun RootScaffold(
         rootNavigationState.animateTo(RootDestination.HOME)
     }
 
-    // 内容区底部预留：系统导航栏 + 底栏高度，避免导航栏遮挡内容
-    val navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val navigationBarHeight = if (shouldUseFloatingNavigationBar) FLOATING_NAV_BAR_RESERVED_HEIGHT else NAV_BAR_CONTENT_HEIGHT
-    val bottomBarPadding = PaddingValues(bottom = navigationBarsBottom + navigationBarHeight)
-    // 液态模糊管线依赖 RuntimeShader（API 33+），与 miuix-blur 门槛对齐
-    val shouldEnableFloatingBlur = shouldUseFloatingNavigationBar &&
-        shouldBlurFloatingNavigationBar &&
-        isRuntimeShaderSupported()
-    val floatingBlurBackdrop = if (shouldEnableFloatingBlur) {
-        val surfaceColor = MiuixTheme.colorScheme.surface
-        rememberLayerBackdrop {
-            drawRect(surfaceColor)
-            drawContent()
+    if (!shouldShowBottomBar) {
+        Box(modifier = modifier.fillMaxSize()) {
+            HorizontalPager(
+                modifier = Modifier.fillMaxSize(),
+                state = rootNavigationState.pagerState,
+                // 首帧只组合首页，优先显示已缓存的媒体内容。
+                beyondViewportPageCount = 0,
+                key = { page -> RootDestination.entries[page] },
+            ) { page ->
+                content(RootDestination.entries[page])
+            }
         }
-    } else {
-        null
+        return
     }
+
+    val bottomBarPadding = rememberRootBottomBarPadding(shouldUseFloatingNavigationBar)
+    val floatingBlurBackdrop = rememberRootFloatingBlurBackdrop(
+        shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
+        shouldBlurFloatingNavigationBar = shouldBlurFloatingNavigationBar,
+    )
 
     Box(modifier = modifier.fillMaxSize()) {
         HorizontalPager(
@@ -113,36 +118,66 @@ fun RootScaffold(
                 content(RootDestination.entries[page])
             }
         }
-        Box(
+        RootBottomBar(
+            currentRoot = rootNavigationState.selectedDestination,
+            shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
+            floatingBlurBackdrop = floatingBlurBackdrop,
+            onTabSelected = rootNavigationState::animateTo,
             modifier = Modifier.align(Alignment.BottomCenter),
-        ) {
-            RootBottomBar(
-                currentRoot = rootNavigationState.selectedDestination,
-                shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
-                floatingBlurBackdrop = floatingBlurBackdrop,
-                onTabSelected = rootNavigationState::animateTo,
-            )
-        }
+        )
     }
 }
 
 @Composable
-private fun RootBottomBar(
+fun rememberRootBottomBarPadding(
+    shouldUseFloatingNavigationBar: Boolean,
+): PaddingValues {
+    // 内容区底部预留：系统导航栏 + 底栏高度，避免导航栏遮挡内容。
+    val navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val navigationBarHeight = if (shouldUseFloatingNavigationBar) FLOATING_NAV_BAR_RESERVED_HEIGHT else NAV_BAR_CONTENT_HEIGHT
+    return remember(navigationBarsBottom, navigationBarHeight) {
+        PaddingValues(bottom = navigationBarsBottom + navigationBarHeight)
+    }
+}
+
+@Composable
+fun rememberRootFloatingBlurBackdrop(
+    shouldUseFloatingNavigationBar: Boolean,
+    shouldBlurFloatingNavigationBar: Boolean,
+): LayerBackdrop? {
+    // 液态模糊管线依赖 RuntimeShader（API 33+），与 miuix-blur 门槛对齐。
+    val shouldEnableFloatingBlur = shouldUseFloatingNavigationBar &&
+        shouldBlurFloatingNavigationBar &&
+        isRuntimeShaderSupported()
+    if (!shouldEnableFloatingBlur) return null
+
+    val surfaceColor = MiuixTheme.colorScheme.surface
+    return rememberLayerBackdrop {
+        drawRect(surfaceColor)
+        drawContent()
+    }
+}
+
+@Composable
+fun RootBottomBar(
     currentRoot: RootDestination,
     shouldUseFloatingNavigationBar: Boolean,
     floatingBlurBackdrop: Backdrop?,
+    modifier: Modifier = Modifier,
     onTabSelected: (RootDestination) -> Unit,
 ) {
     if (shouldUseFloatingNavigationBar) {
         FloatingRootBottomBar(
             currentRoot = currentRoot,
             blurBackdrop = floatingBlurBackdrop,
+            modifier = modifier,
             onTabSelected = onTabSelected,
         )
         return
     }
 
     NavigationBar(
+        modifier = modifier,
         color = MiuixTheme.colorScheme.surface,
     ) {
         RootDestination.entries.forEach { target ->
@@ -159,6 +194,7 @@ private fun RootBottomBar(
 private fun FloatingRootBottomBar(
     currentRoot: RootDestination,
     blurBackdrop: Backdrop?,
+    modifier: Modifier = Modifier,
     onTabSelected: (RootDestination) -> Unit,
 ) {
     val navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -168,7 +204,7 @@ private fun FloatingRootBottomBar(
     val selectedIndex = currentRoot.ordinal
 
     FloatingBottomBar(
-        modifier = Modifier.padding(bottom = navigationBarsBottom + 12.dp),
+        modifier = modifier.padding(bottom = navigationBarsBottom + 12.dp),
         selectedIndex = { selectedIndex },
         onSelected = { index -> onTabSelected(RootDestination.entries[index]) },
         backdrop = backdrop,
@@ -223,7 +259,6 @@ private fun RowScope.RootNavigationBarItem(
             .weight(1f)
             .testTag(destination.tag)
             .clickable(
-                enabled = !isSelected,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 role = Role.Tab,

@@ -34,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -443,13 +442,6 @@ internal fun MediaPickerScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .then(
-                    if (shouldUseLargeTopBar) {
-                        Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-                    } else {
-                        Modifier
-                    },
-                )
                 .padding(top = scaffoldPadding.calculateTopPadding())
                 .padding(start = scaffoldPadding.calculateStartPadding(LocalLayoutDirection.current)),
         ) {
@@ -471,6 +463,7 @@ internal fun MediaPickerScreen(
                         modifier = Modifier.fillMaxSize(),
                         isRefreshing = shouldShowRefreshIndicator,
                         onRefresh = { onEvent(MediaPickerUiEvent.Refresh) },
+                        topAppBarScrollBehavior = scrollBehavior.takeIf { shouldUseLargeTopBar },
                         refreshTexts = refreshTexts,
                     ) {
                         when (activeDataState) {

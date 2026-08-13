@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,29 +54,35 @@ fun SelectionBottomBar(
         modifier = modifier,
     ) {
         val barShape = RoundedCornerShape(26.dp)
-        Surface(
-            shape = barShape,
-            color = MiuixTheme.colorScheme.surface,
+        Box(
             modifier = Modifier
                 .widthIn(max = 420.dp)
-                .shadow(
-                    elevation = 6.dp,
-                    shape = barShape,
-                    ambientColor = Color.Black.copy(alpha = 0.5f),
-                    spotColor = Color.Black.copy(alpha = 0.5f),
-                ),
+                .padding(top = 8.dp),
         ) {
-            Row(
+            Surface(
+                shape = barShape,
+                color = MiuixTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .shadow(
+                        elevation = 6.dp,
+                        shape = barShape,
+                        ambientColor = Color.Black.copy(alpha = 0.5f),
+                        spotColor = Color.Black.copy(alpha = 0.5f),
+                    ),
             ) {
-                actions.forEach { action ->
-                    SelectionBarButton(
-                        action = action,
-                        modifier = Modifier.weight(1f),
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    actions.forEach { action ->
+                        SelectionBarButton(
+                            action = action,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }
