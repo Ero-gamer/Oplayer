@@ -103,6 +103,27 @@ class LocalMediaRepository @Inject constructor(
         )
     }
 
+    override suspend fun markVideosAsPlayed(uris: List<String>) {
+        updatePlaybackPositions(uris, PLAYED_PLAYBACK_POSITION)
+    }
+
+    override suspend fun markVideosAsUnplayed(uris: List<String>) {
+        updatePlaybackPositions(uris, 0L)
+    }
+
+    private suspend fun updatePlaybackPositions(
+        uris: List<String>,
+        position: Long,
+    ) {
+        uris.distinct().forEach { uri ->
+            val canonicalMediaUri = resolveCanonicalMediaUri(uri)
+            val stateEntity = mediumStateDao.get(canonicalMediaUri) ?: MediumStateEntity(uriString = canonicalMediaUri)
+            mediumStateDao.upsert(
+                mediumState = stateEntity.copy(playbackPosition = position),
+            )
+        }
+    }
+
     override suspend fun updateMediumPlaybackSpeed(uri: String, playbackSpeed: Float) {
         val canonicalMediaUri = resolveCanonicalMediaUri(uri)
         val stateEntity = mediumStateDao.get(canonicalMediaUri) ?: MediumStateEntity(uriString = canonicalMediaUri)
@@ -550,4 +571,9 @@ class LocalMediaRepository @Inject constructor(
     }
 
     private fun MediumWithInfo.isMarkedInRecycleBin(): Boolean = mediumStateEntity?.isInRecycleBin == true
+
+    companion object {
+        // 与 Media3 C.TIME_UNSET 数值一致；负位置在 Video.playedPercentage 中按已播完处理。
+        private const val PLAYED_PLAYBACK_POSITION = Long.MIN_VALUE + 1
+    }
 }

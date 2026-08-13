@@ -57,6 +57,7 @@ import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Loop
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.MiscellaneousServices
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PanToolAlt
@@ -184,6 +185,7 @@ object NextIcons {
     val Image = Icons.Rounded.Image
     val Frame = Icons.Rounded.FilterFrames
     val Menu = Icons.Rounded.Menu
+    val MoreVert = Icons.Rounded.MoreVert
     val Lock = Icons.Rounded.Lock
     val Loop = Icons.Rounded.Loop
     val Shuffle = Icons.Rounded.Shuffle

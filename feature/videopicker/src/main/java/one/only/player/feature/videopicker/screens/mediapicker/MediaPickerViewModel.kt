@@ -183,6 +183,8 @@ class MediaPickerViewModel @Inject constructor(
             is MediaPickerUiEvent.ShareVideos -> shareVideos(event.videos)
             is MediaPickerUiEvent.AddFavorites -> addFavorites(event.videos, event.folders)
             is MediaPickerUiEvent.ExcludeFolders -> excludeFolders(event.paths)
+            is MediaPickerUiEvent.MarkVideosPlayed -> markVideosPlayed(event.videos)
+            is MediaPickerUiEvent.MarkVideosUnplayed -> markVideosUnplayed(event.videos)
             is MediaPickerUiEvent.Refresh -> refresh()
             is MediaPickerUiEvent.RenameVideo -> renameVideo(event.uri, event.to)
             is MediaPickerUiEvent.AddToSync -> addToMediaInfoSynchronizer(event.uri)
@@ -375,6 +377,18 @@ class MediaPickerViewModel @Inject constructor(
         }
     }
 
+    private fun markVideosPlayed(uris: List<String>) {
+        viewModelScope.launch {
+            mediaRepository.markVideosAsPlayed(uris)
+        }
+    }
+
+    private fun markVideosUnplayed(uris: List<String>) {
+        viewModelScope.launch {
+            mediaRepository.markVideosAsUnplayed(uris)
+        }
+    }
+
     private fun addToMediaInfoSynchronizer(uri: Uri) {
         mediaInfoSynchronizer.sync(uri)
     }
@@ -517,6 +531,8 @@ sealed interface MediaPickerUiEvent {
         val folders: List<Folder>,
     ) : MediaPickerUiEvent
     data class ExcludeFolders(val paths: List<String>) : MediaPickerUiEvent
+    data class MarkVideosPlayed(val videos: List<String>) : MediaPickerUiEvent
+    data class MarkVideosUnplayed(val videos: List<String>) : MediaPickerUiEvent
     data object Refresh : MediaPickerUiEvent
     data class RenameVideo(val uri: Uri, val to: String) : MediaPickerUiEvent
     data class AddToSync(val uri: Uri) : MediaPickerUiEvent

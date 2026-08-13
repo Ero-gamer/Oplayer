@@ -296,6 +296,9 @@
     <string name="local_subtitle_unsupported">不支持的字幕文件</string>
     <string name="rename_to">重命名为</string>
     <string name="rename">重命名</string>
+    <string name="mark_as_played">标记为已播放</string>
+    <string name="mark_as_unplayed">标记为未播放</string>
+    <string name="more_actions">更多</string>
     <string name="play_next_video">播放下一个视频</string>
     <string name="open_local_video">打开本地视频</string>
     <string name="open_network_stream">打开网络串流</string>

@@ -5,8 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTapGestures as detectGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,26 +75,27 @@ import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.preview.VideoPickerPreviewParameterProvider
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.videopicker.composables.MediaView
+import one.only.player.feature.videopicker.composables.MenuAction
+import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.MoveTargetView
 import one.only.player.feature.videopicker.composables.NoVideosFound
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.RenameDialog
+import one.only.player.feature.videopicker.composables.SelectionBarAction
+import one.only.player.feature.videopicker.composables.SelectionBottomBar
 import one.only.player.feature.videopicker.composables.TextIconToggleButton
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
 import one.only.player.feature.videopicker.state.SelectedFolder
 import one.only.player.feature.videopicker.state.SelectedVideo
+import one.only.player.feature.videopicker.state.SelectionManager
 import one.only.player.feature.videopicker.state.rememberSelectionManager
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
-import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.ListPopupColumn
-import top.yukonga.miuix.kmp.basic.ListPopupDefaults
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
-import top.yukonga.miuix.kmp.basic.PopupPositionProvider
 import top.yukonga.miuix.kmp.basic.PullToRefresh
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.ScrollBehavior
@@ -105,7 +105,6 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.TopAppBarDefaults
-import top.yukonga.miuix.kmp.overlay.OverlayListPopup
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -331,7 +330,7 @@ internal fun MediaPickerScreen(
                                         folder.mediaList.forEach { selectionManager.selectVideo(it) }
                                     }
                                 } else {
-                                    selectionManager.clearSelection()
+                                    selectionManager.exitSelectionMode()
                                 }
                             },
                             modifier = Modifier.testTag("btn_selection_toggle_all"),
@@ -350,84 +349,31 @@ internal fun MediaPickerScreen(
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
-                        Box {
+                        val overflowActions = selectionOverflowActions(
+                            isLibraryMode = isLibraryMode,
+                            isRecycleBinMode = isRecycleBinMode,
+                            selectionManager = selectionManager,
+                            uiState = uiState,
+                            onEvent = onEvent,
+                            onRenameRequest = { video -> showRenameActionFor = video },
+                            onInfoRequest = { video -> showInfoActionFor = video },
+                        )
+                        if (overflowActions.isNotEmpty()) {
                             IconButton(
                                 onClick = { shouldShowSelectionMenu = true },
                                 holdDownState = shouldShowSelectionMenu,
-                                modifier = Modifier.testTag("btn_selection_actions"),
+                                modifier = Modifier.testTag("btn_selection_more"),
                             ) {
                                 Icon(
-                                    imageVector = NextIcons.Menu,
-                                    contentDescription = stringResource(id = R.string.menu),
+                                    imageVector = NextIcons.MoreVert,
+                                    contentDescription = stringResource(id = R.string.more_actions),
                                     tint = MiuixTheme.colorScheme.onBackground,
                                 )
                             }
-                            SelectionActionsMenu(
+                            MenuActionsPopup(
                                 expanded = shouldShowSelectionMenu,
                                 onDismissRequest = { shouldShowSelectionMenu = false },
-                                deleteAction = deleteAction,
-                                shouldShowRestoreAction = isRecycleBinMode,
-                                shouldShowMoveAction = isLibraryMode,
-                                shouldShowFavoriteAction = isLibraryMode,
-                                shouldShowRenameAction = selectionManager.isSingleVideoSelected && isLibraryMode,
-                                shouldShowInfoAction = selectionManager.isSingleVideoSelected,
-                                shouldShowExcludeAction = selectionManager.selectedFolders.isNotEmpty() && isLibraryMode,
-                                onRenameAction = {
-                                    shouldShowSelectionMenu = false
-                                    val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@SelectionActionsMenu
-                                    val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
-                                        ?.find { it.uriString == selectedVideo.uriString } ?: return@SelectionActionsMenu
-                                    showRenameActionFor = video
-                                },
-                                onInfoAction = {
-                                    shouldShowSelectionMenu = false
-                                    val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@SelectionActionsMenu
-                                    val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
-                                        ?.find { it.uriString == selectedVideo.uriString } ?: return@SelectionActionsMenu
-                                    showInfoActionFor = video
-                                    selectionManager.clearSelection()
-                                },
-                                onMoveAction = {
-                                    shouldShowSelectionMenu = false
-                                    onEvent(
-                                        MediaPickerUiEvent.StartMoveSelection(
-                                            videoUris = selectionManager.selectedVideos.map { it.uriString },
-                                            folderPaths = selectionManager.selectedFolders.map { it.path },
-                                        ),
-                                    )
-                                    onMoveSelectionStarted()
-                                },
-                                onFavoriteAction = {
-                                    shouldShowSelectionMenu = false
-                                    val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@SelectionActionsMenu
-                                    val selectedVideos = selectionManager.selectedVideos.mapNotNull { selectedVideo ->
-                                        rootFolder.allMediaList.firstOrNull { video -> video.uriString == selectedVideo.uriString }
-                                    }
-                                    val selectedFolders = selectionManager.selectedFolders.mapNotNull { selectedFolder ->
-                                        rootFolder.folderList.firstOrNull { folder -> folder.path == selectedFolder.path }
-                                    }
-                                    onEvent(MediaPickerUiEvent.AddFavorites(selectedVideos, selectedFolders))
-                                    selectionManager.exitSelectionMode()
-                                },
-                                onShareAction = {
-                                    shouldShowSelectionMenu = false
-                                    onEvent(MediaPickerUiEvent.ShareVideos(selectionManager.allSelectedVideos.map { it.uriString }))
-                                },
-                                onRestoreAction = {
-                                    shouldShowSelectionMenu = false
-                                    onEvent(MediaPickerUiEvent.RestoreVideos(selectionManager.allSelectedVideos.map { it.uriString }))
-                                    selectionManager.clearSelection()
-                                },
-                                onDeleteAction = {
-                                    shouldShowSelectionMenu = false
-                                    shouldShowDeleteVideosConfirmation = true
-                                },
-                                onExcludeAction = {
-                                    shouldShowSelectionMenu = false
-                                    val paths = selectionManager.selectedFolders.map { it.path }
-                                    onEvent(MediaPickerUiEvent.ExcludeFolders(paths))
-                                    selectionManager.exitSelectionMode()
-                                },
+                                groups = listOf(overflowActions),
                             )
                         }
                     } else {
@@ -464,41 +410,29 @@ internal fun MediaPickerScreen(
                                     tint = MiuixTheme.colorScheme.onBackground,
                                 )
                             }
-                            Box {
-                                IconButton(
-                                    onClick = { shouldShowMainMenu = true },
-                                    holdDownState = shouldShowMainMenu,
-                                    modifier = Modifier.testTag("btn_main_menu"),
-                                ) {
-                                    Icon(
-                                        imageVector = NextIcons.ExpandMore,
-                                        contentDescription = stringResource(id = R.string.menu),
-                                        tint = MiuixTheme.colorScheme.onBackground,
-                                    )
-                                }
-                                MainMenuPopup(
-                                    expanded = shouldShowMainMenu,
-                                    onDismissRequest = { shouldShowMainMenu = false },
-                                    onOpenNetworkStream = {
-                                        shouldShowMainMenu = false
-                                        shouldShowUrlDialog = true
-                                    },
-                                    onOpenLocalVideo = {
-                                        shouldShowMainMenu = false
-                                        selectVideoFileLauncher.launch("video/*")
-                                    },
-                                    onOpenRecentlyPlayed = recentlyPlayedVideo?.let { video ->
-                                        {
-                                            shouldShowMainMenu = false
-                                            onPlayVideo(video, uiState.playerPreferences)
-                                        }
-                                    },
-                                    onExit = {
-                                        shouldShowMainMenu = false
-                                        onExitAppClick()
-                                    },
+                            IconButton(
+                                onClick = { shouldShowMainMenu = true },
+                                holdDownState = shouldShowMainMenu,
+                                modifier = Modifier.testTag("btn_main_menu"),
+                            ) {
+                                Icon(
+                                    imageVector = NextIcons.ExpandMore,
+                                    contentDescription = stringResource(id = R.string.menu),
+                                    tint = MiuixTheme.colorScheme.onBackground,
                                 )
                             }
+                            MenuActionsPopup(
+                                expanded = shouldShowMainMenu,
+                                onDismissRequest = { shouldShowMainMenu = false },
+                                groups = mainMenuActionGroups(
+                                    onOpenNetworkStream = { shouldShowUrlDialog = true },
+                                    onOpenLocalVideo = { selectVideoFileLauncher.launch("video/*") },
+                                    onOpenRecentlyPlayed = recentlyPlayedVideo?.let { video ->
+                                        { onPlayVideo(video, uiState.playerPreferences) }
+                                    },
+                                    onExit = onExitAppClick,
+                                ),
+                            )
                         }
                     }
                 },
@@ -606,6 +540,25 @@ internal fun MediaPickerScreen(
                             .padding(end = 21.dp, bottom = 16.dp),
                     )
                 }
+
+                SelectionBottomBar(
+                    isVisible = selectionManager.isInSelectionMode && !isMoveMode,
+                    actions = selectionPrimaryActions(
+                        isLibraryMode = isLibraryMode,
+                        isRecycleBinMode = isRecycleBinMode,
+                        deleteAction = deleteAction,
+                        selectionManager = selectionManager,
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        onMoveSelectionStarted = onMoveSelectionStarted,
+                        onDeleteRequest = { shouldShowDeleteVideosConfirmation = true },
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(scaffoldPadding.withBottomFallback())
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp),
+                )
             }
         }
     }
@@ -662,7 +615,8 @@ internal fun MediaPickerScreen(
     LaunchedEffect(selectionManager.isInSelectionMode, isMoveMode) {
         if (selectionManager.isInSelectionMode || isMoveMode) {
             shouldShowMainMenu = false
-        } else {
+        }
+        if (!selectionManager.isInSelectionMode) {
             shouldShowSelectionMenu = false
         }
     }
@@ -716,7 +670,7 @@ internal fun MediaPickerScreen(
             onDone = {
                 onEvent(MediaPickerUiEvent.RenameVideo(video.uriString.toUri(), it))
                 showRenameActionFor = null
-                selectionManager.clearSelection()
+                selectionManager.exitSelectionMode()
             },
         )
     }
@@ -806,7 +760,7 @@ private fun MediaPickerSmallTitleTopAppBar(
 ) {
     val titleLongPressModifier = if (isTitleLongPressHomeNavigationEnabled) {
         Modifier.pointerInput(onTitleLongPress) {
-            detectTapGestures(onLongPress = { onTitleLongPress() })
+            detectGestures(onLongPress = { onTitleLongPress() })
         }
     } else {
         Modifier
@@ -1091,194 +1045,201 @@ private enum class MediaPickerDeleteAction {
     PermanentlyDelete,
 }
 
+// 选中模式底部操作栏的高频操作：回收站为恢复+删除，媒体库为分享/收藏/移动/删除。
 @Composable
-private fun SelectionActionsMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
+private fun selectionPrimaryActions(
+    isLibraryMode: Boolean,
+    isRecycleBinMode: Boolean,
     deleteAction: MediaPickerDeleteAction,
-    shouldShowRestoreAction: Boolean,
-    shouldShowMoveAction: Boolean,
-    shouldShowFavoriteAction: Boolean,
-    shouldShowRenameAction: Boolean,
-    shouldShowInfoAction: Boolean,
-    shouldShowExcludeAction: Boolean,
-    onRestoreAction: () -> Unit,
-    onRenameAction: () -> Unit,
-    onInfoAction: () -> Unit,
-    onMoveAction: () -> Unit,
-    onFavoriteAction: () -> Unit,
-    onShareAction: () -> Unit,
-    onDeleteAction: () -> Unit,
-    onExcludeAction: () -> Unit,
-) {
-    OverlayListPopup(
-        show = expanded,
-        popupPositionProvider = ListPopupDefaults.DropdownPositionProvider,
-        alignment = PopupPositionProvider.Align.TopEnd,
-        onDismissRequest = onDismissRequest,
-    ) {
-        ListPopupColumn {
-            if (shouldShowRestoreAction) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.restore),
-                    icon = NextIcons.ArrowUpward,
-                    testTag = "item_selection_restore",
-                    onClick = onRestoreAction,
-                )
-            }
-            if (shouldShowMoveAction) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.move),
-                    icon = NextIcons.Folder,
-                    testTag = "item_selection_move",
-                    onClick = onMoveAction,
-                )
-            }
-            if (shouldShowFavoriteAction) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.add_to_favorites),
-                    icon = NextIcons.LibraryBooks,
-                    testTag = "item_selection_add_favorites",
-                    onClick = onFavoriteAction,
-                )
-            }
-            if (shouldShowRenameAction) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.rename),
-                    icon = NextIcons.Edit,
-                    testTag = "item_selection_rename",
-                    onClick = onRenameAction,
-                )
-            }
-            if (shouldShowInfoAction) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.info),
-                    icon = NextIcons.Info,
-                    testTag = "item_selection_info",
-                    onClick = onInfoAction,
-                )
-            }
-            PopupMenuItem(
-                text = stringResource(id = R.string.share),
-                icon = NextIcons.Share,
-                testTag = "item_selection_share",
-                onClick = onShareAction,
-            )
-            if (shouldShowExcludeAction) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.exclude),
-                    icon = NextIcons.FolderOff,
-                    testTag = "item_selection_exclude",
-                    onClick = onExcludeAction,
-                )
-            }
-            PopupMenuItem(
-                text = stringResource(
-                    id = when (deleteAction) {
-                        MediaPickerDeleteAction.MoveToRecycleBin -> R.string.move_to_recycle_bin
-                        MediaPickerDeleteAction.PermanentlyDelete -> {
-                            if (shouldShowRestoreAction) {
-                                R.string.delete_permanently
-                            } else {
-                                R.string.delete
-                            }
-                        }
-                    },
-                ),
-                icon = NextIcons.Delete,
-                testTag = "item_selection_delete",
-                onClick = onDeleteAction,
-                isDestructive = true,
-            )
-        }
+    selectionManager: SelectionManager,
+    uiState: MediaPickerUiState,
+    onEvent: (MediaPickerUiEvent) -> Unit,
+    onMoveSelectionStarted: () -> Unit,
+    onDeleteRequest: () -> Unit,
+): List<SelectionBarAction> {
+    val actions = mutableListOf<SelectionBarAction>()
+    if (isRecycleBinMode) {
+        actions += SelectionBarAction(
+            label = stringResource(id = R.string.restore),
+            icon = NextIcons.ArrowUpward,
+            testTag = "item_selection_restore",
+            onClick = {
+                onEvent(MediaPickerUiEvent.RestoreVideos(selectionManager.allSelectedVideos.map { it.uriString }))
+                selectionManager.exitSelectionMode()
+            },
+        )
     }
+    actions += SelectionBarAction(
+        label = stringResource(id = R.string.share),
+        icon = NextIcons.Share,
+        testTag = "item_selection_share",
+        onClick = {
+            onEvent(MediaPickerUiEvent.ShareVideos(selectionManager.allSelectedVideos.map { it.uriString }))
+        },
+    )
+    if (isLibraryMode) {
+        actions += SelectionBarAction(
+            label = stringResource(id = R.string.favorites),
+            icon = NextIcons.LibraryBooks,
+            testTag = "item_selection_add_favorites",
+            onClick = {
+                val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@SelectionBarAction
+                val selectedVideos = selectionManager.selectedVideos.mapNotNull { selectedVideo ->
+                    rootFolder.allMediaList.firstOrNull { video -> video.uriString == selectedVideo.uriString }
+                }
+                val selectedFolders = selectionManager.selectedFolders.mapNotNull { selectedFolder ->
+                    rootFolder.folderList.firstOrNull { folder -> folder.path == selectedFolder.path }
+                }
+                onEvent(MediaPickerUiEvent.AddFavorites(selectedVideos, selectedFolders))
+                selectionManager.exitSelectionMode()
+            },
+        )
+        actions += SelectionBarAction(
+            label = stringResource(id = R.string.move),
+            icon = NextIcons.DriveFileMove,
+            testTag = "item_selection_move",
+            onClick = {
+                onEvent(
+                    MediaPickerUiEvent.StartMoveSelection(
+                        videoUris = selectionManager.selectedVideos.map { it.uriString },
+                        folderPaths = selectionManager.selectedFolders.map { it.path },
+                    ),
+                )
+                onMoveSelectionStarted()
+            },
+        )
+    }
+    actions += SelectionBarAction(
+        label = stringResource(
+            id = when (deleteAction) {
+                MediaPickerDeleteAction.MoveToRecycleBin -> R.string.delete
+                MediaPickerDeleteAction.PermanentlyDelete -> {
+                    if (isRecycleBinMode) R.string.delete_permanently else R.string.delete
+                }
+            },
+        ),
+        icon = NextIcons.Delete,
+        testTag = "item_selection_delete",
+        isDestructive = true,
+        onClick = onDeleteRequest,
+    )
+    return actions
 }
 
-// 顶栏主菜单，miuix overlay popup 承载本地打开、网络流、最近播放、退出等入口
+// 选中模式顶栏溢出菜单的低频操作：重命名/详情仅单选视频可用，排除仅选中文件夹时可用。
 @Composable
-private fun MainMenuPopup(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
+private fun selectionOverflowActions(
+    isLibraryMode: Boolean,
+    isRecycleBinMode: Boolean,
+    selectionManager: SelectionManager,
+    uiState: MediaPickerUiState,
+    onEvent: (MediaPickerUiEvent) -> Unit,
+    onRenameRequest: (Video) -> Unit,
+    onInfoRequest: (Video) -> Unit,
+): List<MenuAction> {
+    if (isRecycleBinMode) return emptyList()
+    val actions = mutableListOf<MenuAction>()
+    if (selectionManager.isSingleVideoSelected && isLibraryMode) {
+        actions += MenuAction(
+            text = stringResource(id = R.string.rename),
+            icon = NextIcons.Edit,
+            testTag = "item_selection_rename",
+            onClick = {
+                val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@MenuAction
+                val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
+                    ?.find { it.uriString == selectedVideo.uriString } ?: return@MenuAction
+                onRenameRequest(video)
+            },
+        )
+    }
+    if (selectionManager.isSingleVideoSelected) {
+        actions += MenuAction(
+            text = stringResource(id = R.string.info),
+            icon = NextIcons.Info,
+            testTag = "item_selection_info",
+            onClick = {
+                val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@MenuAction
+                val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
+                    ?.find { it.uriString == selectedVideo.uriString } ?: return@MenuAction
+                onInfoRequest(video)
+                selectionManager.exitSelectionMode()
+            },
+        )
+    }
+    if (isLibraryMode) {
+        actions += MenuAction(
+            text = stringResource(id = R.string.mark_as_played),
+            icon = NextIcons.CheckBox,
+            testTag = "item_selection_mark_played",
+            onClick = {
+                onEvent(MediaPickerUiEvent.MarkVideosPlayed(selectionManager.allSelectedVideos.map { it.uriString }))
+                selectionManager.exitSelectionMode()
+            },
+        )
+        actions += MenuAction(
+            text = stringResource(id = R.string.mark_as_unplayed),
+            icon = NextIcons.CheckBoxOutline,
+            testTag = "item_selection_mark_unplayed",
+            onClick = {
+                onEvent(MediaPickerUiEvent.MarkVideosUnplayed(selectionManager.allSelectedVideos.map { it.uriString }))
+                selectionManager.exitSelectionMode()
+            },
+        )
+    }
+    if (selectionManager.selectedFolders.isNotEmpty() && isLibraryMode) {
+        actions += MenuAction(
+            text = stringResource(id = R.string.exclude),
+            icon = NextIcons.FolderOff,
+            testTag = "item_selection_exclude",
+            onClick = {
+                val paths = selectionManager.selectedFolders.map { it.path }
+                onEvent(MediaPickerUiEvent.ExcludeFolders(paths))
+                selectionManager.exitSelectionMode()
+            },
+        )
+    }
+    return actions
+}
+
+// 顶栏主菜单：打开入口为一组，退出单独一组，靠 miuix 分组分隔线区隔。
+@Composable
+private fun mainMenuActionGroups(
     onOpenNetworkStream: () -> Unit,
     onOpenLocalVideo: () -> Unit,
     onOpenRecentlyPlayed: (() -> Unit)?,
     onExit: () -> Unit,
-) {
-    OverlayListPopup(
-        show = expanded,
-        popupPositionProvider = ListPopupDefaults.DropdownPositionProvider,
-        alignment = PopupPositionProvider.Align.TopEnd,
-        onDismissRequest = onDismissRequest,
-    ) {
-        ListPopupColumn {
-            PopupMenuItem(
-                text = stringResource(id = R.string.open_network_stream),
-                icon = NextIcons.Link,
-                testTag = "item_main_menu_network_stream",
-                onClick = onOpenNetworkStream,
-            )
-            PopupMenuItem(
-                text = stringResource(id = R.string.open_local_video),
-                icon = NextIcons.FileOpen,
-                testTag = "item_main_menu_local_video",
-                onClick = onOpenLocalVideo,
-            )
-            if (onOpenRecentlyPlayed != null) {
-                PopupMenuItem(
-                    text = stringResource(id = R.string.recently_played),
-                    icon = NextIcons.History,
-                    testTag = "item_main_menu_recently_played",
-                    onClick = onOpenRecentlyPlayed,
-                )
-            }
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
-                thickness = 1.dp,
-            )
-            PopupMenuItem(
-                text = stringResource(id = R.string.exit),
-                icon = NextIcons.Close,
-                testTag = "item_main_menu_exit_app",
-                onClick = onExit,
-            )
-        }
-    }
-}
-
-// miuix popup 通用行：左图标 + 文本，宽度自适应
-@Composable
-private fun PopupMenuItem(
-    text: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    testTag: String,
-    onClick: () -> Unit,
-    isDestructive: Boolean = false,
-) {
-    val tint = if (isDestructive) {
-        MiuixTheme.colorScheme.onErrorContainer
-    } else {
-        MiuixTheme.colorScheme.onSurface
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp)
-            .testTag(testTag),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = tint,
-            modifier = Modifier.size(20.dp),
-        )
-        Text(
-            text = text,
-            color = tint,
+): List<List<MenuAction>> {
+    val openActions = mutableListOf(
+        MenuAction(
+            text = stringResource(id = R.string.open_network_stream),
+            icon = NextIcons.Link,
+            testTag = "item_main_menu_network_stream",
+            onClick = onOpenNetworkStream,
+        ),
+        MenuAction(
+            text = stringResource(id = R.string.open_local_video),
+            icon = NextIcons.FileOpen,
+            testTag = "item_main_menu_local_video",
+            onClick = onOpenLocalVideo,
+        ),
+    )
+    if (onOpenRecentlyPlayed != null) {
+        openActions += MenuAction(
+            text = stringResource(id = R.string.recently_played),
+            icon = NextIcons.History,
+            testTag = "item_main_menu_recently_played",
+            onClick = onOpenRecentlyPlayed,
         )
     }
+    val exitActions = listOf(
+        MenuAction(
+            text = stringResource(id = R.string.exit),
+            icon = NextIcons.Close,
+            testTag = "item_main_menu_exit_app",
+            onClick = onExit,
+        ),
+    )
+    return listOf(openActions, exitActions)
 }
 
 @Composable

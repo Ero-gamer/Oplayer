@@ -293,6 +293,9 @@
     <string name="online_subtitle_download_failed">下載線上字幕失敗</string>
     <string name="local_subtitle_unsupported">不支援的字幕檔案</string>
     <string name="rename">重新命名</string>
+    <string name="mark_as_played">標記為已播放</string>
+    <string name="mark_as_unplayed">標記為未播放</string>
+    <string name="more_actions">更多</string>
     <string name="rename_to">重新命名為</string>
     <string name="exit">退出</string>
     <string name="open_network_stream">開啟網路視訊串流</string>

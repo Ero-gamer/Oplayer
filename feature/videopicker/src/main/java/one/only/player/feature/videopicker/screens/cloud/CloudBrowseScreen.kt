@@ -76,11 +76,11 @@ import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.composables.InfoChip
 import one.only.player.feature.videopicker.composables.MediaMessageState
+import one.only.player.feature.videopicker.composables.MenuAction
+import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.QuickSettingsTarget
-import one.only.player.feature.videopicker.composables.SelectionActionsPopup
 import one.only.player.feature.videopicker.composables.SelectionCheckIndicator
-import one.only.player.feature.videopicker.composables.SelectionMenuAction
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
@@ -268,38 +268,38 @@ internal fun CloudBrowseScreen(
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
-                        Box {
-                            MiuixIconButton(
-                                onClick = { shouldShowSelectionMenu = true },
-                                holdDownState = shouldShowSelectionMenu,
-                                modifier = Modifier.testTag("btn_cloud_selection_actions"),
-                            ) {
-                                MiuixIcon(
-                                    imageVector = NextIcons.Menu,
-                                    contentDescription = stringResource(id = R.string.menu),
-                                    tint = MiuixTheme.colorScheme.onBackground,
-                                )
-                            }
-                            val selectedFiles = uiState.files.filter { it.path in selectedFilePaths }
-                            val selectedFile = selectedFiles.singleOrNull()
-                            CloudSelectionActionsMenu(
-                                expanded = shouldShowSelectionMenu,
-                                onDismissRequest = { shouldShowSelectionMenu = false },
-                                shouldShowInfoAction = selectedFile?.isDirectory == false,
-                                onFavoriteAction = {
-                                    shouldShowSelectionMenu = false
-                                    if (selectedFiles.isEmpty()) return@CloudSelectionActionsMenu
-                                    onEvent(CloudBrowseEvent.AddFavorites(selectedFiles))
-                                    clearSelection()
-                                },
-                                onInfoAction = {
-                                    shouldShowSelectionMenu = false
-                                    val file = selectedFile?.takeUnless { it.isDirectory } ?: return@CloudSelectionActionsMenu
-                                    onFileInfoClick(file)
-                                    clearSelection()
-                                },
+                        MiuixIconButton(
+                            onClick = { shouldShowSelectionMenu = true },
+                            holdDownState = shouldShowSelectionMenu,
+                            modifier = Modifier.testTag("btn_cloud_selection_actions"),
+                        ) {
+                            MiuixIcon(
+                                imageVector = NextIcons.MoreVert,
+                                contentDescription = stringResource(id = R.string.more_actions),
+                                tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        val selectedFiles = uiState.files.filter { it.path in selectedFilePaths }
+                        val selectedFile = selectedFiles.singleOrNull()
+                        MenuActionsPopup(
+                            expanded = shouldShowSelectionMenu,
+                            onDismissRequest = { shouldShowSelectionMenu = false },
+                            groups = listOf(
+                                cloudSelectionActions(
+                                    shouldShowInfoAction = selectedFile?.isDirectory == false,
+                                    onFavoriteAction = {
+                                        if (selectedFiles.isEmpty()) return@cloudSelectionActions
+                                        onEvent(CloudBrowseEvent.AddFavorites(selectedFiles))
+                                        clearSelection()
+                                    },
+                                    onInfoAction = {
+                                        val file = selectedFile?.takeUnless { it.isDirectory } ?: return@cloudSelectionActions
+                                        onFileInfoClick(file)
+                                        clearSelection()
+                                    },
+                                ),
+                            ),
+                        )
                     },
                 )
             } else {
@@ -835,38 +835,29 @@ private fun RemoteFolderThumbnail(
 }
 
 @Composable
-private fun CloudSelectionActionsMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
+private fun cloudSelectionActions(
     shouldShowInfoAction: Boolean,
     onFavoriteAction: () -> Unit,
     onInfoAction: () -> Unit,
-) {
-    val actions = buildList {
+): List<MenuAction> = buildList {
+    add(
+        MenuAction(
+            text = stringResource(id = R.string.add_to_favorites),
+            icon = NextIcons.LibraryBooks,
+            testTag = "item_cloud_selection_add_favorites",
+            onClick = onFavoriteAction,
+        ),
+    )
+    if (shouldShowInfoAction) {
         add(
-            SelectionMenuAction(
-                text = stringResource(id = R.string.add_to_favorites),
-                icon = NextIcons.LibraryBooks,
-                testTag = "item_cloud_selection_add_favorites",
-                onClick = onFavoriteAction,
+            MenuAction(
+                text = stringResource(id = R.string.info),
+                icon = NextIcons.Info,
+                testTag = "item_cloud_selection_info",
+                onClick = onInfoAction,
             ),
         )
-        if (shouldShowInfoAction) {
-            add(
-                SelectionMenuAction(
-                    text = stringResource(id = R.string.info),
-                    icon = NextIcons.Info,
-                    testTag = "item_cloud_selection_info",
-                    onClick = onInfoAction,
-                ),
-            )
-        }
     }
-    SelectionActionsPopup(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        groups = listOf(actions),
-    )
 }
 
 private fun resolveCloudRestoreScrollIndex(

@@ -128,6 +128,8 @@ class SearchViewModel @Inject constructor(
             is SearchUiEvent.StartMoveSelection -> startMoveSelection(event.videoUris, event.folderPaths)
             is SearchUiEvent.AddFavorites -> addFavorites(event.videos, event.folders)
             is SearchUiEvent.ShareVideos -> shareVideos(event.uris)
+            is SearchUiEvent.MarkVideosPlayed -> markVideosPlayed(event.uris)
+            is SearchUiEvent.MarkVideosUnplayed -> markVideosUnplayed(event.uris)
             is SearchUiEvent.MoveVideosToRecycleBin -> moveVideosToRecycleBin(event.uris)
             is SearchUiEvent.PermanentlyDeleteVideos -> permanentlyDeleteVideos(event.uris)
             is SearchUiEvent.RenameVideo -> renameVideo(event.uri, event.to)
@@ -201,6 +203,18 @@ class SearchViewModel @Inject constructor(
     private fun shareVideos(uris: List<String>) {
         viewModelScope.launch {
             mediaService.shareMedia(uris.map { it.toUri() })
+        }
+    }
+
+    private fun markVideosPlayed(uris: List<String>) {
+        viewModelScope.launch {
+            mediaRepository.markVideosAsPlayed(uris)
+        }
+    }
+
+    private fun markVideosUnplayed(uris: List<String>) {
+        viewModelScope.launch {
+            mediaRepository.markVideosAsUnplayed(uris)
         }
     }
 
@@ -294,6 +308,8 @@ sealed interface SearchUiEvent {
         val folders: List<Folder>,
     ) : SearchUiEvent
     data class ShareVideos(val uris: List<String>) : SearchUiEvent
+    data class MarkVideosPlayed(val uris: List<String>) : SearchUiEvent
+    data class MarkVideosUnplayed(val uris: List<String>) : SearchUiEvent
     data class MoveVideosToRecycleBin(val uris: List<String>) : SearchUiEvent
     data class PermanentlyDeleteVideos(val uris: List<String>) : SearchUiEvent
     data class RenameVideo(val uri: Uri, val to: String) : SearchUiEvent

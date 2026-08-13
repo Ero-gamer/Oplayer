@@ -63,11 +63,14 @@ import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.videopicker.composables.FolderItem
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MediaView
+import one.only.player.feature.videopicker.composables.MenuAction
+import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.RenameDialog
-import one.only.player.feature.videopicker.composables.SelectionActionsPopup
-import one.only.player.feature.videopicker.composables.SelectionMenuAction
+import one.only.player.feature.videopicker.composables.SelectionBarAction
+import one.only.player.feature.videopicker.composables.SelectionBottomBar
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.state.SelectedVideo
+import one.only.player.feature.videopicker.state.SelectionManager
 import one.only.player.feature.videopicker.state.rememberSelectionManager
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.Icon
@@ -109,10 +112,10 @@ internal fun SearchScreen(
 ) {
     val context = LocalContext.current
     val selectionManager = rememberSelectionManager()
-    var shouldShowSelectionMenu by rememberSaveable { mutableStateOf(false) }
     var showRenameActionFor: Video? by rememberSaveable { mutableStateOf(null) }
     var showInfoActionFor: Video? by rememberSaveable { mutableStateOf(null) }
     var shouldShowDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
+    var shouldShowSelectionMenu by rememberSaveable { mutableStateOf(false) }
     val rootFolder = uiState.searchResults.asRootFolder()
     val selectedVideos = remember(selectionManager.selectedVideos, rootFolder) {
         selectionManager.selectedVideos.mapNotNull { selectedVideo ->
@@ -163,7 +166,9 @@ internal fun SearchScreen(
                     navigationIcon = {
                         IconButton(
                             onClick = { selectionManager.exitSelectionMode() },
-                            modifier = Modifier.padding(start = 12.dp),
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .testTag("btn_search_selection_close"),
                         ) {
                             Icon(
                                 imageVector = NextIcons.Close,
@@ -173,83 +178,56 @@ internal fun SearchScreen(
                         }
                     },
                     actions = {
-                        if (selectionManager.isInSelectionMode) {
-                            IconButton(
-                                onClick = {
-                                    if (selectedItemsSize != totalItemsSize) {
-                                        rootFolder.folderList.forEach { selectionManager.selectFolder(it) }
-                                        rootFolder.mediaList.forEach { selectionManager.selectVideo(it) }
-                                    } else {
-                                        selectionManager.exitSelectionMode()
-                                    }
+                        IconButton(
+                            onClick = {
+                                if (selectedItemsSize != totalItemsSize) {
+                                    rootFolder.folderList.forEach { selectionManager.selectFolder(it) }
+                                    rootFolder.mediaList.forEach { selectionManager.selectVideo(it) }
+                                } else {
+                                    selectionManager.exitSelectionMode()
+                                }
+                            },
+                            modifier = Modifier.testTag("btn_search_selection_toggle_all"),
+                        ) {
+                            Icon(
+                                imageVector = if (selectedItemsSize != totalItemsSize) {
+                                    NextIcons.SelectAll
+                                } else {
+                                    NextIcons.DeselectAll
                                 },
-                                modifier = Modifier,
+                                contentDescription = if (selectedItemsSize != totalItemsSize) {
+                                    stringResource(R.string.select_all)
+                                } else {
+                                    stringResource(R.string.deselect_all)
+                                },
+                                tint = MiuixTheme.colorScheme.onBackground,
+                            )
+                        }
+                        val overflowActions = searchSelectionOverflowActions(
+                            selectionManager = selectionManager,
+                            selectedVideos = selectedVideos,
+                            selectedVideoUris = selectedVideoUris,
+                            onEvent = onEvent,
+                            onRenameRequest = { video -> showRenameActionFor = video },
+                            onInfoRequest = { video -> showInfoActionFor = video },
+                        )
+                        if (overflowActions.isNotEmpty()) {
+                            IconButton(
+                                onClick = { shouldShowSelectionMenu = true },
+                                holdDownState = shouldShowSelectionMenu,
+                                modifier = Modifier.testTag("btn_search_selection_more"),
                             ) {
                                 Icon(
-                                    imageVector = if (selectedItemsSize != totalItemsSize) {
-                                        NextIcons.SelectAll
-                                    } else {
-                                        NextIcons.DeselectAll
-                                    },
-                                    contentDescription = if (selectedItemsSize != totalItemsSize) {
-                                        stringResource(R.string.select_all)
-                                    } else {
-                                        stringResource(R.string.deselect_all)
-                                    },
+                                    imageVector = NextIcons.MoreVert,
+                                    contentDescription = stringResource(id = R.string.more_actions),
                                     tint = MiuixTheme.colorScheme.onBackground,
                                 )
                             }
-                            Box {
-                                IconButton(
-                                    onClick = { shouldShowSelectionMenu = true },
-                                    modifier = Modifier.testTag("btn_search_selection_actions"),
-                                ) {
-                                    Icon(
-                                        imageVector = NextIcons.Menu,
-                                        contentDescription = stringResource(id = R.string.menu),
-                                        tint = MiuixTheme.colorScheme.onBackground,
-                                    )
-                                }
-                                SearchSelectionActionsMenu(
-                                    expanded = shouldShowSelectionMenu,
-                                    onDismissRequest = { shouldShowSelectionMenu = false },
-                                    shouldShowRenameAction = selectionManager.isSingleVideoSelected,
-                                    shouldShowInfoAction = selectionManager.isSingleVideoSelected,
-                                    onMoveAction = {
-                                        shouldShowSelectionMenu = false
-                                        onEvent(
-                                            SearchUiEvent.StartMoveSelection(
-                                                videoUris = selectionManager.selectedVideos.map { it.uriString },
-                                                folderPaths = selectionManager.selectedFolders.map { it.path },
-                                            ),
-                                        )
-                                        selectionManager.exitSelectionMode()
-                                        onMoveSelectionStarted()
-                                    },
-                                    onFavoriteAction = {
-                                        shouldShowSelectionMenu = false
-                                        onEvent(SearchUiEvent.AddFavorites(selectedVideos, selectedFolders))
-                                        selectionManager.exitSelectionMode()
-                                    },
-                                    onRenameAction = {
-                                        shouldShowSelectionMenu = false
-                                        showRenameActionFor = selectedVideos.firstOrNull()
-                                    },
-                                    onInfoAction = {
-                                        shouldShowSelectionMenu = false
-                                        showInfoActionFor = selectedVideos.firstOrNull()
-                                        selectionManager.exitSelectionMode()
-                                    },
-                                    onShareAction = {
-                                        shouldShowSelectionMenu = false
-                                        onEvent(SearchUiEvent.ShareVideos(selectedVideoUris))
-                                    },
-                                    onDeleteAction = {
-                                        shouldShowSelectionMenu = false
-                                        shouldShowDeleteConfirmation = true
-                                    },
-                                )
-                            }
+                            MenuActionsPopup(
+                                expanded = shouldShowSelectionMenu,
+                                onDismissRequest = { shouldShowSelectionMenu = false },
+                                groups = listOf(overflowActions),
+                            )
                         }
                     },
                 )
@@ -290,12 +268,34 @@ internal fun SearchScreen(
                         selectionManager = selectionManager,
                     )
                 }
+
+                SelectionBottomBar(
+                    isVisible = selectionManager.isInSelectionMode,
+                    actions = searchSelectionPrimaryActions(
+                        selectionManager = selectionManager,
+                        selectedVideos = selectedVideos,
+                        selectedFolders = selectedFolders,
+                        selectedVideoUris = selectedVideoUris,
+                        onEvent = onEvent,
+                        onMoveSelectionStarted = onMoveSelectionStarted,
+                        onDeleteRequest = { shouldShowDeleteConfirmation = true },
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(updatedScaffoldPadding)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 12.dp),
+                )
             }
         }
     }
 
     BackHandler(enabled = selectionManager.isInSelectionMode) {
         selectionManager.exitSelectionMode()
+    }
+
+    LaunchedEffect(selectionManager.isInSelectionMode) {
+        if (!selectionManager.isInSelectionMode) shouldShowSelectionMenu = false
     }
 
     showRenameActionFor?.let { video ->
@@ -305,7 +305,7 @@ internal fun SearchScreen(
             onDone = {
                 onEvent(SearchUiEvent.RenameVideo(video.uriString.toUri(), it))
                 showRenameActionFor = null
-                selectionManager.clearSelection()
+                selectionManager.exitSelectionMode()
             },
         )
     }
@@ -509,78 +509,107 @@ private fun SearchResultsContent(
     }
 }
 
+// 搜索页选中模式底部操作栏的高频操作。
 @Composable
-private fun SearchSelectionActionsMenu(
-    expanded: Boolean,
-    onDismissRequest: () -> Unit,
-    shouldShowRenameAction: Boolean,
-    shouldShowInfoAction: Boolean,
-    onMoveAction: () -> Unit,
-    onFavoriteAction: () -> Unit,
-    onRenameAction: () -> Unit,
-    onInfoAction: () -> Unit,
-    onShareAction: () -> Unit,
-    onDeleteAction: () -> Unit,
-) {
-    val primaryActions = buildList {
-        add(
-            SelectionMenuAction(
-                text = stringResource(id = R.string.move),
-                icon = NextIcons.Folder,
-                testTag = "item_search_selection_move",
-                onClick = onMoveAction,
-            ),
-        )
-        add(
-            SelectionMenuAction(
-                text = stringResource(id = R.string.add_to_favorites),
-                icon = NextIcons.LibraryBooks,
-                testTag = "item_search_selection_add_favorites",
-                onClick = onFavoriteAction,
-            ),
-        )
-        if (shouldShowRenameAction) {
-            add(
-                SelectionMenuAction(
-                    text = stringResource(id = R.string.rename),
-                    icon = NextIcons.Edit,
-                    testTag = "item_search_selection_rename",
-                    onClick = onRenameAction,
+private fun searchSelectionPrimaryActions(
+    selectionManager: SelectionManager,
+    selectedVideos: List<Video>,
+    selectedFolders: List<Folder>,
+    selectedVideoUris: List<String>,
+    onEvent: (SearchUiEvent) -> Unit,
+    onMoveSelectionStarted: () -> Unit,
+    onDeleteRequest: () -> Unit,
+): List<SelectionBarAction> = listOf(
+    SelectionBarAction(
+        label = stringResource(id = R.string.share),
+        icon = NextIcons.Share,
+        testTag = "item_search_selection_share",
+        onClick = {
+            onEvent(SearchUiEvent.ShareVideos(selectedVideoUris))
+        },
+    ),
+    SelectionBarAction(
+        label = stringResource(id = R.string.favorites),
+        icon = NextIcons.LibraryBooks,
+        testTag = "item_search_selection_add_favorites",
+        onClick = {
+            onEvent(SearchUiEvent.AddFavorites(selectedVideos, selectedFolders))
+            selectionManager.exitSelectionMode()
+        },
+    ),
+    SelectionBarAction(
+        label = stringResource(id = R.string.move),
+        icon = NextIcons.DriveFileMove,
+        testTag = "item_search_selection_move",
+        onClick = {
+            onEvent(
+                SearchUiEvent.StartMoveSelection(
+                    videoUris = selectionManager.selectedVideos.map { it.uriString },
+                    folderPaths = selectionManager.selectedFolders.map { it.path },
                 ),
             )
-        }
-        if (shouldShowInfoAction) {
-            add(
-                SelectionMenuAction(
-                    text = stringResource(id = R.string.info),
-                    icon = NextIcons.Info,
-                    testTag = "item_search_selection_info",
-                    onClick = onInfoAction,
-                ),
-            )
-        }
+            selectionManager.exitSelectionMode()
+            onMoveSelectionStarted()
+        },
+    ),
+    SelectionBarAction(
+        label = stringResource(id = R.string.delete),
+        icon = NextIcons.Delete,
+        testTag = "item_search_selection_delete",
+        isDestructive = true,
+        onClick = onDeleteRequest,
+    ),
+)
+
+// 搜索页选中模式顶栏溢出菜单的低频操作。
+@Composable
+private fun searchSelectionOverflowActions(
+    selectionManager: SelectionManager,
+    selectedVideos: List<Video>,
+    selectedVideoUris: List<String>,
+    onEvent: (SearchUiEvent) -> Unit,
+    onRenameRequest: (Video) -> Unit,
+    onInfoRequest: (Video) -> Unit,
+): List<MenuAction> {
+    val actions = mutableListOf<MenuAction>()
+    if (selectionManager.isSingleVideoSelected) {
+        actions += MenuAction(
+            text = stringResource(id = R.string.rename),
+            icon = NextIcons.Edit,
+            testTag = "item_search_selection_rename",
+            onClick = {
+                selectedVideos.firstOrNull()?.let(onRenameRequest)
+            },
+        )
+        actions += MenuAction(
+            text = stringResource(id = R.string.info),
+            icon = NextIcons.Info,
+            testTag = "item_search_selection_info",
+            onClick = {
+                selectedVideos.firstOrNull()?.let(onInfoRequest)
+                selectionManager.exitSelectionMode()
+            },
+        )
     }
-    SelectionActionsPopup(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        groups = listOf(
-            primaryActions,
-            listOf(
-                SelectionMenuAction(
-                    text = stringResource(id = R.string.share),
-                    icon = NextIcons.Share,
-                    testTag = "item_search_selection_share",
-                    onClick = onShareAction,
-                ),
-                SelectionMenuAction(
-                    text = stringResource(id = R.string.delete),
-                    icon = NextIcons.Delete,
-                    testTag = "item_search_selection_delete",
-                    onClick = onDeleteAction,
-                ),
-            ),
-        ),
+    actions += MenuAction(
+        text = stringResource(id = R.string.mark_as_played),
+        icon = NextIcons.CheckBox,
+        testTag = "item_search_selection_mark_played",
+        onClick = {
+            onEvent(SearchUiEvent.MarkVideosPlayed(selectedVideoUris))
+            selectionManager.exitSelectionMode()
+        },
     )
+    actions += MenuAction(
+        text = stringResource(id = R.string.mark_as_unplayed),
+        icon = NextIcons.CheckBoxOutline,
+        testTag = "item_search_selection_mark_unplayed",
+        onClick = {
+            onEvent(SearchUiEvent.MarkVideosUnplayed(selectedVideoUris))
+            selectionManager.exitSelectionMode()
+        },
+    )
+    return actions
 }
 
 @Composable

@@ -68,6 +68,12 @@ class FakeMediaRepository : MediaRepository {
     override suspend fun updateMediumPosition(uri: String, position: Long) {
     }
 
+    override suspend fun markVideosAsPlayed(uris: List<String>) {
+    }
+
+    override suspend fun markVideosAsUnplayed(uris: List<String>) {
+    }
+
     override suspend fun updateMediumPlaybackSpeed(uri: String, playbackSpeed: Float) {
     }
 
