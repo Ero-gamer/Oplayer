@@ -1,14 +1,16 @@
-- 新增章节预览面板，显示章节名称、时间范围和起始画面缩略图，并突出当前章节
-- 支持从现代菜单或旧式控制器打开章节列表，点击章节即可跳转，长列表会自动跟随当前章节
-- 支持双指左右滑动切换上一章或下一章，并显示清晰的章节切换提示
-- 改进 MP4 和 MKV 章节识别，切换视频时及时刷新章节状态
+- 支持为媒体库设置自定义扫描目录，并在扫描日志中保护目录标识
+- 支持调整 ASS/PGS 字幕大小，并修复 WebM 内嵌 VTT 字幕识别
+- 优化播放器章节和播放列表面板，支持章节预览、跳转和手势切换
+- 改进媒体库选择操作、批量播放状态标记和快捷设置的可见度
+- 优化播放器面板和媒体列表卡片的视觉层次
 
 <details>
 <summary>English Version</summary>
 
-- Add a chapter preview panel with chapter names, time ranges, starting-frame thumbnails, and a clear current-chapter highlight
-- Open the chapter list from the modern menu or legacy controls, jump by tapping a chapter, and automatically follow the current chapter in long lists
-- Switch to the previous or next chapter with a two-finger horizontal swipe and show clear chapter feedback
-- Improve MP4 and MKV chapter detection and refresh chapter state promptly when switching videos
+- Add custom media library scan folders and protect folder identifiers in scan logs
+- Add ASS/PGS subtitle scaling and fix embedded VTT subtitle detection in WebM videos
+- Improve chapter and playlist panels with chapter previews, seeking, and gesture navigation
+- Improve media selection actions, batch playback status marking, and quick settings visibility
+- Refine the visual hierarchy of player panels and media list cards
 
 </details>
