@@ -16,7 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -53,6 +52,9 @@ import one.only.player.feature.player.extensions.getName
 import one.only.player.feature.player.state.SubtitleOptionsEvent
 import one.only.player.feature.player.state.rememberSubtitleOptionsState
 import one.only.player.feature.player.state.rememberTracksState
+import one.only.player.feature.player.ui.panel.PanelActionButton
+import one.only.player.feature.player.ui.panel.PanelOptionList
+import one.only.player.feature.player.ui.panel.PanelOptionRow
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 
@@ -107,52 +109,50 @@ fun SubtitleSelectorContent(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp)
-            .selectableGroup(),
+            .padding(horizontal = 16.dp),
     ) {
-        subtitleTracksState.tracks.forEachIndexed { index, track ->
-            RadioButtonRow(
-                isSelected = track.isSelected,
-                text = track.mediaTrackGroup.getName(C.TRACK_TYPE_TEXT, index),
-                testTag = "item_subtitle_$index",
+        PanelOptionList(modifier = Modifier.selectableGroup()) {
+            subtitleTracksState.tracks.forEachIndexed { index, track ->
+                PanelOptionRow(
+                    isSelected = track.isSelected,
+                    text = track.mediaTrackGroup.getName(C.TRACK_TYPE_TEXT, index),
+                    testTag = "item_subtitle_$index",
+                    isFirstItem = index == 0,
+                    onClick = {
+                        subtitleTracksState.switchTrack(index)
+                        onDismiss()
+                    },
+                )
+            }
+            PanelOptionRow(
+                isSelected = subtitleTracksState.tracks.none { it.isSelected },
+                text = stringResource(R.string.disable),
+                testTag = "item_subtitle_disable",
+                isFirstItem = subtitleTracksState.tracks.isEmpty(),
+                isLastItem = true,
                 onClick = {
-                    subtitleTracksState.switchTrack(index)
+                    subtitleTracksState.switchTrack(-1)
                     onDismiss()
                 },
             )
         }
-        RadioButtonRow(
-            isSelected = subtitleTracksState.tracks.none { it.isSelected },
-            text = stringResource(R.string.disable),
-            testTag = "item_subtitle_disable",
-            onClick = {
-                subtitleTracksState.switchTrack(-1)
-                onDismiss()
-            },
-        )
         Spacer(modifier = Modifier.size(16.dp))
-        FilledTonalButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("btn_open_subtitle_picker"),
+        PanelActionButton(
+            modifier = Modifier.testTag("btn_open_subtitle_picker"),
+            text = stringResource(R.string.open_subtitle),
             onClick = {
                 onSelectSubtitleClick()
                 onDismiss()
             },
-        ) {
-            Text(text = stringResource(R.string.open_subtitle))
-        }
-        Spacer(modifier = Modifier.size(16.dp))
-        FilledTonalButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("btn_add_online_subtitle"),
+        )
+        Spacer(modifier = Modifier.size(12.dp))
+        PanelActionButton(
+            modifier = Modifier.testTag("btn_add_online_subtitle"),
+            text = stringResource(R.string.add_online_subtitle),
             onClick = {
                 isOnlineSubtitleDialogVisible = true
             },
-        ) {
-            Text(text = stringResource(R.string.add_online_subtitle))
-        }
+        )
         Spacer(modifier = Modifier.size(16.dp))
         DelayInput(
             value = subtitleOptionsState.delayMilliseconds,

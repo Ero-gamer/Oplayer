@@ -1,7 +1,6 @@
 package one.only.player.feature.player.ui
 
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
@@ -12,6 +11,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.only.player.core.model.DecoderPriority
 import one.only.player.core.ui.R
+import one.only.player.feature.player.ui.panel.PanelOptionList
+import one.only.player.feature.player.ui.panel.PanelOptionRow
 
 @Composable
 fun BoxScope.DecoderPrioritySelectorView(
@@ -41,18 +42,20 @@ fun DecoderPrioritySelectorContent(
     onDecoderPriorityClick: (DecoderPriority) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Column(
+    PanelOptionList(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
             .selectableGroup(),
     ) {
-        DecoderPriority.entries.forEach { decoderPriority ->
-            RadioButtonRow(
+        DecoderPriority.entries.forEachIndexed { index, decoderPriority ->
+            PanelOptionRow(
                 isSelected = decoderPriority == currentDecoderPriority,
                 text = decoderPriority.shortName(),
                 testTag = "btn_decoder_${decoderPriority.logSuffix()}",
+                isFirstItem = index == 0,
+                isLastItem = index == DecoderPriority.entries.lastIndex,
                 onClick = {
                     onDecoderPriorityClick(decoderPriority)
                     onDismiss()

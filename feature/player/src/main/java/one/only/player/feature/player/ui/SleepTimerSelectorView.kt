@@ -8,10 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -26,6 +22,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
 import one.only.player.feature.player.state.SleepTimerState
+import one.only.player.feature.player.ui.panel.PanelActionButton
+import one.only.player.feature.player.ui.panel.PanelSlider
+import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun BoxScope.SleepTimerSelectorView(
@@ -53,6 +54,7 @@ fun SleepTimerSelectorContent(
     onDismiss: () -> Unit,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
+    val tokens = rememberPlayerPanelTokens()
     val initialMinutes = if (sleepTimerState.isActive) {
         (sleepTimerState.remainingMillis / 60_000f).coerceAtLeast(1f)
     } else {
@@ -67,21 +69,21 @@ fun SleepTimerSelectorContent(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 16.dp),
     ) {
         if (sleepTimerState.isActive) {
             val remainMin = (sleepTimerState.remainingMillis / 60_000L).toInt()
             val remainSec = ((sleepTimerState.remainingMillis % 60_000L) / 1000L).toInt()
-            Text(
+            MiuixText(
                 text = "${stringResource(R.string.sleep_timer_remaining)}: ${String.format("%d:%02d", remainMin, remainSec)}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
+                style = MiuixTheme.textStyles.body2,
+                color = tokens.accentColor,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
             )
         }
 
-        Text(
+        MiuixText(
             text = when {
                 displayMinutes == 0 -> stringResource(R.string.sleep_timer_off)
                 displayHours > 0 -> String.format("%dh %02dmin", displayHours, displayRemainderMinutes)
@@ -91,10 +93,11 @@ fun SleepTimerSelectorContent(
                 .fillMaxWidth()
                 .padding(vertical = 20.dp),
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleMedium,
+            color = tokens.contentColor,
+            style = MiuixTheme.textStyles.title4,
         )
 
-        Slider(
+        PanelSlider(
             modifier = Modifier.testTag("slider_sleep_timer"),
             value = sliderValue,
             onValueChange = {
@@ -106,10 +109,10 @@ fun SleepTimerSelectorContent(
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        FilledTonalButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("btn_sleep_timer_confirm"),
+        PanelActionButton(
+            modifier = Modifier.testTag("btn_sleep_timer_confirm"),
+            text = stringResource(R.string.done),
+            isProminent = true,
             onClick = {
                 if (displayMinutes > 0) {
                     sleepTimerState.start(displayMinutes)
@@ -118,23 +121,18 @@ fun SleepTimerSelectorContent(
                 }
                 onDismiss()
             },
-        ) {
-            Text(text = stringResource(R.string.done))
-        }
+        )
 
         if (sleepTimerState.isActive) {
             Spacer(modifier = Modifier.size(8.dp))
-            FilledTonalButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("btn_sleep_timer_off"),
+            PanelActionButton(
+                modifier = Modifier.testTag("btn_sleep_timer_off"),
+                text = stringResource(R.string.sleep_timer_off),
                 onClick = {
                     sleepTimerState.cancel()
                     onDismiss()
                 },
-            ) {
-                Text(text = stringResource(R.string.sleep_timer_off))
-            }
+            )
         }
     }
 }

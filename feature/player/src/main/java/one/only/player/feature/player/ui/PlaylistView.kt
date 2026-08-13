@@ -17,11 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -36,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -52,10 +47,15 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.NextSegmentedListItem
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.feature.player.state.rememberPlaylistState
+import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
 import sh.calvin.reorderable.DragGestureDetector
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -83,6 +83,7 @@ fun PlaylistContent(
     player: Player,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
+    val tokens = rememberPlayerPanelTokens()
     val playlistState = rememberPlaylistState(player)
     val playlistEntries = playlistState.playlist.toPlaylistEntries()
     val lazyListState = rememberLazyListState()
@@ -107,7 +108,7 @@ fun PlaylistContent(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
             contentPadding = PaddingValues(8.dp),
-            verticalArrangement = Arrangement.spacedBy(0.dp),
+            verticalArrangement = Arrangement.spacedBy(tokens.itemSpacing),
         ) {
             itemsIndexed(
                 items = playlistEntries,
@@ -163,6 +164,13 @@ private fun ReorderableCollectionItemScope.PlaylistItemView(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val hapticFeedback = LocalHapticFeedback.current
+    val tokens = rememberPlayerPanelTokens()
+    val contentColor = if (isCurrentItem) tokens.itemSelectedContentColor else tokens.itemContentColor
+    val secondaryColor = if (isCurrentItem) {
+        tokens.itemSelectedContentColor.copy(alpha = 0.7f)
+    } else {
+        tokens.secondaryContentColor
+    }
     NextSegmentedListItem(
         modifier = Modifier
             .fillMaxWidth()
@@ -181,20 +189,18 @@ private fun ReorderableCollectionItemScope.PlaylistItemView(
         interactionSource = interactionSource,
         isFirstItem = isFirstItem,
         isLastItem = isLastItem,
+        containerColor = tokens.itemColor,
+        selectedContainerColor = tokens.itemSelectedColor,
         onClick = onClick,
         leadingContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Icon(
+                MiuixIcon(
                     painter = painterResource(R.drawable.ic_drag_handle),
                     contentDescription = stringResource(R.string.reorder),
-                    tint = if (isCurrentItem) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
+                    tint = secondaryColor,
                 )
 
                 ThumbnailView(
@@ -205,20 +211,21 @@ private fun ReorderableCollectionItemScope.PlaylistItemView(
             }
         },
         content = {
-            Text(
+            MiuixText(
                 text = mediaItem.mediaMetadata.title?.toString() ?: stringResource(R.string.unknown),
                 maxLines = 2,
-                style = MaterialTheme.typography.titleSmall,
+                style = MiuixTheme.textStyles.body1,
                 overflow = TextOverflow.Ellipsis,
+                color = contentColor,
             )
         },
         trailingContent = {
             if (canDelete) {
-                IconButton(onClick = onDelete) {
-                    Icon(
+                MiuixIconButton(onClick = onDelete) {
+                    MiuixIcon(
                         painter = painterResource(R.drawable.ic_close),
                         contentDescription = stringResource(R.string.remove),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = secondaryColor,
                     )
                 }
             }
@@ -232,16 +239,17 @@ private fun ThumbnailView(
     mediaItem: MediaItem,
 ) {
     val context = LocalContext.current
+    val tokens = rememberPlayerPanelTokens()
     Box(
         modifier = modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .background(tokens.contentColor.copy(alpha = 0.1f))
             .aspectRatio(16f / 10f),
     ) {
-        Icon(
+        MiuixIcon(
             imageVector = NextIcons.Video,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.surfaceColorAtElevation(100.dp),
+            tint = tokens.secondaryContentColor.copy(alpha = 0.4f),
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxSize(0.5f),
@@ -260,14 +268,14 @@ private fun ThumbnailView(
 
         mediaItem.mediaMetadata.durationMs?.let { durationMs ->
             if (durationMs > 0) {
-                Text(
+                MiuixText(
                     text = Utils.formatDurationMillis(durationMs),
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Normal),
+                    style = MiuixTheme.textStyles.footnote2,
                     color = Color.White,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(4.dp)
-                        .clip(MaterialTheme.shapes.extraSmall)
+                        .clip(RoundedCornerShape(4.dp))
                         .background(Color.Black.copy(alpha = 0.6f))
                         .padding(vertical = 1.dp, horizontal = 3.dp),
                 )
@@ -278,6 +286,7 @@ private fun ThumbnailView(
 
 @Composable
 private fun EmptyPlaylistView() {
+    val tokens = rememberPlayerPanelTokens()
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,16 +294,16 @@ private fun EmptyPlaylistView() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Icon(
+        MiuixIcon(
             imageVector = NextIcons.Video,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            tint = tokens.secondaryContentColor.copy(alpha = 0.6f),
             modifier = Modifier.fillMaxSize(0.3f),
         )
-        Text(
+        MiuixText(
             text = stringResource(R.string.no_videos_in_queue),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MiuixTheme.textStyles.body2,
+            color = tokens.secondaryContentColor,
             textAlign = TextAlign.Center,
         )
     }

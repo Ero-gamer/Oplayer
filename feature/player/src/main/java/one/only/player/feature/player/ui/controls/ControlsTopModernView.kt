@@ -9,21 +9,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun ControlsTopModernView(
@@ -40,32 +41,33 @@ fun ControlsTopModernView(
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(
+        MiuixIconButton(
             modifier = Modifier.testTag("btn_back"),
             onClick = onBackClick,
         ) {
-            Icon(
+            MiuixIcon(
                 modifier = Modifier.size(24.dp),
                 imageVector = NextIcons.ArrowBack,
                 contentDescription = stringResource(R.string.navigate_up),
                 tint = Color.White,
             )
         }
-        Text(
+        MiuixText(
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 8.dp),
             text = title,
-            style = MaterialTheme.typography.titleMedium,
+            style = MiuixTheme.textStyles.body1,
+            fontWeight = FontWeight.Medium,
             color = Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        IconButton(
+        MiuixIconButton(
             modifier = Modifier.testTag("btn_menu"),
             onClick = onMenuClick,
         ) {
-            Icon(
+            MiuixIcon(
                 modifier = Modifier.size(24.dp),
                 imageVector = NextIcons.Menu,
                 contentDescription = stringResource(R.string.menu),

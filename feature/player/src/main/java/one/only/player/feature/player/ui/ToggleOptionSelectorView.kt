@@ -1,7 +1,6 @@
 package one.only.player.feature.player.ui
 
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
@@ -12,6 +11,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
+import one.only.player.feature.player.ui.panel.PanelOptionList
+import one.only.player.feature.player.ui.panel.PanelOptionRow
 
 @Composable
 fun BoxScope.ToggleOptionSelectorView(
@@ -51,22 +52,25 @@ fun ToggleOptionSelectorContent(
     onEnabledChanged: (Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    Column(
+    val options = toggleOptions(
+        offTestTag = offTestTag,
+        onTestTag = onTestTag,
+    )
+    PanelOptionList(
         modifier = Modifier
             .testTag(panelTestTag)
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
             .selectableGroup(),
     ) {
-        toggleOptions(
-            offTestTag = offTestTag,
-            onTestTag = onTestTag,
-        ).forEach { option ->
-            RadioButtonRow(
+        options.forEachIndexed { index, option ->
+            PanelOptionRow(
                 isSelected = isEnabled == option.isEnabled,
                 text = stringResource(option.labelRes),
                 testTag = option.testTag,
+                isFirstItem = index == 0,
+                isLastItem = index == options.lastIndex,
                 onClick = {
                     onEnabledChanged(option.isEnabled)
                     onDismiss()

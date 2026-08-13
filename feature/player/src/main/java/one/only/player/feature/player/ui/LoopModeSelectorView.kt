@@ -2,7 +2,6 @@ package one.only.player.feature.player.ui
 
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
@@ -16,6 +15,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberRepeatButtonState
 import androidx.media3.ui.compose.state.rememberShuffleButtonState
 import one.only.player.core.ui.R
+import one.only.player.feature.player.ui.panel.PanelOptionList
+import one.only.player.feature.player.ui.panel.PanelOptionRow
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -45,18 +46,21 @@ fun LoopModeSelectorContent(
     onDismiss: () -> Unit,
 ) {
     val state = rememberRepeatButtonState(player)
-    Column(
+    val options = loopModeOptions()
+    PanelOptionList(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
             .selectableGroup(),
     ) {
-        loopModeOptions().forEach { option ->
-            RadioButtonRow(
+        options.forEachIndexed { index, option ->
+            PanelOptionRow(
                 isSelected = state.repeatModeState == option.repeatMode,
                 text = stringResource(option.labelRes),
                 testTag = option.testTag,
+                isFirstItem = index == 0,
+                isLastItem = index == options.lastIndex,
                 onClick = {
                     player.repeatMode = option.repeatMode
                     onDismiss()
@@ -94,18 +98,21 @@ fun ShuffleModeSelectorContent(
     onDismiss: () -> Unit,
 ) {
     val state = rememberShuffleButtonState(player)
-    Column(
+    val options = shuffleModeOptions()
+    PanelOptionList(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 16.dp)
             .selectableGroup(),
     ) {
-        shuffleModeOptions().forEach { option ->
-            RadioButtonRow(
+        options.forEachIndexed { index, option ->
+            PanelOptionRow(
                 isSelected = state.shuffleOn == option.isEnabled,
                 text = stringResource(option.labelRes),
                 testTag = option.testTag,
+                isFirstItem = index == 0,
+                isLastItem = index == options.lastIndex,
                 onClick = {
                     player.shuffleModeEnabled = option.isEnabled
                     onDismiss()

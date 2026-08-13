@@ -18,12 +18,9 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -47,6 +44,10 @@ import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.extensions.noRippleClickable
 import one.only.player.feature.player.state.MediaPresentationState
 import one.only.player.feature.player.state.durationFormatted
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun ControlsBottomModernView(
@@ -94,11 +95,11 @@ fun ControlsBottomModernView(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(
+            MiuixIconButton(
                 modifier = Modifier.testTag("btn_play_pause_modern"),
                 onClick = onPlayPauseClick,
             ) {
-                Icon(
+                MiuixIcon(
                     modifier = Modifier.size(28.dp),
                     imageVector = if (isPlaying) NextIcons.Pause else NextIcons.Play,
                     contentDescription = stringResource(R.string.player_controls_play_pause),
@@ -118,37 +119,37 @@ fun ControlsBottomModernView(
                     },
                 verticalArrangement = Arrangement.Center,
             ) {
-                Text(
+                MiuixText(
                     text = positionText,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MiuixTheme.textStyles.footnote1,
                     color = Color.White,
                     maxLines = 1,
                 )
-                Text(
+                MiuixText(
                     text = mediaPresentationState.durationFormatted,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MiuixTheme.textStyles.footnote1,
                     color = Color.White.copy(alpha = 0.6f),
                     maxLines = 1,
                 )
             }
-            IconButton(
+            MiuixIconButton(
                 modifier = Modifier.testTag("btn_previous_modern"),
                 onClick = onPreviousClick,
                 enabled = hasPrevious,
             ) {
-                Icon(
+                MiuixIcon(
                     modifier = Modifier.size(24.dp),
                     imageVector = NextIcons.SkipPrevious,
                     contentDescription = stringResource(R.string.player_controls_previous),
                     tint = if (hasPrevious) Color.White else Color.White.copy(alpha = 0.4f),
                 )
             }
-            IconButton(
+            MiuixIconButton(
                 modifier = Modifier.testTag("btn_next_modern"),
                 onClick = onNextClick,
                 enabled = hasNext,
             ) {
-                Icon(
+                MiuixIcon(
                     modifier = Modifier.size(24.dp),
                     imageVector = NextIcons.SkipNext,
                     contentDescription = stringResource(R.string.player_controls_next),
@@ -156,33 +157,33 @@ fun ControlsBottomModernView(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(
+            MiuixIconButton(
                 modifier = Modifier.testTag("btn_rotate_modern"),
                 onClick = onRotateClick,
             ) {
-                Icon(
+                MiuixIcon(
                     modifier = Modifier.size(24.dp),
                     imageVector = NextIcons.Rotation,
                     contentDescription = stringResource(R.string.screen_rotation),
                     tint = Color.White,
                 )
             }
-            IconButton(
+            MiuixIconButton(
                 modifier = Modifier.testTag("btn_playlist_modern"),
                 onClick = onPlaylistClick,
             ) {
-                Icon(
+                MiuixIcon(
                     modifier = Modifier.size(24.dp),
                     imageVector = NextIcons.PlaylistPlay,
                     contentDescription = stringResource(R.string.now_playing),
                     tint = Color.White,
                 )
             }
-            IconButton(
+            MiuixIconButton(
                 modifier = Modifier.testTag("btn_speed_modern"),
                 onClick = onPlaybackSpeedClick,
             ) {
-                Icon(
+                MiuixIcon(
                     modifier = Modifier.size(24.dp),
                     imageVector = NextIcons.Speed,
                     contentDescription = stringResource(R.string.select_playback_speed),

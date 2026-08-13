@@ -5,6 +5,8 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -16,26 +18,32 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
+import one.only.player.feature.player.ui.panel.rememberPanelMaterialColorScheme
+import one.only.player.feature.player.ui.panel.rememberPanelMiuixColors
+import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun BoxScope.OverlayView(
@@ -49,9 +57,31 @@ fun BoxScope.OverlayView(
     val configuration = LocalConfiguration.current
     val resolvedContentPadding = contentPadding.withBottomFallback()
     val layoutDirection = LocalLayoutDirection.current
-    val endPadding = WindowInsets.safeDrawing
-        .asPaddingValues()
-        .calculateEndPadding(layoutDirection)
+    val tokens = rememberPlayerPanelTokens()
+    val safeDrawingPadding = WindowInsets.safeDrawing.asPaddingValues()
+    val panelMargin = 12.dp
+    val screenWidth = configuration.screenWidthDp.dp
+    val panelShape = RoundedCornerShape(tokens.containerCornerRadius)
+
+    val sizeModifier = if (configuration.isPortrait) {
+        Modifier
+            .padding(
+                start = panelMargin,
+                end = panelMargin,
+                bottom = maxOf(safeDrawingPadding.calculateBottomPadding(), panelMargin),
+            )
+            .width(min(screenWidth - panelMargin * 2, 560.dp))
+            .fillMaxHeight(0.45f)
+    } else {
+        Modifier
+            .padding(
+                top = panelMargin,
+                bottom = panelMargin,
+                end = maxOf(safeDrawingPadding.calculateEndPadding(layoutDirection), panelMargin),
+            )
+            .width(min(screenWidth * 0.45f, 400.dp))
+            .fillMaxHeight()
+    }
 
     AnimatedVisibility(
         modifier = Modifier.align(
@@ -65,8 +95,7 @@ fun BoxScope.OverlayView(
         enter = if (configuration.isPortrait) slideInVertically { it } else slideInHorizontally { it },
         exit = if (configuration.isPortrait) slideOutVertically { it } else slideOutHorizontally { it },
     ) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
+        Column(
             modifier = modifier
                 .then(
                     if (testTag != null) {
@@ -77,32 +106,26 @@ fun BoxScope.OverlayView(
                         Modifier
                     },
                 )
-                .then(
-                    if (configuration.isPortrait) {
-                        Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.45f)
-                    } else {
-                        Modifier
-                            .fillMaxWidth(0.45f)
-                            .fillMaxHeight()
-                    },
-                ),
+                .then(sizeModifier)
+                .clip(panelShape)
+                .background(tokens.containerColor)
+                .border(1.dp, tokens.containerBorderColor, panelShape)
+                .padding(resolvedContentPadding)
+                .padding(top = 20.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(resolvedContentPadding)
-                    .padding(top = 24.dp)
-                    .padding(end = endPadding),
-            ) {
-                Text(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    text = title,
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                Spacer(modifier = Modifier.size(8.dp))
-                content()
+            MiuixTheme(colors = tokens.rememberPanelMiuixColors()) {
+                MaterialTheme(colorScheme = tokens.rememberPanelMaterialColorScheme()) {
+                    MiuixText(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        text = title,
+                        color = tokens.contentColor,
+                        style = MiuixTheme.textStyles.title3,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                    )
+                    Spacer(modifier = Modifier.size(12.dp))
+                    content()
+                }
             }
         }
     }
@@ -114,7 +137,7 @@ private fun PreviewOverlayView() {
     OnlyPlayerTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             OverlayView(modifier = Modifier.align(Alignment.BottomCenter), title = "Selector view", shouldShow = true) {
-                Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum")
+                MiuixText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum")
             }
         }
     }

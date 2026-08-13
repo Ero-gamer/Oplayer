@@ -17,10 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +48,10 @@ import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.model.currentChapterIndex
+import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.Text as MiuixText
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun BoxScope.ChaptersView(
@@ -107,13 +109,14 @@ fun ChaptersContent(
         return
     }
 
+    val tokens = rememberPlayerPanelTokens()
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .testTag("chapter_list"),
         state = listState,
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+        verticalArrangement = Arrangement.spacedBy(tokens.itemSpacing),
     ) {
         itemsIndexed(
             items = chapters,
@@ -142,7 +145,14 @@ private fun ChapterItem(
     isLastItem: Boolean,
     onClick: () -> Unit,
 ) {
+    val tokens = rememberPlayerPanelTokens()
     val chapterNumber = stringResource(R.string.chapter_number, chapter.index + 1)
+    val contentColor = if (isCurrentChapter) tokens.itemSelectedContentColor else tokens.itemContentColor
+    val secondaryColor = if (isCurrentChapter) {
+        tokens.itemSelectedContentColor.copy(alpha = 0.7f)
+    } else {
+        tokens.secondaryContentColor
+    }
     NextSegmentedListItem(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,8 +161,8 @@ private fun ChapterItem(
         isFirstItem = isFirstItem,
         isLastItem = isLastItem,
         contentPadding = PaddingValues(8.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        selectedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        containerColor = tokens.itemColor,
+        selectedContainerColor = tokens.itemSelectedColor,
         onClick = onClick,
         leadingContent = {
             ChapterThumbnail(
@@ -168,41 +178,42 @@ private fun ChapterItem(
         },
         overlineContent = if (chapter.title != null) {
             {
-                Text(
+                MiuixText(
                     text = chapterNumber,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MiuixTheme.textStyles.footnote2,
+                    color = secondaryColor,
                 )
             }
         } else {
             null
         },
         content = {
-            Text(
+            MiuixText(
                 text = chapter.title ?: chapterNumber,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleSmall,
+                style = MiuixTheme.textStyles.body1,
                 fontWeight = if (isCurrentChapter) FontWeight.SemiBold else FontWeight.Medium,
+                color = contentColor,
             )
         },
         supportingContent = {
-            Text(
+            MiuixText(
                 text = stringResource(
                     R.string.chapter_time_range,
                     chapter.startTimeMs.milliseconds.formatted(),
                     chapter.endTimeMs.milliseconds.formatted(),
                 ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MiuixTheme.textStyles.footnote1,
+                color = secondaryColor,
             )
         },
         trailingContent = {
             if (isCurrentChapter) {
-                Icon(
+                MiuixIcon(
                     imageVector = NextIcons.Play,
                     contentDescription = stringResource(R.string.current_chapter),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = tokens.itemSelectedContentColor,
                 )
             }
         },
@@ -218,7 +229,8 @@ private fun ChapterThumbnail(
     contentDescription: String,
 ) {
     val context = LocalContext.current
-    val shape = MaterialTheme.shapes.small
+    val tokens = rememberPlayerPanelTokens()
+    val shape = RoundedCornerShape(8.dp)
     val width = min(112.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f)
     val cacheKey = remember(mediaUri, chapter.startTimeMs) {
         "$mediaUri#chapter=${chapter.startTimeMs}"
@@ -237,7 +249,7 @@ private fun ChapterThumbnail(
         }
     }
     val borderModifier = if (isCurrentChapter) {
-        Modifier.border(2.dp, MaterialTheme.colorScheme.primary, shape)
+        Modifier.border(2.dp, tokens.accentColor, shape)
     } else {
         Modifier
     }
@@ -247,14 +259,14 @@ private fun ChapterThumbnail(
             .width(width)
             .aspectRatio(16f / 9f)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(tokens.contentColor.copy(alpha = 0.1f))
             .then(borderModifier),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
+        MiuixIcon(
             imageVector = NextIcons.Video,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+            tint = tokens.secondaryContentColor.copy(alpha = 0.35f),
         )
         if (imageRequest != null) {
             AsyncImage(
@@ -264,14 +276,14 @@ private fun ChapterThumbnail(
                 modifier = Modifier.fillMaxSize(),
             )
         }
-        Text(
+        MiuixText(
             text = chapter.startTimeMs.milliseconds.formatted(),
-            style = MaterialTheme.typography.labelSmall,
+            style = MiuixTheme.textStyles.footnote2,
             color = Color.White,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 4.dp, bottom = 5.dp)
-                .background(Color.Black.copy(alpha = 0.72f), MaterialTheme.shapes.extraSmall)
+                .background(Color.Black.copy(alpha = 0.72f), RoundedCornerShape(4.dp))
                 .padding(horizontal = 4.dp, vertical = 1.dp),
         )
         if (isCurrentChapter && chapter.endTimeMs > chapter.startTimeMs) {
@@ -283,7 +295,7 @@ private fun ChapterThumbnail(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .height(3.dp),
-                color = MaterialTheme.colorScheme.primary,
+                color = tokens.accentColor,
                 trackColor = Color.Transparent,
             )
         }
@@ -292,6 +304,7 @@ private fun ChapterThumbnail(
 
 @Composable
 private fun EmptyChaptersView(modifier: Modifier = Modifier) {
+    val tokens = rememberPlayerPanelTokens()
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -302,15 +315,15 @@ private fun EmptyChaptersView(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(
+            MiuixIcon(
                 imageVector = NextIcons.PlaylistPlay,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = tokens.secondaryContentColor,
             )
-            Text(
+            MiuixText(
                 text = stringResource(R.string.no_chapters),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MiuixTheme.textStyles.body2,
+                color = tokens.secondaryContentColor,
             )
         }
     }

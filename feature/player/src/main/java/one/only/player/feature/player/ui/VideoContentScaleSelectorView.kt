@@ -3,14 +3,11 @@ package one.only.player.feature.player.ui
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -19,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import one.only.player.core.model.VideoContentScale
 import one.only.player.core.ui.R
 import one.only.player.feature.player.extensions.nameRes
+import one.only.player.feature.player.ui.panel.PanelActionButton
+import one.only.player.feature.player.ui.panel.PanelOptionList
+import one.only.player.feature.player.ui.panel.PanelOptionRow
 
 @Composable
 fun BoxScope.VideoContentScaleSelectorView(
@@ -57,26 +57,25 @@ fun VideoContentScaleSelectorContent(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .padding(bottom = 24.dp)
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 16.dp),
     ) {
         if (onShowVideoFilters != null) {
-            FilledTonalButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("btn_open_video_filters"),
+            PanelActionButton(
+                modifier = Modifier.testTag("btn_open_video_filters"),
+                text = stringResource(R.string.video_filters),
                 onClick = onShowVideoFilters,
-            ) {
-                Text(text = stringResource(R.string.video_filters))
-            }
+            )
             Spacer(modifier = Modifier.size(16.dp))
         }
 
-        Column(modifier = Modifier.selectableGroup()) {
-            VideoContentScale.entries.forEach { contentScale ->
-                RadioButtonRow(
+        PanelOptionList(modifier = Modifier.selectableGroup()) {
+            VideoContentScale.entries.forEachIndexed { index, contentScale ->
+                PanelOptionRow(
                     isSelected = !isCustomZoomActive && contentScale == videoContentScale,
                     text = stringResource(contentScale.nameRes()),
                     testTag = "btn_video_scale_${contentScale.name.lowercase()}",
+                    isFirstItem = index == 0,
+                    isLastItem = index == VideoContentScale.entries.lastIndex,
                     onClick = {
                         onVideoContentScaleChanged(contentScale)
                         onDismiss()
