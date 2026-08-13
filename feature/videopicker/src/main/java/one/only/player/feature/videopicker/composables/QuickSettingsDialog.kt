@@ -1,20 +1,18 @@
 package one.only.player.feature.videopicker.composables
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,7 +43,6 @@ import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.extensions.name
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
-import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -88,82 +85,81 @@ fun QuickSettingsDialog(
                     .fillMaxWidth()
                     .heightIn(max = configuration.screenHeightDp.dp * 0.58f)
                     .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(SectionSpacing),
             ) {
                 if (target == QuickSettingsTarget.LOCAL) {
-                    DialogSectionTitle(text = stringResource(R.string.media_view_mode))
-                    TabRow(
-                        tabs = MediaViewMode.entries.map { it.name() },
-                        selectedTabIndex = MediaViewMode.entries.indexOf(preferences.mediaViewMode),
-                        onTabSelected = { index -> preferences = preferences.copy(mediaViewMode = MediaViewMode.entries[index]) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("tabs_${target.dialogTestTag}_view_mode"),
+                    QuickSettingsSection(title = stringResource(R.string.media_view_mode)) {
+                        QuickSettingsChoiceRow(
+                            options = MediaViewMode.entries,
+                            selectedOption = preferences.mediaViewMode,
+                            label = MediaViewMode::name,
+                            onOptionSelected = { preferences = preferences.copy(mediaViewMode = it) },
+                            modifier = Modifier.testTag("tabs_${target.dialogTestTag}_view_mode"),
+                        )
+                    }
+                }
+                QuickSettingsSection(title = stringResource(R.string.media_layout)) {
+                    QuickSettingsChoiceRow(
+                        options = MediaLayoutMode.entries,
+                        selectedOption = layoutMode,
+                        label = MediaLayoutMode::name,
+                        onOptionSelected = { preferences = preferences.withLayoutMode(target, cloudServerId, it) },
+                        modifier = Modifier.testTag("tabs_${target.dialogTestTag}_layout_mode"),
+                    )
+                    if (layoutMode == MediaLayoutMode.GRID) {
+                        MediaLayoutScaleControls(
+                            scale = preferences.normalizedLayoutScale(target, cloudServerId),
+                            onResetClick = {
+                                preferences = preferences.withLayoutScale(
+                                    target = target,
+                                    serverId = cloudServerId,
+                                    scale = ApplicationPreferences.DEFAULT_MEDIA_LAYOUT_SCALE,
+                                )
+                            },
+                            onDecreaseClick = {
+                                preferences = preferences.withLayoutScale(
+                                    target = target,
+                                    serverId = cloudServerId,
+                                    scale = preferences.layoutScale(target, cloudServerId) - ApplicationPreferences.MEDIA_LAYOUT_SCALE_STEP,
+                                )
+                            },
+                            onIncreaseClick = {
+                                preferences = preferences.withLayoutScale(
+                                    target = target,
+                                    serverId = cloudServerId,
+                                    scale = preferences.layoutScale(target, cloudServerId) + ApplicationPreferences.MEDIA_LAYOUT_SCALE_STEP,
+                                )
+                            },
+                        )
+                    }
+                }
+                QuickSettingsSection(title = stringResource(R.string.sort)) {
+                    SortOptions(
+                        selectedSortBy = sortBy,
+                        options = target.supportedSortOptions,
+                        onOptionSelected = { preferences = preferences.withSortBy(target, cloudServerId, it) },
+                    )
+                    QuickSettingsChoiceRow(
+                        options = Sort.Order.entries,
+                        selectedOption = sortOrder,
+                        label = { it.name(sortBy = sortBy) },
+                        onOptionSelected = { preferences = preferences.withSortOrder(target, cloudServerId, it) },
+                        modifier = Modifier.testTag("tabs_${target.dialogTestTag}_sort_order"),
                     )
                 }
-                DialogSectionTitle(text = stringResource(R.string.media_layout))
-                TabRow(
-                    tabs = MediaLayoutMode.entries.map { it.name() },
-                    selectedTabIndex = MediaLayoutMode.entries.indexOf(preferences.layoutMode(target, cloudServerId)),
-                    onTabSelected = { index -> preferences = preferences.withLayoutMode(target, cloudServerId, MediaLayoutMode.entries[index]) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("tabs_${target.dialogTestTag}_layout_mode"),
-                )
-                if (layoutMode == MediaLayoutMode.GRID) {
-                    MediaLayoutScaleControls(
-                        scale = preferences.normalizedLayoutScale(target, cloudServerId),
-                        onResetClick = {
-                            preferences = preferences.withLayoutScale(
-                                target = target,
-                                serverId = cloudServerId,
-                                scale = ApplicationPreferences.DEFAULT_MEDIA_LAYOUT_SCALE,
-                            )
-                        },
-                        onDecreaseClick = {
-                            preferences = preferences.withLayoutScale(
-                                target = target,
-                                serverId = cloudServerId,
-                                scale = preferences.layoutScale(target, cloudServerId) - ApplicationPreferences.MEDIA_LAYOUT_SCALE_STEP,
-                            )
-                        },
-                        onIncreaseClick = {
-                            preferences = preferences.withLayoutScale(
-                                target = target,
-                                serverId = cloudServerId,
-                                scale = preferences.layoutScale(target, cloudServerId) + ApplicationPreferences.MEDIA_LAYOUT_SCALE_STEP,
-                            )
-                        },
-                    )
-                }
-                DialogSectionTitle(text = stringResource(R.string.sort))
-                SortOptions(
-                    selectedSortBy = sortBy,
-                    options = target.supportedSortOptions,
-                    onOptionSelected = { preferences = preferences.withSortBy(target, cloudServerId, it) },
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                TabRow(
-                    tabs = Sort.Order.entries.map { it.name(sortBy = sortBy) },
-                    selectedTabIndex = Sort.Order.entries.indexOf(preferences.sortOrder(target, cloudServerId)),
-                    onTabSelected = { index -> preferences = preferences.withSortOrder(target, cloudServerId, Sort.Order.entries[index]) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("tabs_${target.dialogTestTag}_sort_order"),
-                )
-                DialogSectionTitle(text = stringResource(R.string.fields))
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(align = Alignment.Top),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    QuickSettingsFields(
-                        preferences = preferences,
-                        target = target,
-                        cloudServerId = cloudServerId,
-                        onPreferencesChange = { preferences = it },
-                    )
+                QuickSettingsSection(title = stringResource(R.string.fields)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        QuickSettingsFields(
+                            preferences = preferences,
+                            target = target,
+                            cloudServerId = cloudServerId,
+                            onPreferencesChange = { preferences = it },
+                        )
+                    }
                 }
             }
         },
@@ -185,6 +181,78 @@ fun QuickSettingsDialog(
     )
 }
 
+// 标题放在卡片外，设置项收进独立卡片，与设置页保持一致。
+@Composable
+private fun QuickSettingsSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = title,
+            style = MiuixTheme.textStyles.subtitle,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            modifier = Modifier.padding(start = 4.dp),
+        )
+        Surface(
+            shape = RoundedCornerShape(SectionCornerRadius),
+            color = MiuixTheme.colorScheme.surfaceContainerHigh,
+            border = BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.18f)),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                content = content,
+            )
+        }
+    }
+}
+
+@Composable
+private fun <T> QuickSettingsChoiceRow(
+    options: List<T>,
+    selectedOption: T,
+    label: @Composable (T) -> String,
+    onOptionSelected: (T) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEach { option ->
+            QuickSettingsChoice(
+                label = label(option),
+                isSelected = option == selectedOption,
+                onClick = { onOptionSelected(option) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun RowScope.QuickSettingsChoice(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.surface,
+        border = if (isSelected) null else BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f)),
+        modifier = Modifier.weight(1f),
+    ) {
+        Text(
+            text = label,
+            style = MiuixTheme.textStyles.body1,
+            color = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 11.dp),
+        )
+    }
+}
+
 @Composable
 private fun MediaLayoutScaleControls(
     scale: Float,
@@ -192,36 +260,63 @@ private fun MediaLayoutScaleControls(
     onDecreaseClick: () -> Unit,
     onIncreaseClick: () -> Unit,
 ) {
-    DialogSectionTitle(text = stringResource(R.string.media_layout_scale))
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(
+            text = stringResource(R.string.media_layout_scale),
+            style = MiuixTheme.textStyles.body2,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
             text = "${(scale * 100).roundToInt()}%",
-            style = MiuixTheme.textStyles.title4,
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .testTag("text_media_layout_scale"),
+            style = MiuixTheme.textStyles.body1,
+            modifier = Modifier.testTag("text_media_layout_scale"),
         )
-        TextIconToggleButton(
-            text = stringResource(R.string.media_layout_scale_reset),
-            icon = NextIcons.Replay,
-            modifier = Modifier.testTag("btn_media_layout_scale_reset"),
-            onClick = { onResetClick() },
-        )
-        TextIconToggleButton(
-            text = stringResource(R.string.media_layout_scale_decrease),
+        ScaleIconButton(
             icon = NextIcons.Remove,
-            modifier = Modifier.testTag("btn_media_layout_scale_decrease"),
-            onClick = { onDecreaseClick() },
+            contentDescription = stringResource(R.string.media_layout_scale_decrease),
+            testTag = "btn_media_layout_scale_decrease",
+            onClick = onDecreaseClick,
         )
-        TextIconToggleButton(
-            text = stringResource(R.string.media_layout_scale_increase),
+        ScaleIconButton(
             icon = NextIcons.Add,
-            modifier = Modifier.testTag("btn_media_layout_scale_increase"),
-            onClick = { onIncreaseClick() },
+            contentDescription = stringResource(R.string.media_layout_scale_increase),
+            testTag = "btn_media_layout_scale_increase",
+            onClick = onIncreaseClick,
+        )
+        ScaleIconButton(
+            icon = NextIcons.Replay,
+            contentDescription = stringResource(R.string.media_layout_scale_reset),
+            testTag = "btn_media_layout_scale_reset",
+            onClick = onResetClick,
+        )
+    }
+}
+
+@Composable
+private fun ScaleIconButton(
+    icon: ImageVector,
+    contentDescription: String,
+    testTag: String,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = MiuixTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier.testTag(testTag),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = MiuixTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(7.dp)
+                .size(18.dp),
         )
     }
 }
@@ -362,11 +457,11 @@ fun FieldChip(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(50),
-        color = if (isSelected) MiuixTheme.colorScheme.primaryContainer else MiuixTheme.colorScheme.surfaceContainer,
+        color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.surface,
         border = if (isSelected) {
-            BorderStroke(1.dp, MiuixTheme.colorScheme.primary)
-        } else {
             null
+        } else {
+            BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f))
         },
         modifier = modifier.testTag("chip_quick_settings_field_$key"),
     ) {
@@ -379,11 +474,11 @@ fun FieldChip(
                 imageVector = if (isSelected) selectedIcon else unselectedIcon,
                 contentDescription = label,
                 modifier = Modifier.size(18.dp),
-                tint = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.secondary,
+                tint = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.secondary,
             )
             Text(
                 text = label,
-                color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface,
+                color = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
             )
         }
     }
@@ -397,10 +492,9 @@ private fun SortOptions(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
+            .fillMaxWidth(),
     ) {
         options.forEach { option ->
             TextIconToggleButton(
@@ -408,7 +502,9 @@ private fun SortOptions(
                 icon = option.icon(),
                 isSelected = selectedSortBy == option,
                 onClick = { onOptionSelected(option) },
-                modifier = Modifier.testTag("btn_quick_settings_sort_${option.name.lowercase()}"),
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("btn_quick_settings_sort_${option.name.lowercase()}"),
             )
         }
     }
@@ -539,15 +635,6 @@ private fun Sort.By.icon(): ImageVector = when (this) {
     Sort.By.PATH -> NextIcons.Location
 }
 
-@Composable
-private fun DialogSectionTitle(text: String) {
-    Text(
-        text = text,
-        style = MiuixTheme.textStyles.title4,
-        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
-    )
-}
-
 @Preview
 @Composable
 fun QuickSettingsPreview() {
@@ -555,3 +642,6 @@ fun QuickSettingsPreview() {
         QuickSettingsDialog(applicationPreferences = ApplicationPreferences(), onDismiss = { }, updatePreferences = {})
     }
 }
+
+private val SectionSpacing = 14.dp
+private val SectionCornerRadius = 16.dp

@@ -1,5 +1,6 @@
 package one.only.player.feature.videopicker.composables
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,8 @@ fun TextIconToggleButton(
     Surface(
         onClick = { onClick(!isSelected) },
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) MiuixTheme.colorScheme.primaryContainer else MiuixTheme.colorScheme.surfaceContainer,
+        color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.surfaceContainerHigh,
+        border = if (isSelected) null else BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f)),
         interactionSource = interactionSource,
         indication = indication,
         modifier = modifier,
@@ -46,11 +48,12 @@ fun TextIconToggleButton(
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                tint = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.onSurface,
+                tint = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
             )
             Text(
                 text = text,
                 style = MiuixTheme.textStyles.body2,
+                color = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
             )
         }
     }
