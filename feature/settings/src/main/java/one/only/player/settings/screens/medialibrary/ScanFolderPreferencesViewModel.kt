@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import one.only.player.core.common.Logger
+import one.only.player.core.common.extensions.toPrivateLogSummary
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ApplicationPreferences
 
@@ -49,7 +50,7 @@ class ScanFolderPreferencesViewModel @Inject constructor(
     private fun addScanFolder(treeUri: Uri) {
         val path = treeUri.toFolderPathOrNull()
         if (path == null) {
-            Logger.info(TAG, "Ignored unsupported scan folder uri: $treeUri")
+            Logger.info(TAG, "Ignored unsupported scan folder uri: ${treeUri.toPrivateLogSummary()}")
             return
         }
 
