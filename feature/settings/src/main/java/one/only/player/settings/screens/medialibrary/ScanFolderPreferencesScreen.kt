@@ -1,0 +1,150 @@
+package one.only.player.settings.screens.medialibrary
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import one.only.player.core.model.ApplicationPreferences
+import one.only.player.core.ui.R
+import one.only.player.core.ui.components.ClickablePreferenceItem
+import one.only.player.core.ui.components.PreferenceItem
+import one.only.player.core.ui.components.SegmentedItemGap
+import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.SettingsGroupGap
+import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.extensions.plus
+import one.only.player.core.ui.extensions.withBottomFallback
+import one.only.player.core.ui.theme.OnlyPlayerTheme
+import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
+import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.basic.TopAppBar
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+@Composable
+fun ScanFolderPreferencesScreen(
+    onNavigateUp: () -> Unit,
+    viewModel: ScanFolderPreferencesViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    ScanFolderPreferencesContent(
+        uiState = uiState,
+        onNavigateUp = onNavigateUp,
+        onEvent = viewModel::onEvent,
+    )
+}
+
+@Composable
+private fun ScanFolderPreferencesContent(
+    uiState: ScanFolderPreferencesUiState,
+    onNavigateUp: () -> Unit,
+    onEvent: (ScanFolderPreferencesUiEvent) -> Unit,
+) {
+    val directoryPickerLauncher = rememberLauncherForActivityResult(
+        contract = OpenDocumentTree(),
+    ) { treeUri ->
+        treeUri?.let { onEvent(ScanFolderPreferencesUiEvent.AddFolder(it)) }
+    }
+    val scanFolders = uiState.preferences.scanFolders
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = stringResource(id = R.string.scan_folders),
+                navigationIcon = {
+                    MiuixIconButton(
+                        onClick = onNavigateUp,
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .testTag("button_scan_folders_back"),
+                    ) {
+                        MiuixIcon(
+                            imageVector = NextIcons.ArrowBack,
+                            contentDescription = stringResource(id = R.string.navigate_up),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = innerPadding.withBottomFallback() +
+                PaddingValues(top = SettingsContentTopPadding) +
+                PaddingValues(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+        ) {
+            itemsIndexed(scanFolders) { index, folderPath ->
+                PreferenceItem(
+                    modifier = Modifier.testTag("item_settings_scan_folder_$index"),
+                    title = folderPath.substringAfterLast('/'),
+                    description = folderPath,
+                    icon = NextIcons.Folder,
+                    isEnabled = true,
+                    isFirstItem = index == 0,
+                    isLastItem = index == scanFolders.lastIndex,
+                    trailingContent = {
+                        MiuixIconButton(
+                            onClick = { onEvent(ScanFolderPreferencesUiEvent.RemoveFolder(folderPath)) },
+                            modifier = Modifier.testTag("button_remove_scan_folder_$index"),
+                        ) {
+                            MiuixIcon(
+                                imageVector = NextIcons.Delete,
+                                contentDescription = stringResource(id = R.string.delete),
+                                tint = MiuixTheme.colorScheme.onBackground,
+                            )
+                        }
+                    },
+                )
+            }
+
+            item {
+                ClickablePreferenceItem(
+                    modifier = Modifier
+                        .padding(top = if (scanFolders.isEmpty()) 0.dp else SettingsGroupGap)
+                        .testTag("item_settings_add_scan_folder"),
+                    title = stringResource(id = R.string.add_folder),
+                    description = stringResource(id = R.string.scan_folders_empty_desc).takeIf { scanFolders.isEmpty() },
+                    icon = NextIcons.Add,
+                    onClick = { directoryPickerLauncher.launch(null) },
+                    isFirstItem = true,
+                    isLastItem = true,
+                )
+            }
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun ScanFolderPreferencesScreenPreview() {
+    OnlyPlayerTheme {
+        ScanFolderPreferencesContent(
+            uiState = ScanFolderPreferencesUiState(
+                preferences = ApplicationPreferences(
+                    scanFolders = listOf(
+                        "/storage/emulated/0/Movies",
+                        "/storage/emulated/0/DCIM/Camera",
+                    ),
+                ),
+            ),
+            onNavigateUp = {},
+            onEvent = {},
+        )
+    }
+}

@@ -25,6 +25,7 @@ data class ApplicationPreferences(
     val shouldIgnoreNoMediaFiles: Boolean = false,
     val isRecycleBinEnabled: Boolean = false,
     val excludeFolders: List<String> = emptyList(),
+    val scanFolders: List<String> = emptyList(),
     val localFolderLastPlayedMediaUris: Map<String, String> = emptyMap(),
     val remoteFolderLastPlayedMediaPaths: Map<String, String> = emptyMap(),
     val mediaViewMode: MediaViewMode = MediaViewMode.FOLDERS,
@@ -54,6 +55,16 @@ data class ApplicationPreferences(
 
         return excludeFolders.any { excludedPath ->
             path == excludedPath || path.startsWith("$excludedPath/")
+        }
+    }
+
+    // 扫描目录白名单为空时表示扫描全部存储
+    fun isPathInsideScanFolders(path: String): Boolean {
+        if (scanFolders.isEmpty()) return true
+        if (path.isBlank()) return false
+
+        return scanFolders.any { scanFolder ->
+            path == scanFolder || path.startsWith("$scanFolder/")
         }
     }
 

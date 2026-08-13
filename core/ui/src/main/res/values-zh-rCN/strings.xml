@@ -132,6 +132,10 @@
     <string name="manage_folders">管理文件夹</string>
     <string name="ff_rewind">快进/快退</string>
     <string name="manage_folders_desc">选择要在媒体库中排除的文件夹</string>
+    <string name="scan_folders">扫描目录</string>
+    <string name="scan_folders_desc">仅扫描指定目录中的视频</string>
+    <string name="scan_folders_empty_desc">未添加目录，将扫描全部存储</string>
+    <string name="add_folder">添加目录</string>
     <string name="screen_rotation">屏幕旋转</string>
     <string name="automatic">自动（传感器）</string>
     <string name="landscape">横向</string>

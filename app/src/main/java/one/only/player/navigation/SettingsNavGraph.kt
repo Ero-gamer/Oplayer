@@ -27,10 +27,12 @@ import one.only.player.settings.navigation.navigateToLogs
 import one.only.player.settings.navigation.navigateToMediaLibraryPreferencesScreen
 import one.only.player.settings.navigation.navigateToPlayerPreferences
 import one.only.player.settings.navigation.navigateToPrivacyPreferences
+import one.only.player.settings.navigation.navigateToScanFolderPreferencesScreen
 import one.only.player.settings.navigation.navigateToSubtitlePreferences
 import one.only.player.settings.navigation.navigateToThumbnailPreferencesScreen
 import one.only.player.settings.navigation.playerPreferencesScreen
 import one.only.player.settings.navigation.privacyPreferencesScreen
+import one.only.player.settings.navigation.scanFolderPreferencesScreen
 import one.only.player.settings.navigation.subtitlePreferencesScreen
 import one.only.player.settings.navigation.thumbnailPreferencesScreen
 
@@ -53,12 +55,16 @@ fun NavGraphBuilder.settingsDetailNavGraph(
     mediaLibraryPreferencesScreen(
         onNavigateUp = navController::navigateUp,
         onFolderSettingClick = navController::navigateToFolderPreferencesScreen,
+        onScanFolderSettingClick = navController::navigateToScanFolderPreferencesScreen,
         onThumbnailSettingClick = navController::navigateToThumbnailPreferencesScreen,
     )
     thumbnailPreferencesScreen(
         onNavigateUp = navController::navigateUp,
     )
     folderPreferencesScreen(
+        onNavigateUp = navController::navigateUp,
+    )
+    scanFolderPreferencesScreen(
         onNavigateUp = navController::navigateUp,
     )
     playerPreferencesScreen(

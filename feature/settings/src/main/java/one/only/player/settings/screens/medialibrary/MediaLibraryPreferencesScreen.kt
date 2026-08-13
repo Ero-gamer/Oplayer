@@ -43,6 +43,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 fun MediaLibraryPreferencesScreen(
     onNavigateUp: () -> Unit,
     onFolderSettingClick: () -> Unit = {},
+    onScanFolderSettingClick: () -> Unit = {},
     onThumbnailSettingClick: () -> Unit = {},
     viewModel: MediaLibraryPreferencesViewModel = hiltViewModel(),
 ) {
@@ -67,6 +68,7 @@ fun MediaLibraryPreferencesScreen(
         hasAllFilesAccess = hasAllFilesAccess,
         onNavigateUp = onNavigateUp,
         onFolderSettingClick = onFolderSettingClick,
+        onScanFolderSettingClick = onScanFolderSettingClick,
         onThumbnailSettingClick = onThumbnailSettingClick,
         onOpenAllFilesAccessSettings = {
             context.startActivity(createManageExternalStorageAccessIntent(context))
@@ -88,6 +90,7 @@ private fun MediaLibraryPreferencesContent(
     hasAllFilesAccess: Boolean,
     onNavigateUp: () -> Unit,
     onFolderSettingClick: () -> Unit,
+    onScanFolderSettingClick: () -> Unit,
     onThumbnailSettingClick: () -> Unit,
     onOpenAllFilesAccessSettings: () -> Unit,
     onToggleIgnoreNoMediaFiles: (Boolean) -> Unit,
@@ -189,6 +192,15 @@ private fun MediaLibraryPreferencesContent(
                     isLastItem = false,
                 )
                 ClickablePreferenceItem(
+                    modifier = Modifier.testTag("item_settings_media_scan_folders"),
+                    title = stringResource(id = R.string.scan_folders),
+                    description = stringResource(id = R.string.scan_folders_desc),
+                    icon = NextIcons.Folder,
+                    onClick = onScanFolderSettingClick,
+                    isFirstItem = false,
+                    isLastItem = false,
+                )
+                ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_folders"),
                     title = stringResource(id = R.string.manage_folders),
                     description = stringResource(id = R.string.manage_folders_desc),
@@ -229,6 +241,7 @@ private fun MediaLibraryPreferencesScreenPreview() {
             hasAllFilesAccess = false,
             onNavigateUp = {},
             onFolderSettingClick = {},
+            onScanFolderSettingClick = {},
             onThumbnailSettingClick = {},
             onOpenAllFilesAccessSettings = {},
             onToggleIgnoreNoMediaFiles = {},

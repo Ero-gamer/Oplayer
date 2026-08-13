@@ -148,6 +148,10 @@
     <string name="enter_a_network_url">輸入一個網路 URL：</string>
     <string name="thumbnail">縮圖</string>
     <string name="manage_folders_desc">選擇的資料夾將被排除在媒體庫之外</string>
+    <string name="scan_folders">掃描目錄</string>
+    <string name="scan_folders_desc">僅掃描指定目錄中的影片</string>
+    <string name="scan_folders_empty_desc">未新增目錄，將掃描全部儲存空間</string>
+    <string name="add_folder">新增目錄</string>
     <string name="remember_brightness_level">記住亮度等級</string>
     <string name="landscape">橫向</string>
     <string name="system_caption_style_desc">點擊以開啟系統字幕偏好設定</string>

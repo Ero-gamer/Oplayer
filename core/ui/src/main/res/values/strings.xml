@@ -139,6 +139,10 @@
     <string name="ignore_nomedia_files">Ignore .nomedia files</string>
     <string name="ignore_nomedia_files_desc">Show videos inside directories that contain a .nomedia file, including their subdirectories. Requires all files access.</string>
     <string name="manage_folders_desc">Select folders to be excluded in the media library</string>
+    <string name="scan_folders">Scan folders</string>
+    <string name="scan_folders_desc">Only scan videos in the selected folders</string>
+    <string name="scan_folders_empty_desc">No folders added, all storage will be scanned</string>
+    <string name="add_folder">Add folder</string>
     <string name="video">Video</string>
     <string name="videos">Videos</string>
     <string name="screen_rotation">Screen Rotation</string>
