@@ -66,8 +66,6 @@ import one.only.player.feature.videopicker.composables.MediaView
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.RenameDialog
-import one.only.player.feature.videopicker.composables.SelectionBarAction
-import one.only.player.feature.videopicker.composables.SelectionBottomBar
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.state.SelectedVideo
 import one.only.player.feature.videopicker.state.SelectionManager
@@ -203,6 +201,14 @@ internal fun SearchScreen(
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        val primaryActions = searchSelectionPrimaryActions(
+                            selectionManager = selectionManager,
+                            selectedVideos = selectedVideos,
+                            selectedFolders = selectedFolders,
+                            selectedVideoUris = selectedVideoUris,
+                            onEvent = onEvent,
+                            onMoveSelectionStarted = onMoveSelectionStarted,
+                        )
                         val overflowActions = searchSelectionOverflowActions(
                             selectionManager = selectionManager,
                             selectedVideos = selectedVideos,
@@ -211,24 +217,25 @@ internal fun SearchScreen(
                             onRenameRequest = { video -> showRenameActionFor = video },
                             onInfoRequest = { video -> showInfoActionFor = video },
                         )
-                        if (overflowActions.isNotEmpty()) {
-                            IconButton(
-                                onClick = { shouldShowSelectionMenu = true },
-                                holdDownState = shouldShowSelectionMenu,
-                                modifier = Modifier.testTag("btn_search_selection_more"),
-                            ) {
-                                Icon(
-                                    imageVector = NextIcons.MoreVert,
-                                    contentDescription = stringResource(id = R.string.more_actions),
-                                    tint = MiuixTheme.colorScheme.onBackground,
-                                )
-                            }
-                            MenuActionsPopup(
-                                expanded = shouldShowSelectionMenu,
-                                onDismissRequest = { shouldShowSelectionMenu = false },
-                                groups = listOf(overflowActions),
+                        val deleteMenuAction = searchSelectionDeleteAction(
+                            onDeleteRequest = { shouldShowDeleteConfirmation = true },
+                        )
+                        IconButton(
+                            onClick = { shouldShowSelectionMenu = true },
+                            holdDownState = shouldShowSelectionMenu,
+                            modifier = Modifier.testTag("btn_search_selection_more"),
+                        ) {
+                            Icon(
+                                imageVector = NextIcons.MoreVert,
+                                contentDescription = stringResource(id = R.string.more_actions),
+                                tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        MenuActionsPopup(
+                            expanded = shouldShowSelectionMenu,
+                            onDismissRequest = { shouldShowSelectionMenu = false },
+                            groups = listOf(primaryActions, overflowActions, listOf(deleteMenuAction)),
+                        )
                     },
                 )
             }
@@ -268,24 +275,6 @@ internal fun SearchScreen(
                         selectionManager = selectionManager,
                     )
                 }
-
-                SelectionBottomBar(
-                    isVisible = selectionManager.isInSelectionMode,
-                    actions = searchSelectionPrimaryActions(
-                        selectionManager = selectionManager,
-                        selectedVideos = selectedVideos,
-                        selectedFolders = selectedFolders,
-                        selectedVideoUris = selectedVideoUris,
-                        onEvent = onEvent,
-                        onMoveSelectionStarted = onMoveSelectionStarted,
-                        onDeleteRequest = { shouldShowDeleteConfirmation = true },
-                    ),
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(updatedScaffoldPadding)
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp),
-                )
             }
         }
     }
@@ -509,7 +498,7 @@ private fun SearchResultsContent(
     }
 }
 
-// 搜索页选中模式底部操作栏的高频操作。
+// 搜索页选中模式菜单的高频操作组：分享/收藏/移动；删除单独成组置底。
 @Composable
 private fun searchSelectionPrimaryActions(
     selectionManager: SelectionManager,
@@ -518,18 +507,17 @@ private fun searchSelectionPrimaryActions(
     selectedVideoUris: List<String>,
     onEvent: (SearchUiEvent) -> Unit,
     onMoveSelectionStarted: () -> Unit,
-    onDeleteRequest: () -> Unit,
-): List<SelectionBarAction> = listOf(
-    SelectionBarAction(
-        label = stringResource(id = R.string.share),
+): List<MenuAction> = listOf(
+    MenuAction(
+        text = stringResource(id = R.string.share),
         icon = NextIcons.Share,
         testTag = "item_search_selection_share",
         onClick = {
             onEvent(SearchUiEvent.ShareVideos(selectedVideoUris))
         },
     ),
-    SelectionBarAction(
-        label = stringResource(id = R.string.favorites),
+    MenuAction(
+        text = stringResource(id = R.string.favorites),
         icon = NextIcons.LibraryBooks,
         testTag = "item_search_selection_add_favorites",
         onClick = {
@@ -537,8 +525,8 @@ private fun searchSelectionPrimaryActions(
             selectionManager.exitSelectionMode()
         },
     ),
-    SelectionBarAction(
-        label = stringResource(id = R.string.move),
+    MenuAction(
+        text = stringResource(id = R.string.move),
         icon = NextIcons.DriveFileMove,
         testTag = "item_search_selection_move",
         onClick = {
@@ -552,13 +540,15 @@ private fun searchSelectionPrimaryActions(
             onMoveSelectionStarted()
         },
     ),
-    SelectionBarAction(
-        label = stringResource(id = R.string.delete),
-        icon = NextIcons.Delete,
-        testTag = "item_search_selection_delete",
-        isDestructive = true,
-        onClick = onDeleteRequest,
-    ),
+)
+
+// 删除入口单独成组，置于菜单末尾，用分隔线与其它操作区隔。
+@Composable
+private fun searchSelectionDeleteAction(onDeleteRequest: () -> Unit): MenuAction = MenuAction(
+    text = stringResource(id = R.string.delete),
+    icon = NextIcons.Delete,
+    testTag = "item_search_selection_delete",
+    onClick = onDeleteRequest,
 )
 
 // 搜索页选中模式顶栏溢出菜单的低频操作。

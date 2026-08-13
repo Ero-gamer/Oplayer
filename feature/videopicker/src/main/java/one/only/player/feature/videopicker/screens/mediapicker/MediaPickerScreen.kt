@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -80,9 +79,6 @@ import one.only.player.feature.videopicker.composables.MoveTargetView
 import one.only.player.feature.videopicker.composables.NoVideosFound
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.RenameDialog
-import one.only.player.feature.videopicker.composables.SelectionBarAction
-import one.only.player.feature.videopicker.composables.SelectionBottomBar
-import one.only.player.feature.videopicker.composables.TextIconToggleButton
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
@@ -348,6 +344,14 @@ internal fun MediaPickerScreen(
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        val primaryActions = selectionPrimaryActions(
+                            isLibraryMode = isLibraryMode,
+                            isRecycleBinMode = isRecycleBinMode,
+                            selectionManager = selectionManager,
+                            uiState = uiState,
+                            onEvent = onEvent,
+                            onMoveSelectionStarted = onMoveSelectionStarted,
+                        )
                         val overflowActions = selectionOverflowActions(
                             isLibraryMode = isLibraryMode,
                             isRecycleBinMode = isRecycleBinMode,
@@ -357,24 +361,27 @@ internal fun MediaPickerScreen(
                             onRenameRequest = { video -> showRenameActionFor = video },
                             onInfoRequest = { video -> showInfoActionFor = video },
                         )
-                        if (overflowActions.isNotEmpty()) {
-                            IconButton(
-                                onClick = { shouldShowSelectionMenu = true },
-                                holdDownState = shouldShowSelectionMenu,
-                                modifier = Modifier.testTag("btn_selection_more"),
-                            ) {
-                                Icon(
-                                    imageVector = NextIcons.MoreVert,
-                                    contentDescription = stringResource(id = R.string.more_actions),
-                                    tint = MiuixTheme.colorScheme.onBackground,
-                                )
-                            }
-                            MenuActionsPopup(
-                                expanded = shouldShowSelectionMenu,
-                                onDismissRequest = { shouldShowSelectionMenu = false },
-                                groups = listOf(overflowActions),
+                        val deleteMenuAction = selectionDeleteAction(
+                            isRecycleBinMode = isRecycleBinMode,
+                            deleteAction = deleteAction,
+                            onDeleteRequest = { shouldShowDeleteVideosConfirmation = true },
+                        )
+                        IconButton(
+                            onClick = { shouldShowSelectionMenu = true },
+                            holdDownState = shouldShowSelectionMenu,
+                            modifier = Modifier.testTag("btn_selection_more"),
+                        ) {
+                            Icon(
+                                imageVector = NextIcons.MoreVert,
+                                contentDescription = stringResource(id = R.string.more_actions),
+                                tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        MenuActionsPopup(
+                            expanded = shouldShowSelectionMenu,
+                            onDismissRequest = { shouldShowSelectionMenu = false },
+                            groups = listOf(primaryActions, overflowActions, listOf(deleteMenuAction)),
+                        )
                     } else {
                         if (isLibraryMode) {
                             IconButton(
@@ -533,25 +540,6 @@ internal fun MediaPickerScreen(
                             .padding(end = 21.dp, bottom = 16.dp),
                     )
                 }
-
-                SelectionBottomBar(
-                    isVisible = selectionManager.isInSelectionMode && !isMoveMode,
-                    actions = selectionPrimaryActions(
-                        isLibraryMode = isLibraryMode,
-                        isRecycleBinMode = isRecycleBinMode,
-                        deleteAction = deleteAction,
-                        selectionManager = selectionManager,
-                        uiState = uiState,
-                        onEvent = onEvent,
-                        onMoveSelectionStarted = onMoveSelectionStarted,
-                        onDeleteRequest = { shouldShowDeleteVideosConfirmation = true },
-                    ),
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(scaffoldPadding.withBottomFallback())
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 12.dp),
-                )
             }
         }
     }
@@ -1038,22 +1026,20 @@ private enum class MediaPickerDeleteAction {
     PermanentlyDelete,
 }
 
-// 选中模式底部操作栏的高频操作：回收站为恢复+删除，媒体库为分享/收藏/移动/删除。
+// 选中模式菜单的高频操作组：回收站为恢复+分享，媒体库为分享/收藏/移动；删除单独成组置底。
 @Composable
 private fun selectionPrimaryActions(
     isLibraryMode: Boolean,
     isRecycleBinMode: Boolean,
-    deleteAction: MediaPickerDeleteAction,
     selectionManager: SelectionManager,
     uiState: MediaPickerUiState,
     onEvent: (MediaPickerUiEvent) -> Unit,
     onMoveSelectionStarted: () -> Unit,
-    onDeleteRequest: () -> Unit,
-): List<SelectionBarAction> {
-    val actions = mutableListOf<SelectionBarAction>()
+): List<MenuAction> {
+    val actions = mutableListOf<MenuAction>()
     if (isRecycleBinMode) {
-        actions += SelectionBarAction(
-            label = stringResource(id = R.string.restore),
+        actions += MenuAction(
+            text = stringResource(id = R.string.restore),
             icon = NextIcons.ArrowUpward,
             testTag = "item_selection_restore",
             onClick = {
@@ -1062,8 +1048,8 @@ private fun selectionPrimaryActions(
             },
         )
     }
-    actions += SelectionBarAction(
-        label = stringResource(id = R.string.share),
+    actions += MenuAction(
+        text = stringResource(id = R.string.share),
         icon = NextIcons.Share,
         testTag = "item_selection_share",
         onClick = {
@@ -1071,12 +1057,12 @@ private fun selectionPrimaryActions(
         },
     )
     if (isLibraryMode) {
-        actions += SelectionBarAction(
-            label = stringResource(id = R.string.favorites),
+        actions += MenuAction(
+            text = stringResource(id = R.string.favorites),
             icon = NextIcons.LibraryBooks,
             testTag = "item_selection_add_favorites",
             onClick = {
-                val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@SelectionBarAction
+                val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@MenuAction
                 val selectedVideos = selectionManager.selectedVideos.mapNotNull { selectedVideo ->
                     rootFolder.allMediaList.firstOrNull { video -> video.uriString == selectedVideo.uriString }
                 }
@@ -1087,8 +1073,8 @@ private fun selectionPrimaryActions(
                 selectionManager.exitSelectionMode()
             },
         )
-        actions += SelectionBarAction(
-            label = stringResource(id = R.string.move),
+        actions += MenuAction(
+            text = stringResource(id = R.string.move),
             icon = NextIcons.DriveFileMove,
             testTag = "item_selection_move",
             onClick = {
@@ -1102,22 +1088,28 @@ private fun selectionPrimaryActions(
             },
         )
     }
-    actions += SelectionBarAction(
-        label = stringResource(
-            id = when (deleteAction) {
-                MediaPickerDeleteAction.MoveToRecycleBin -> R.string.delete
-                MediaPickerDeleteAction.PermanentlyDelete -> {
-                    if (isRecycleBinMode) R.string.delete_permanently else R.string.delete
-                }
-            },
-        ),
-        icon = NextIcons.Delete,
-        testTag = "item_selection_delete",
-        isDestructive = true,
-        onClick = onDeleteRequest,
-    )
     return actions
 }
+
+// 删除入口单独成组，置于菜单末尾，用分隔线与其它操作区隔。
+@Composable
+private fun selectionDeleteAction(
+    isRecycleBinMode: Boolean,
+    deleteAction: MediaPickerDeleteAction,
+    onDeleteRequest: () -> Unit,
+): MenuAction = MenuAction(
+    text = stringResource(
+        id = when (deleteAction) {
+            MediaPickerDeleteAction.MoveToRecycleBin -> R.string.delete
+            MediaPickerDeleteAction.PermanentlyDelete -> {
+                if (isRecycleBinMode) R.string.delete_permanently else R.string.delete
+            }
+        },
+    ),
+    icon = NextIcons.Delete,
+    testTag = "item_selection_delete",
+    onClick = onDeleteRequest,
+)
 
 // 选中模式顶栏溢出菜单的低频操作：重命名/详情仅单选视频可用，排除仅选中文件夹时可用。
 @Composable
@@ -1303,18 +1295,6 @@ private fun MediaPickerScreenPreview(
                     mediaLayoutMode = MediaLayoutMode.GRID,
                 ),
             ),
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun ButtonPreview() {
-    Surface {
-        TextIconToggleButton(
-            text = "Title",
-            icon = NextIcons.Title,
-            onClick = {},
         )
     }
 }

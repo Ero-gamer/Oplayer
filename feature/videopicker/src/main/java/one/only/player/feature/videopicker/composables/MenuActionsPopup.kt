@@ -1,6 +1,7 @@
 package one.only.player.feature.videopicker.composables
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
@@ -45,33 +46,37 @@ fun MenuActionsPopup(
         ListPopupColumn {
             var actionIndex = 0
             visibleGroups.forEachIndexed { groupIndex, group ->
-                if (groupIndex > 0) HorizontalDivider()
-                group.forEach { action ->
+                group.forEachIndexed { indexInGroup, action ->
                     val currentIndex = actionIndex++
-                    Box(modifier = Modifier.testTag(action.testTag)) {
-                        DropdownImpl(
-                            item = DropdownItem(
-                                text = action.text,
-                                icon = { modifier ->
-                                    Icon(
-                                        imageVector = action.icon,
-                                        contentDescription = null,
-                                        modifier = modifier,
-                                    )
+                    // 分隔线并入分组首项，保证 ListPopupColumn 的直接子节点数等于操作数；
+                    // 它的可见高度按前 8 个子节点计算，分隔线单独占位会把末尾操作挤进滚动区。
+                    Column {
+                        if (groupIndex > 0 && indexInGroup == 0) HorizontalDivider()
+                        Box(modifier = Modifier.testTag(action.testTag)) {
+                            DropdownImpl(
+                                item = DropdownItem(
+                                    text = action.text,
+                                    icon = { modifier ->
+                                        Icon(
+                                            imageVector = action.icon,
+                                            contentDescription = null,
+                                            modifier = modifier,
+                                        )
+                                    },
+                                ),
+                                optionSize = actionCount,
+                                isSelected = false,
+                                index = currentIndex,
+                                dropdownColors = DropdownDefaults.dropdownColors(),
+                                isFirst = currentIndex == 0,
+                                isLast = currentIndex == actionCount - 1,
+                                onSelectedIndexChange = {
+                                    dismiss?.invoke()
+                                    onDismissRequest()
+                                    action.onClick()
                                 },
-                            ),
-                            optionSize = actionCount,
-                            isSelected = false,
-                            index = currentIndex,
-                            dropdownColors = DropdownDefaults.dropdownColors(),
-                            isFirst = currentIndex == 0,
-                            isLast = currentIndex == actionCount - 1,
-                            onSelectedIndexChange = {
-                                dismiss?.invoke()
-                                onDismissRequest()
-                                action.onClick()
-                            },
-                        )
+                            )
+                        }
                     }
                 }
             }

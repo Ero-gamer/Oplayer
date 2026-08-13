@@ -1,6 +1,5 @@
 package one.only.player.feature.videopicker.composables
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -43,6 +41,7 @@ import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.extensions.name
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
+import top.yukonga.miuix.kmp.basic.TabRowWithContour
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -89,7 +88,7 @@ fun QuickSettingsDialog(
             ) {
                 if (target == QuickSettingsTarget.LOCAL) {
                     QuickSettingsSection(title = stringResource(R.string.media_view_mode)) {
-                        QuickSettingsChoiceRow(
+                        QuickSettingsTabRow(
                             options = MediaViewMode.entries,
                             selectedOption = preferences.mediaViewMode,
                             label = MediaViewMode::name,
@@ -99,7 +98,7 @@ fun QuickSettingsDialog(
                     }
                 }
                 QuickSettingsSection(title = stringResource(R.string.media_layout)) {
-                    QuickSettingsChoiceRow(
+                    QuickSettingsTabRow(
                         options = MediaLayoutMode.entries,
                         selectedOption = layoutMode,
                         label = MediaLayoutMode::name,
@@ -134,12 +133,14 @@ fun QuickSettingsDialog(
                     }
                 }
                 QuickSettingsSection(title = stringResource(R.string.sort)) {
-                    SortOptions(
-                        selectedSortBy = sortBy,
+                    QuickSettingsTabRow(
                         options = target.supportedSortOptions,
+                        selectedOption = sortBy,
+                        label = { it.label() },
                         onOptionSelected = { preferences = preferences.withSortBy(target, cloudServerId, it) },
+                        modifier = Modifier.testTag("tabs_${target.dialogTestTag}_sort_by"),
                     )
-                    QuickSettingsChoiceRow(
+                    QuickSettingsTabRow(
                         options = Sort.Order.entries,
                         selectedOption = sortOrder,
                         label = { it.name(sortBy = sortBy) },
@@ -181,76 +182,38 @@ fun QuickSettingsDialog(
     )
 }
 
-// 标题放在卡片外，设置项收进独立卡片，与设置页保持一致。
+// 标题在控件上方，控件直接铺在对话框背景上，与 miuix 原生对话框风格一致。
 @Composable
 private fun QuickSettingsSection(
     title: String,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
             text = title,
             style = MiuixTheme.textStyles.subtitle,
             color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             modifier = Modifier.padding(start = 4.dp),
         )
-        Surface(
-            shape = RoundedCornerShape(SectionCornerRadius),
-            color = MiuixTheme.colorScheme.surfaceContainerHigh,
-            border = BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.18f)),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                content = content,
-            )
-        }
+        content()
     }
 }
 
+// 单选项使用 miuix 分段控件，选项少时自动铺满整行，多时可横向滚动。
 @Composable
-private fun <T> QuickSettingsChoiceRow(
+private fun <T> QuickSettingsTabRow(
     options: List<T>,
     selectedOption: T,
     label: @Composable (T) -> String,
     onOptionSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        options.forEach { option ->
-            QuickSettingsChoice(
-                label = label(option),
-                isSelected = option == selectedOption,
-                onClick = { onOptionSelected(option) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun RowScope.QuickSettingsChoice(
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.surface,
-        border = if (isSelected) null else BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f)),
-        modifier = Modifier.weight(1f),
-    ) {
-        Text(
-            text = label,
-            style = MiuixTheme.textStyles.body1,
-            color = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 11.dp),
-        )
-    }
+    TabRowWithContour(
+        tabs = options.map { option -> label(option) },
+        selectedTabIndex = options.indexOf(selectedOption).coerceAtLeast(0),
+        onTabSelected = { index -> onOptionSelected(options[index]) },
+        modifier = modifier,
+    )
 }
 
 @Composable
@@ -263,7 +226,9 @@ private fun MediaLayoutScaleControls(
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
     ) {
         Text(
             text = stringResource(R.string.media_layout_scale),
@@ -307,7 +272,7 @@ private fun ScaleIconButton(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(10.dp),
-        color = MiuixTheme.colorScheme.surfaceContainerHigh,
+        color = MiuixTheme.colorScheme.secondaryContainer,
         modifier = Modifier.testTag(testTag),
     ) {
         Icon(
@@ -444,6 +409,7 @@ private fun QuickSettingsFields(
     }
 }
 
+// 多选字段用胶囊 Chip，选中态填充主题色，与 miuix 无边框风格一致。
 @Composable
 fun FieldChip(
     key: String,
@@ -451,62 +417,19 @@ fun FieldChip(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    selectedIcon: ImageVector = NextIcons.CheckBox,
-    unselectedIcon: ImageVector = NextIcons.CheckBoxOutline,
 ) {
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(50),
-        color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.surface,
-        border = if (isSelected) {
-            null
-        } else {
-            BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.3f))
-        },
+        color = if (isSelected) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.secondaryContainer,
         modifier = modifier.testTag("chip_quick_settings_field_$key"),
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Icon(
-                imageVector = if (isSelected) selectedIcon else unselectedIcon,
-                contentDescription = label,
-                modifier = Modifier.size(18.dp),
-                tint = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.secondary,
-            )
-            Text(
-                text = label,
-                color = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SortOptions(
-    selectedSortBy: Sort.By,
-    options: List<Sort.By>,
-    onOptionSelected: (Sort.By) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-            .fillMaxWidth(),
-    ) {
-        options.forEach { option ->
-            TextIconToggleButton(
-                text = option.label(),
-                icon = option.icon(),
-                isSelected = selectedSortBy == option,
-                onClick = { onOptionSelected(option) },
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("btn_quick_settings_sort_${option.name.lowercase()}"),
-            )
-        }
+        Text(
+            text = label,
+            style = MiuixTheme.textStyles.body2,
+            color = if (isSelected) MiuixTheme.colorScheme.onPrimary else MiuixTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
+        )
     }
 }
 
@@ -627,14 +550,6 @@ private fun Sort.By.label(): String = when (this) {
     Sort.By.PATH -> stringResource(id = R.string.location)
 }
 
-private fun Sort.By.icon(): ImageVector = when (this) {
-    Sort.By.TITLE -> NextIcons.Title
-    Sort.By.LENGTH -> NextIcons.Length
-    Sort.By.DATE -> NextIcons.Calendar
-    Sort.By.SIZE -> NextIcons.Size
-    Sort.By.PATH -> NextIcons.Location
-}
-
 @Preview
 @Composable
 fun QuickSettingsPreview() {
@@ -644,4 +559,3 @@ fun QuickSettingsPreview() {
 }
 
 private val SectionSpacing = 14.dp
-private val SectionCornerRadius = 16.dp
