@@ -27,6 +27,8 @@ internal class NormalizingAssMatroskaExtractor(
 
     private var currentAttachmentName: String? = null
     private var currentAttachmentMime: String? = null
+    private var isCurrentTrackWebmVtt = false
+    private val webmVttTrackNumbers = mutableSetOf<Int>()
     private val subtitleSample = subtitleSampleField.get(this) as ParsableByteArray
 
     override fun getElementType(id: Int): Int = when (id) {
@@ -53,6 +55,10 @@ internal class NormalizingAssMatroskaExtractor(
                 wrapExtractorOutput()
                 super.startMasterElement(id, contentPosition, contentSize)
             }
+            ID_TRACK_ENTRY -> {
+                isCurrentTrackWebmVtt = false
+                super.startMasterElement(id, contentPosition, contentSize)
+            }
             ID_ATTACHED_FILE -> clearAttachment()
             else -> super.startMasterElement(id, contentPosition, contentSize)
         }
@@ -70,6 +76,13 @@ internal class NormalizingAssMatroskaExtractor(
                 super.endMasterElement(id)
                 publishUpdatedTrackFormats()
             }
+            ID_TRACK_ENTRY -> {
+                if (isCurrentTrackWebmVtt) {
+                    webmVttTrackNumbers += getCurrentTrack(id).number
+                    isCurrentTrackWebmVtt = false
+                }
+                super.endMasterElement(id)
+            }
             ID_ATTACHED_FILE -> clearAttachment()
             else -> super.endMasterElement(id)
         }
@@ -80,6 +93,10 @@ internal class NormalizingAssMatroskaExtractor(
         when (id) {
             ID_FILE_NAME -> currentAttachmentName = value
             ID_FILE_MIME_TYPE -> currentAttachmentMime = value
+            ID_CODEC_ID -> {
+                isCurrentTrackWebmVtt = value in WEBM_VTT_CODEC_IDS
+                super.stringElement(id, if (isCurrentTrackWebmVtt) MATROSKA_VTT_CODEC_ID else value)
+            }
             else -> super.stringElement(id, value)
         }
     }
@@ -89,6 +106,11 @@ internal class NormalizingAssMatroskaExtractor(
         contentSize: Int,
         input: ExtractorInput,
     ) {
+        if (id == ID_BLOCK) {
+            super.binaryElement(id, contentSize, input)
+            maybeRewriteWebmVttSample()
+            return
+        }
         if (id != ID_FILE_DATA) {
             super.binaryElement(id, contentSize, input)
             return
@@ -126,6 +148,51 @@ internal class NormalizingAssMatroskaExtractor(
         currentAttachmentMime = null
     }
 
+    /**
+     * WebM 规范（ffmpeg / Chrome 产出）内嵌 VTT 的 block 载荷为 “cue id\ncue settings\ncue text”，
+     * 与 Matroska 规范的 S_TEXT/WEBVTT 不同。MatroskaExtractor 已把载荷写入 subtitleSample 并加上
+     * “WEBVTT\n\n00:00:00.000 --> 00:00:00.000\n” 前缀，这里去掉 id 行并把 settings 合并到时间码行，
+     * 使 WebvttParser 能正确解析。结束时间码由 MatroskaExtractor 在固定偏移处回写，不能改动前缀区。
+     */
+    private fun maybeRewriteWebmVttSample() {
+        if (webmVttTrackNumbers.isEmpty()) return
+        if (blockTrackNumberField.getInt(this) !in webmVttTrackNumbers) return
+
+        val limit = subtitleSample.limit()
+        if (limit <= VTT_SAMPLE_PREFIX_LENGTH) return
+
+        val data = subtitleSample.data
+        var idEnd = -1
+        var settingsEnd = -1
+        for (index in VTT_SAMPLE_PREFIX_LENGTH until limit) {
+            if (data[index] != NEWLINE) continue
+            if (idEnd < 0) {
+                idEnd = index
+            } else {
+                settingsEnd = index
+                break
+            }
+        }
+        if (idEnd < 0 || settingsEnd < 0) return
+
+        val headerLength = VTT_SAMPLE_PREFIX_LENGTH - 1
+        val settingsLength = settingsEnd - idEnd - 1
+        val settingsExtra = if (settingsLength > 0) settingsLength + 1 else 0
+        val textLength = limit - settingsEnd - 1
+        val rewritten = ByteArray(headerLength + settingsExtra + 1 + textLength)
+        data.copyInto(rewritten, destinationOffset = 0, startIndex = 0, endIndex = headerLength)
+        var offset = headerLength
+        if (settingsLength > 0) {
+            rewritten[offset] = SPACE
+            data.copyInto(rewritten, destinationOffset = offset + 1, startIndex = idEnd + 1, endIndex = settingsEnd)
+            offset += settingsLength + 1
+        }
+        rewritten[offset] = NEWLINE
+        offset++
+        data.copyInto(rewritten, destinationOffset = offset, startIndex = settingsEnd + 1, endIndex = limit)
+        subtitleSample.reset(rewritten, rewritten.size)
+    }
+
     private fun publishUpdatedTrackFormats() {
         val tracks = tracksField.get(this) as SparseArray<*>
         for (index in 0 until tracks.size()) {
@@ -145,10 +212,27 @@ internal class NormalizingAssMatroskaExtractor(
         private const val ID_FILE_NAME = 0x466E
         private const val ID_FILE_MIME_TYPE = 0x4660
         private const val ID_FILE_DATA = 0x465C
+        private const val ID_TRACK_ENTRY = 0xAE
+        private const val ID_CODEC_ID = 0x86
+        private const val ID_BLOCK = 0xA1
 
         private const val ELEMENT_TYPE_MASTER = 1
         private const val ELEMENT_TYPE_STRING = 3
         private const val ELEMENT_TYPE_BINARY = 4
+
+        private const val MATROSKA_VTT_CODEC_ID = "S_TEXT/WEBVTT"
+
+        // “WEBVTT\n\n00:00:00.000 --> 00:00:00.000\n” 的字节长度，与 MatroskaExtractor.VTT_PREFIX 一致
+        private const val VTT_SAMPLE_PREFIX_LENGTH = 38
+
+        private const val NEWLINE = '\n'.code.toByte()
+        private const val SPACE = ' '.code.toByte()
+
+        private val WEBM_VTT_CODEC_IDS = setOf(
+            "D_WEBVTT/SUBTITLES",
+            "D_WEBVTT/CAPTIONS",
+            "D_WEBVTT/DESCRIPTIONS",
+        )
 
         private val FONT_MIME_TYPES = setOf(
             "font/ttf",
@@ -172,6 +256,10 @@ internal class NormalizingAssMatroskaExtractor(
         }
 
         private val tracksField: Field = MatroskaExtractor::class.java.getDeclaredField("tracks").apply {
+            isAccessible = true
+        }
+
+        private val blockTrackNumberField: Field = MatroskaExtractor::class.java.getDeclaredField("blockTrackNumber").apply {
             isAccessible = true
         }
     }
