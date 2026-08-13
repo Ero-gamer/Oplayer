@@ -63,6 +63,8 @@ class RotationState(
     var currentRequestedOrientation: Int by mutableIntStateOf(activity.requestedOrientation)
         private set
 
+    private var hasSystemIgnoredOrientationRequest = false
+
     fun rotate() {
         val newOrientation = when (activity.resources.configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> LastPlayerScreenOrientation.PORTRAIT
@@ -77,13 +79,34 @@ class RotationState(
     fun handleListeners(disposableEffectScope: DisposableEffectScope): DisposableEffectResult = with(disposableEffectScope) {
         val configurationChangedListener: Consumer<Configuration> = Consumer {
             currentRequestedOrientation = activity.requestedOrientation
+            releaseOrientationRequestIfLetterboxed()
         }
 
         activity.addOnConfigurationChangedListener(configurationChangedListener)
+        releaseOrientationRequestIfLetterboxed()
 
         onDispose {
             activity.removeOnConfigurationChangedListener(configurationChangedListener)
         }
+    }
+
+    /**
+     * 系统开启 ignoreOrientationRequest 时（平板、部分新设备的竖持锁定场景），固定方向请求
+     * 不会旋转屏幕，而是把整个播放器 letterbox 成屏幕中间的小窗。检测到 letterbox 就撤回
+     * 方向请求恢复全屏窗口，并停止本次会话内的自动方向请求，避免反复触发。
+     */
+    private fun releaseOrientationRequestIfLetterboxed() {
+        if (activity.requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) return
+        if (activity.isInMultiWindowMode) return
+        val windowManager = activity.windowManager
+        val windowBounds = windowManager.currentWindowMetrics.bounds
+        val displayBounds = windowManager.maximumWindowMetrics.bounds
+        if (windowBounds == displayBounds) return
+
+        Log.d(TAG, "releaseOrientationRequestIfLetterboxed: window=$windowBounds display=$displayBounds")
+        hasSystemIgnoredOrientationRequest = true
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        currentRequestedOrientation = activity.requestedOrientation
     }
 
     suspend fun observe(player: Player) {
@@ -106,6 +129,7 @@ class RotationState(
     }
 
     private fun maybeApplyVideoOrientation(player: Player) {
+        if (hasSystemIgnoredOrientationRequest) return
         if (screenOrientation != ScreenOrientation.VIDEO_ORIENTATION) return
         if (activity.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) return
         val orientation = getVideoBasedOrientation(player)
@@ -117,6 +141,7 @@ class RotationState(
 
     private fun setOrientation(player: Player) {
         Log.d(TAG, "setOrientation: requestedOrientation=${activity.requestedOrientation}")
+        if (hasSystemIgnoredOrientationRequest) return
         if (activity.requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) return
 
         activity.requestedOrientation = lastScreenOrientation
