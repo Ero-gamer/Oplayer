@@ -57,7 +57,6 @@ fun AudioTrackSelectorContent(
             PanelOptionRow(
                 isSelected = track.isSelected,
                 text = track.mediaTrackGroup.getName(C.TRACK_TYPE_AUDIO, index),
-                isFirstItem = index == 0,
                 onClick = {
                     audioTracksState.switchTrack(index)
                     onDismiss()
@@ -67,8 +66,6 @@ fun AudioTrackSelectorContent(
         PanelOptionRow(
             isSelected = audioTracksState.tracks.none { it.isSelected },
             text = stringResource(R.string.disable),
-            isFirstItem = audioTracksState.tracks.isEmpty(),
-            isLastItem = true,
             onClick = {
                 audioTracksState.switchTrack(-1)
                 onDismiss()

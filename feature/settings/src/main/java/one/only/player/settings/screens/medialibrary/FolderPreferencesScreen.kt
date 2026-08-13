@@ -20,7 +20,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.ui.R
 import one.only.player.core.ui.base.DataState
-import one.only.player.core.ui.components.SegmentedItemGap
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.SelectablePreference
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
@@ -92,7 +92,7 @@ private fun FolderPreferencesContent(
                     contentPadding = innerPadding.withBottomFallback() +
                         PaddingValues(top = SettingsContentTopPadding) +
                         PaddingValues(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                    verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
                     itemsIndexed(uiState.foldersDataState.value) { index, folder ->
                         SelectablePreference(
@@ -101,8 +101,6 @@ private fun FolderPreferencesContent(
                             description = folder.path,
                             isSelected = folder.path in uiState.preferences.excludeFolders,
                             onClick = { onEvent(FolderPreferencesUiEvent.UpdateExcludeList(folder.path)) },
-                            isFirstItem = index == 0,
-                            isLastItem = index == uiState.foldersDataState.value.lastIndex,
                         )
                     }
                 }

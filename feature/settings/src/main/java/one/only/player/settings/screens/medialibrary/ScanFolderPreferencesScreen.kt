@@ -19,9 +19,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.PreferenceItem
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -87,7 +87,7 @@ private fun ScanFolderPreferencesContent(
             contentPadding = innerPadding.withBottomFallback() +
                 PaddingValues(top = SettingsContentTopPadding) +
                 PaddingValues(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+            verticalArrangement = Arrangement.spacedBy(CardItemGap),
         ) {
             itemsIndexed(scanFolders) { index, folderPath ->
                 PreferenceItem(
@@ -96,8 +96,6 @@ private fun ScanFolderPreferencesContent(
                     description = folderPath,
                     icon = NextIcons.Folder,
                     isEnabled = true,
-                    isFirstItem = index == 0,
-                    isLastItem = index == scanFolders.lastIndex,
                     trailingContent = {
                         MiuixIconButton(
                             onClick = { onEvent(ScanFolderPreferencesUiEvent.RemoveFolder(folderPath)) },
@@ -122,8 +120,6 @@ private fun ScanFolderPreferencesContent(
                     description = stringResource(id = R.string.scan_folders_empty_desc).takeIf { scanFolders.isEmpty() },
                     icon = NextIcons.Add,
                     onClick = { directoryPickerLauncher.launch(null) },
-                    isFirstItem = true,
-                    isLastItem = true,
                 )
             }
         }

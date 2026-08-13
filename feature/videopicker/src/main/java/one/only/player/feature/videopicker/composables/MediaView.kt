@@ -35,6 +35,7 @@ import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.model.MediaViewMode
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ListSectionTitle
 import one.only.player.feature.videopicker.state.SelectionManager
 import one.only.player.feature.videopicker.state.rememberSelectionManager
@@ -64,8 +65,8 @@ fun MediaView(
             MediaLayoutMode.GRID -> 8.dp
         }
         val itemSpacing = when (preferences.mediaLayoutMode) {
-            MediaLayoutMode.LIST -> 2.dp
-            MediaLayoutMode.GRID -> 2.dp
+            MediaLayoutMode.LIST -> CardItemGap
+            MediaLayoutMode.GRID -> CardItemGap
         }
         val sectionTitleStartPadding = if (preferences.mediaViewMode == MediaViewMode.FOLDER_TREE) 15.dp else 0.dp
         val maxWidth = this.maxWidth - (contentHorizontalPadding * 2) - itemSpacing
@@ -121,8 +122,6 @@ fun MediaView(
                     isRecentlyPlayedFolder = rootFolder.isRecentlyPlayedVideo(folder.recentlyPlayedVideo),
                     preferences = preferences,
                     isSelected = isFolderSelected,
-                    isFirstItem = index == 0,
-                    isLastItem = index == rootFolder.folderList.lastIndex,
                     onClick = {
                         if (selectionManager.isInSelectionMode) {
                             haptic.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -167,8 +166,6 @@ fun MediaView(
                     video = video,
                     preferences = preferences,
                     isRecentlyPlayedVideo = rootFolder.isRecentlyPlayedVideo(video),
-                    isFirstItem = index == 0,
-                    isLastItem = index == rootFolder.mediaList.lastIndex,
                     isSelected = isVideoSelected,
                     onClick = {
                         if (selectionManager.isInSelectionMode) {

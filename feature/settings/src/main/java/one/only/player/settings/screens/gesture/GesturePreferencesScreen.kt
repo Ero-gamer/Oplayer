@@ -25,13 +25,13 @@ import one.only.player.core.common.extensions.toString
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.NextDialogWithDoneAndCancelButtons
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -99,7 +99,7 @@ private fun GesturePreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_seek"),
@@ -108,7 +108,6 @@ private fun GesturePreferencesContent(
                     icon = NextIcons.SwipeHorizontal,
                     isChecked = uiState.preferences.shouldUseSeekControls,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseSeekControls) },
-                    isFirstItem = true,
                 )
                 PreferenceSlider(
                     modifier = Modifier.testTag("item_settings_gesture_seek_sensitivity"),
@@ -174,7 +173,6 @@ private fun GesturePreferencesContent(
                     value = uiState.preferences.volumeGestureSensitivity,
                     valueRange = 0.1f..2.0f,
                     onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateVolumeGestureSensitivity(it)) },
-                    isLastItem = true,
                     trailingContent = {
                         NextResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_gesture_volume_sensitivity"),
@@ -187,7 +185,7 @@ private fun GesturePreferencesContent(
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_gesture_double_tap"),
@@ -198,13 +196,11 @@ private fun GesturePreferencesContent(
                     isChecked = (uiState.preferences.doubleTapGesture != DoubleTapGesture.NONE),
                     onChecked = { onEvent(GesturePreferencesUiEvent.ToggleDoubleTapGesture) },
                     onClick = { onEvent(GesturePreferencesUiEvent.ShowDialog(GesturePreferenceDialog.DoubleTapDialog)) },
-                    isFirstItem = true,
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_gesture_long_press"),
@@ -215,7 +211,6 @@ private fun GesturePreferencesContent(
                     isChecked = uiState.preferences.shouldUseLongPressControls,
                     onChecked = { onEvent(GesturePreferencesUiEvent.ToggleUseLongPressControls) },
                     onClick = { onEvent(GesturePreferencesUiEvent.ShowDialog(GesturePreferenceDialog.LongPressControlsSpeedDialog)) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_long_press_variable_speed"),
@@ -225,12 +220,11 @@ private fun GesturePreferencesContent(
                     isEnabled = uiState.preferences.shouldUseLongPressControls,
                     isChecked = uiState.preferences.shouldUseLongPressVariableSpeed,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseLongPressVariableSpeed) },
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_zoom"),
@@ -239,7 +233,6 @@ private fun GesturePreferencesContent(
                     icon = NextIcons.Pinch,
                     isChecked = uiState.preferences.shouldUseZoomControls,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseZoomControls) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_pan"),
@@ -249,12 +242,11 @@ private fun GesturePreferencesContent(
                     isEnabled = uiState.preferences.shouldUseZoomControls,
                     isChecked = uiState.preferences.isPanGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnablePanGesture) },
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSlider(
                     modifier = Modifier.testTag("item_settings_gesture_seek_increment"),
@@ -265,8 +257,6 @@ private fun GesturePreferencesContent(
                     value = uiState.preferences.seekIncrement.toFloat(),
                     valueRange = 1.0f..PlayerPreferences.MAX_SEEK_INCREMENT.toFloat(),
                     onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(it.toInt())) },
-                    isFirstItem = true,
-                    isLastItem = true,
                     trailingContent = {
                         NextResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_gesture_seek_increment"),

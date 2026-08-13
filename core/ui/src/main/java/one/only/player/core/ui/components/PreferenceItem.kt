@@ -28,13 +28,11 @@ fun PreferenceItem(
     isEnabled: Boolean,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     showArrow: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem, isLastItem),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = modifier,
     ) {
@@ -60,21 +58,9 @@ fun PreferenceItem(
     }
 }
 
-// 段圆角：仅在段首/段尾大圆角，中间保持小圆角
+// 独立卡片圆角：每个条目使用统一的完整圆角
 @Composable
-internal fun preferenceSegmentShape(
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
-): RoundedCornerShape {
-    val large = 24.dp
-    val small = 0.dp
-    return RoundedCornerShape(
-        topStart = if (isFirstItem) large else small,
-        topEnd = if (isFirstItem) large else small,
-        bottomStart = if (isLastItem) large else small,
-        bottomEnd = if (isLastItem) large else small,
-    )
-}
+internal fun preferenceCardShape(): RoundedCornerShape = RoundedCornerShape(18.dp)
 
 @Composable
 internal fun PreferenceIcon(
@@ -97,11 +83,9 @@ fun SelectablePreference(
     isSelected: Boolean = false,
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem, isLastItem),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = modifier,
     ) {
@@ -123,11 +107,9 @@ fun SingleSelectablePreference(
     isSelected: Boolean = false,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem, isLastItem),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = modifier,
     ) {

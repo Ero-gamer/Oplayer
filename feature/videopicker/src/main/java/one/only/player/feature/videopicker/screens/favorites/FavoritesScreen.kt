@@ -36,11 +36,11 @@ import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
+import one.only.player.core.ui.components.CardItemGap
+import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextSearchTopAppBar
-import one.only.player.core.ui.components.NextSegmentedListItem
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -204,7 +204,7 @@ internal fun FavoritesScreen(
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
                     contentPadding = innerPadding.copy(top = 8.dp, start = 0.dp).withBottomFallback(),
-                    verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                    verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
                     itemsIndexed(
                         uiState.visibleItems,
@@ -212,8 +212,6 @@ internal fun FavoritesScreen(
                     ) { index, item ->
                         FavoriteListItem(
                             item = item,
-                            isFirstItem = index == 0,
-                            isLastItem = index == uiState.visibleItems.lastIndex,
                             onClick = { onEvent(FavoritesUiEvent.OpenItem(item)) },
                             onMoveClick = { movingItem = item },
                             onDeleteClick = { deletingItem = item },
@@ -270,16 +268,12 @@ private fun EmptyFavoritesContent(contentPadding: androidx.compose.foundation.la
 @Composable
 private fun FavoriteListItem(
     item: FavoriteItem,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     onClick: () -> Unit,
     onMoveClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
-    NextSegmentedListItem(
+    NextCardListItem(
         onClick = onClick,
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         modifier = Modifier.testTag("favorite_item_${item.id}"),
         leadingContent = {
             MiuixIcon(

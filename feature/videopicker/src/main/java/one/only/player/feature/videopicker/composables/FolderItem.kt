@@ -31,7 +31,7 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextSegmentedListItem
+import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
@@ -43,8 +43,6 @@ fun FolderItem(
     isRecentlyPlayedFolder: Boolean,
     preferences: ApplicationPreferences,
     modifier: Modifier = Modifier,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     isSelected: Boolean = false,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
@@ -55,8 +53,6 @@ fun FolderItem(
             isRecentlyPlayedFolder = isRecentlyPlayedFolder,
             preferences = preferences,
             modifier = modifier,
-            isFirstItem = isFirstItem,
-            isLastItem = isLastItem,
             isSelected = isSelected,
             onClick = onClick,
             onLongClick = onLongClick,
@@ -66,8 +62,6 @@ fun FolderItem(
             isRecentlyPlayedFolder = isRecentlyPlayedFolder,
             preferences = preferences,
             modifier = modifier,
-            isFirstItem = isFirstItem,
-            isLastItem = isLastItem,
             isSelected = isSelected,
             onClick = onClick,
             onLongClick = onLongClick,
@@ -82,19 +76,15 @@ private fun FolderListItem(
     isRecentlyPlayedFolder: Boolean,
     preferences: ApplicationPreferences,
     modifier: Modifier = Modifier,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     isSelected: Boolean = false,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = modifier.testTag("item_folder_${folder.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
         contentPadding = PaddingValues(8.dp),
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         onClick = onClick,
         onLongClick = onLongClick,
         leadingContent = {
@@ -177,21 +167,17 @@ private fun FolderGridItem(
     isRecentlyPlayedFolder: Boolean,
     preferences: ApplicationPreferences,
     modifier: Modifier = Modifier,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     isSelected: Boolean = false,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = modifier
             .fillMaxWidth()
             .testTag("item_folder_${folder.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
         contentPadding = PaddingValues(8.dp),
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         onClick = onClick,
         onLongClick = onLongClick,
         trailingContent = {

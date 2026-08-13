@@ -117,7 +117,6 @@ fun SubtitleSelectorContent(
                     isSelected = track.isSelected,
                     text = track.mediaTrackGroup.getName(C.TRACK_TYPE_TEXT, index),
                     testTag = "item_subtitle_$index",
-                    isFirstItem = index == 0,
                     onClick = {
                         subtitleTracksState.switchTrack(index)
                         onDismiss()
@@ -128,8 +127,6 @@ fun SubtitleSelectorContent(
                 isSelected = subtitleTracksState.tracks.none { it.isSelected },
                 text = stringResource(R.string.disable),
                 testTag = "item_subtitle_disable",
-                isFirstItem = subtitleTracksState.tracks.isEmpty(),
-                isLastItem = true,
                 onClick = {
                     subtitleTracksState.switchTrack(-1)
                     onDismiss()

@@ -31,11 +31,9 @@ fun PreferenceSwitchWithDivider(
     isChecked: Boolean = true,
     onClick: (() -> Unit) = {},
     onChecked: () -> Unit = {},
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem, isLastItem),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = modifier,
     ) {
@@ -91,7 +89,7 @@ fun PreferenceCheckbox(
     onLongClick: (() -> Unit) = {},
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem = true, isLastItem = true),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
     ) {
         CheckboxPreference(

@@ -27,10 +27,10 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SingleSelectablePreference
@@ -108,7 +108,7 @@ private fun ThumbnailPreferencesContent(
         ) {
             Column(
                 modifier = Modifier.selectableGroup(),
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 SingleSelectablePreference(
                     modifier = Modifier.testTag("option_settings_thumbnail_strategy_first_frame"),
@@ -119,7 +119,6 @@ private fun ThumbnailPreferencesContent(
                         if (preferences.thumbnailGenerationStrategy == ThumbnailGenerationStrategy.FIRST_FRAME) return@SingleSelectablePreference
                         pendingChange = ThumbnailPreferenceChange.Strategy(ThumbnailGenerationStrategy.FIRST_FRAME)
                     },
-                    isFirstItem = true,
                 )
                 SingleSelectablePreference(
                     modifier = Modifier.testTag("option_settings_thumbnail_strategy_frame_at_percentage"),
@@ -140,7 +139,6 @@ private fun ThumbnailPreferencesContent(
                         if (preferences.thumbnailGenerationStrategy == ThumbnailGenerationStrategy.HYBRID) return@SingleSelectablePreference
                         pendingChange = ThumbnailPreferenceChange.Strategy(ThumbnailGenerationStrategy.HYBRID)
                     },
-                    isLastItem = true,
                 )
             }
 
@@ -153,8 +151,6 @@ private fun ThumbnailPreferencesContent(
                 icon = NextIcons.Frame,
                 value = frameSliderValue,
                 valueRange = 0f..100f,
-                isFirstItem = true,
-                isLastItem = true,
                 onValueChange = { frameSliderValue = it },
                 onValueChangeFinished = {
                     val newPosition = frameSliderValue / 100f

@@ -19,18 +19,16 @@ import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-val SegmentedItemGap = 0.dp
+val CardItemGap = 8.dp
 val SettingsGroupGap = 12.dp
 val SettingsContentTopPadding = 12.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NextSegmentedListItem(
+fun NextCardListItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     isEnabled: Boolean = true,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(16.dp),
     containerColor: Color = MiuixTheme.colorScheme.surfaceContainer,
     selectedContainerColor: Color = MiuixTheme.colorScheme.primaryContainer,
@@ -48,7 +46,7 @@ fun NextSegmentedListItem(
     @Suppress("UNUSED_VARIABLE")
     val ignoredMaterialCompatibility = colors to shapes
     val itemInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    val itemShape = preferenceSegmentShape(isFirstItem, isLastItem)
+    val itemShape = preferenceCardShape()
     val clickableModifier = if (isEnabled) {
         Modifier
             .clip(itemShape)

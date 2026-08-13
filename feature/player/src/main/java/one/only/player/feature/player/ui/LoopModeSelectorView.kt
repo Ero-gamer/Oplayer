@@ -59,8 +59,6 @@ fun LoopModeSelectorContent(
                 isSelected = state.repeatModeState == option.repeatMode,
                 text = stringResource(option.labelRes),
                 testTag = option.testTag,
-                isFirstItem = index == 0,
-                isLastItem = index == options.lastIndex,
                 onClick = {
                     player.repeatMode = option.repeatMode
                     onDismiss()
@@ -111,8 +109,6 @@ fun ShuffleModeSelectorContent(
                 isSelected = state.shuffleOn == option.isEnabled,
                 text = stringResource(option.labelRes),
                 testTag = option.testTag,
-                isFirstItem = index == 0,
-                isLastItem = index == options.lastIndex,
                 onClick = {
                     player.shuffleModeEnabled = option.isEnabled
                     onDismiss()

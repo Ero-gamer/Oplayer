@@ -366,8 +366,6 @@ private fun AddEditServerDialog(
                     icon = NextIcons.Link,
                     isChecked = isProxyEnabled,
                     onClick = { isProxyEnabled = !isProxyEnabled },
-                    isFirstItem = true,
-                    isLastItem = !isProxyEnabled,
                 )
                 if (isProxyEnabled) {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

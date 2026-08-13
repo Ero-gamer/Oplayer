@@ -17,8 +17,6 @@ fun ClickablePreferenceItem(
     icon: ImageVector? = null,
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
 ) {
     PreferenceItem(
         title = title,
@@ -28,8 +26,6 @@ fun ClickablePreferenceItem(
         isEnabled = isEnabled,
         onClick = onClick,
         onLongClick = onLongClick,
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         showArrow = true,
     )
 }

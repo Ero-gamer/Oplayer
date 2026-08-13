@@ -54,8 +54,6 @@ fun DecoderPrioritySelectorContent(
                 isSelected = decoderPriority == currentDecoderPriority,
                 text = decoderPriority.shortName(),
                 testTag = "btn_decoder_${decoderPriority.logSuffix()}",
-                isFirstItem = index == 0,
-                isLastItem = index == DecoderPriority.entries.lastIndex,
                 onClick = {
                     onDecoderPriorityClick(decoderPriority)
                     onDismiss()

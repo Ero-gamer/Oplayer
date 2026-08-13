@@ -29,11 +29,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.nio.charset.Charset
 import one.only.player.core.model.Font
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SubtitleStylePanel
@@ -133,7 +133,7 @@ private fun SubtitlePreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_subtitle_auto_load"),
@@ -142,7 +142,6 @@ private fun SubtitlePreferencesContent(
                     icon = NextIcons.Subtitle,
                     isChecked = uiState.preferences.isSubtitleAutoLoadEnabled,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ToggleSubtitleAutoLoad) },
-                    isFirstItem = true,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_language"),
@@ -166,12 +165,11 @@ private fun SubtitlePreferencesContent(
                     description = charsetResource.first { it.contains(uiState.preferences.subtitleTextEncoding) },
                     icon = NextIcons.Subtitle,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ShowDialog(SubtitlePreferenceDialog.SubtitleEncodingDialog)) },
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_subtitle_system_caption_style"),
@@ -182,7 +180,6 @@ private fun SubtitlePreferencesContent(
                     isChecked = uiState.preferences.shouldUseSystemCaptionStyle,
                     onChecked = { onEvent(SubtitlePreferencesUiEvent.ToggleUseSystemCaptionStyle) },
                     onClick = { context.startActivity(Intent(Settings.ACTION_CAPTIONING_SETTINGS)) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_subtitle_embedded_styles"),
@@ -191,7 +188,6 @@ private fun SubtitlePreferencesContent(
                     icon = NextIcons.Style,
                     isChecked = uiState.preferences.shouldApplyEmbeddedStyles,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ToggleApplyEmbeddedStyles) },
-                    isLastItem = uiState.preferences.shouldUseSystemCaptionStyle.not(),
                 )
                 if (uiState.preferences.shouldUseSystemCaptionStyle) {
                     ClickablePreferenceItem(
@@ -199,13 +195,12 @@ private fun SubtitlePreferencesContent(
                         description = stringResource(id = R.string.external_subtitle_font_system_style_notice),
                         icon = NextIcons.Info,
                         isEnabled = false,
-                        isLastItem = true,
                     )
                 }
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_font"),
@@ -214,7 +209,6 @@ private fun SubtitlePreferencesContent(
                     icon = NextIcons.Font,
                     isEnabled = uiState.preferences.shouldUseSystemCaptionStyle.not(),
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ShowDialog(SubtitlePreferenceDialog.SubtitleFontDialog)) },
-                    isFirstItem = true,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_import_external_font"),
@@ -237,7 +231,6 @@ private fun SubtitlePreferencesContent(
                     icon = NextIcons.DeleteSweep,
                     isEnabled = uiState.isExternalFontAvailable,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ClearExternalSubtitleFont) },
-                    isLastItem = true,
                 )
             }
 

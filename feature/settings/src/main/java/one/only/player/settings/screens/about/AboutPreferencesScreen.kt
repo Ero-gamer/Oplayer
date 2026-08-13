@@ -46,11 +46,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.extensions.appIcon
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -121,21 +121,19 @@ fun AboutPreferencesScreen(
                 onEvent = viewModel::onEvent,
             )
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceItem(
                     title = stringResource(R.string.architecture),
                     description = rememberDeviceArchitecture(),
                     icon = NextIcons.Decoder,
                     isEnabled = true,
-                    isFirstItem = true,
                 )
                 PreferenceItem(
                     title = stringResource(R.string.android_version),
                     description = rememberAndroidVersion(),
                     icon = NextIcons.Update,
                     isEnabled = true,
-                    isLastItem = true,
                 )
             }
         }
@@ -152,7 +150,7 @@ private fun DiagnosticsSection(
     onLogsClick: () -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+        verticalArrangement = Arrangement.spacedBy(CardItemGap),
     ) {
         ClickablePreferenceItem(
             modifier = Modifier.testTag("item_settings_about_logs"),
@@ -160,8 +158,6 @@ private fun DiagnosticsSection(
             description = stringResource(R.string.app_logs_description),
             icon = NextIcons.BugReport,
             onClick = onLogsClick,
-            isFirstItem = true,
-            isLastItem = true,
         )
     }
 }
@@ -176,7 +172,7 @@ private fun UpdateSection(
     val uriHandler = LocalUriHandler.current
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+        verticalArrangement = Arrangement.spacedBy(CardItemGap),
     ) {
         ClickablePreferenceItem(
             modifier = Modifier.testTag("item_settings_about_check_updates"),
@@ -192,7 +188,6 @@ private fun UpdateSection(
                     else -> onEvent(AboutPreferencesUiEvent.CheckForUpdates(currentVersionName))
                 }
             },
-            isFirstItem = true,
         )
         PreferenceSwitch(
             modifier = Modifier.testTag("switch_settings_about_check_updates_on_startup"),
@@ -200,7 +195,6 @@ private fun UpdateSection(
             description = stringResource(R.string.check_updates_on_startup_desc),
             isChecked = uiState.shouldCheckForUpdatesOnStartup,
             onClick = { onEvent(AboutPreferencesUiEvent.ToggleCheckOnStartup) },
-            isLastItem = true,
         )
     }
 }

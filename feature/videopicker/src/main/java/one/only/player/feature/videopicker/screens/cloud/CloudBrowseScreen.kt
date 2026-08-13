@@ -66,9 +66,10 @@ import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.model.RemoteFile
 import one.only.player.core.model.RemoteServer
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ListSectionTitle
+import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextSegmentedListItem
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
@@ -465,7 +466,7 @@ private fun CloudRemoteMediaView(
 
     BoxWithConstraints {
         val contentHorizontalPadding = 8.dp
-        val itemSpacing = 2.dp
+        val itemSpacing = CardItemGap
         val maxWidth = this.maxWidth - (contentHorizontalPadding * 2) - itemSpacing
         val maxFolders = (maxWidth / folderMinWidth).toInt()
         val maxVideos = (maxWidth / videoMinWidth).toInt()
@@ -508,8 +509,6 @@ private fun CloudRemoteMediaView(
                     isRecentlyPlayed = false,
                     hasBeenPlayed = false,
                     isSelected = file.path in selectedFilePaths,
-                    isFirstItem = index == 0,
-                    isLastItem = index == folders.lastIndex,
                     onClick = {
                         if (isInSelectionMode) {
                             onToggleFileSelection(file)
@@ -543,8 +542,6 @@ private fun CloudRemoteMediaView(
                     isRecentlyPlayed = isRecentlyPlayed,
                     hasBeenPlayed = hasBeenPlayed,
                     isSelected = isSelected,
-                    isFirstItem = index == 0,
-                    isLastItem = index == videos.lastIndex,
                     onClick = {
                         if (isInSelectionMode) {
                             onToggleFileSelection(file)
@@ -587,8 +584,6 @@ private fun RemoteFileItem(
     settings: CloudQuickSettings,
     thumbnailUri: Uri?,
     shouldMarkLastPlayedMedia: Boolean,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     isRecentlyPlayed: Boolean = false,
     hasBeenPlayed: Boolean = false,
     isSelected: Boolean = false,
@@ -601,8 +596,6 @@ private fun RemoteFileItem(
             settings = settings,
             thumbnailUri = thumbnailUri,
             shouldMarkLastPlayedMedia = shouldMarkLastPlayedMedia,
-            isFirstItem = isFirstItem,
-            isLastItem = isLastItem,
             isRecentlyPlayed = isRecentlyPlayed,
             hasBeenPlayed = hasBeenPlayed,
             isSelected = isSelected,
@@ -614,8 +607,6 @@ private fun RemoteFileItem(
             settings = settings,
             thumbnailUri = thumbnailUri,
             shouldMarkLastPlayedMedia = shouldMarkLastPlayedMedia,
-            isFirstItem = isFirstItem,
-            isLastItem = isLastItem,
             isRecentlyPlayed = isRecentlyPlayed,
             hasBeenPlayed = hasBeenPlayed,
             isSelected = isSelected,
@@ -632,8 +623,6 @@ private fun RemoteFileListItem(
     settings: CloudQuickSettings,
     thumbnailUri: Uri?,
     shouldMarkLastPlayedMedia: Boolean,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     isRecentlyPlayed: Boolean,
     hasBeenPlayed: Boolean,
     isSelected: Boolean,
@@ -642,12 +631,10 @@ private fun RemoteFileListItem(
 ) {
     val shouldHighlight = isRecentlyPlayed && shouldMarkLastPlayedMedia
     val highlightColor = MiuixTheme.colorScheme.primary
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = Modifier.testTag("remote_file_${file.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         contentPadding = PaddingValues(8.dp),
         onClick = onClick,
         onLongClick = onLongClick,
@@ -717,8 +704,6 @@ private fun RemoteFileGridItem(
     settings: CloudQuickSettings,
     thumbnailUri: Uri?,
     shouldMarkLastPlayedMedia: Boolean,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     isRecentlyPlayed: Boolean,
     hasBeenPlayed: Boolean,
     isSelected: Boolean,
@@ -727,14 +712,12 @@ private fun RemoteFileGridItem(
 ) {
     val shouldHighlight = isRecentlyPlayed && shouldMarkLastPlayedMedia
     val highlightColor = MiuixTheme.colorScheme.primary
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("remote_file_${file.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         contentPadding = PaddingValues(8.dp),
         onClick = onClick,
         onLongClick = onLongClick,

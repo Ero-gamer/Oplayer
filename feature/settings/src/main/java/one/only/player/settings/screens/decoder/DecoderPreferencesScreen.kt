@@ -22,13 +22,13 @@ import java.util.Locale
 import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.NextSwitch
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -95,7 +95,7 @@ private fun DecoderPreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_decoder_priority"),
@@ -103,8 +103,6 @@ private fun DecoderPreferencesContent(
                     description = preferences.decoderPriority.name(),
                     icon = NextIcons.Priority,
                     onClick = { onEvent(DecoderPreferencesUiEvent.ShowDialog(DecoderPreferenceDialog.DecoderPriorityDialog)) },
-                    isFirstItem = true,
-                    isLastItem = true,
                 )
             }
 
@@ -145,7 +143,7 @@ private fun VideoFiltersSettings(
     onEvent: (DecoderPreferencesUiEvent) -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+        verticalArrangement = Arrangement.spacedBy(CardItemGap),
     ) {
         PreferenceSwitch(
             modifier = Modifier.testTag("switch_settings_video_filters"),
@@ -154,7 +152,6 @@ private fun VideoFiltersSettings(
             icon = NextIcons.Sensitivity,
             isChecked = preferences.shouldApplyVideoFilters,
             onClick = { onEvent(DecoderPreferencesUiEvent.ToggleVideoFilters) },
-            isFirstItem = true,
         )
         PreferenceSlider(
             modifier = Modifier.testTag("item_settings_video_brightness"),
@@ -282,7 +279,6 @@ private fun VideoFiltersSettings(
             value = preferences.videoSharpening,
             valueRange = PlayerPreferences.DEFAULT_VIDEO_SHARPENING..PlayerPreferences.MAX_VIDEO_SHARPENING,
             onValueChange = { onEvent(DecoderPreferencesUiEvent.UpdateVideoSharpening(it)) },
-            isLastItem = true,
             trailingContent = {
                 VideoFilterActions(
                     switchTestTag = "switch_settings_video_sharpening",

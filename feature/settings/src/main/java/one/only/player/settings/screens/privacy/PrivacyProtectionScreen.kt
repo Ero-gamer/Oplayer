@@ -16,8 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -80,7 +80,7 @@ private fun PrivacyProtectionContent(
             val isHideInRecentsAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_privacy_prevent_screenshots"),
@@ -89,8 +89,6 @@ private fun PrivacyProtectionContent(
                     icon = NextIcons.HideSource,
                     isChecked = uiState.preferences.shouldPreventScreenshots,
                     onClick = { onEvent(PrivacyProtectionUiEvent.TogglePreventScreenshots) },
-                    isFirstItem = true,
-                    isLastItem = !isHideInRecentsAvailable,
                 )
                 if (isHideInRecentsAvailable) {
                     PreferenceSwitch(
@@ -100,8 +98,6 @@ private fun PrivacyProtectionContent(
                         icon = NextIcons.Background,
                         isChecked = uiState.preferences.shouldHideInRecents,
                         onClick = { onEvent(PrivacyProtectionUiEvent.ToggleHideInRecents) },
-                        isFirstItem = false,
-                        isLastItem = true,
                     )
                 }
             }

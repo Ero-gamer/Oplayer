@@ -22,9 +22,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -129,7 +129,7 @@ private fun GeneralPreferencesContent(
                 .padding(horizontal = 16.dp),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_general_backup_settings"),
@@ -137,7 +137,6 @@ private fun GeneralPreferencesContent(
                     description = stringResource(R.string.backup_settings_description),
                     icon = NextIcons.FileOpen,
                     onClick = { onEvent(GeneralPreferencesUiEvent.BackupSettings) },
-                    isFirstItem = true,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_general_restore_settings"),
@@ -159,7 +158,6 @@ private fun GeneralPreferencesContent(
                     description = stringResource(R.string.reset_settings_description),
                     icon = NextIcons.Delete,
                     onClick = { onEvent(GeneralPreferencesUiEvent.ShowDialog(GeneralPreferencesDialog.ResetSettingsDialog)) },
-                    isLastItem = true,
                 )
             }
         }

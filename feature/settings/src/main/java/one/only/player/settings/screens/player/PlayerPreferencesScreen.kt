@@ -35,13 +35,13 @@ import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -113,7 +113,7 @@ private fun PlayerPreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_player_controller_timeout"),
@@ -123,7 +123,6 @@ private fun PlayerPreferencesContent(
                     onClick = {
                         onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControllerAutoHideDialog))
                     },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_player_dim_video_controls"),
@@ -156,7 +155,6 @@ private fun PlayerPreferencesContent(
                     description = uiState.preferences.controlsStyle.name(),
                     icon = NextIcons.Player,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControlsStyleDialog)) },
-                    isLastItem = uiState.preferences.controlsStyle != PlayerControlsStyle.LEGACY,
                 )
                 if (uiState.preferences.controlsStyle == PlayerControlsStyle.LEGACY) {
                     ClickablePreferenceItem(
@@ -165,13 +163,12 @@ private fun PlayerPreferencesContent(
                         description = uiState.preferences.playerIconStyle.name(),
                         icon = NextIcons.Style,
                         onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PlayerIconStyleDialog)) },
-                        isLastItem = true,
                     )
                 }
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_player_resume"),
@@ -180,7 +177,6 @@ private fun PlayerPreferencesContent(
                     icon = NextIcons.Resume,
                     isChecked = uiState.preferences.resume.isEnabled,
                     onClick = { onEvent(PlayerPreferencesUiEvent.TogglePlaybackResume) },
-                    isFirstItem = true,
                 )
                 PreferenceSlider(
                     modifier = Modifier.testTag("item_settings_player_default_speed"),
@@ -248,12 +244,11 @@ private fun PlayerPreferencesContent(
                     icon = NextIcons.Brightness,
                     isChecked = uiState.preferences.shouldRememberPlayerBrightness,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel) },
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_player_control_buttons_position"),
@@ -261,7 +256,6 @@ private fun PlayerPreferencesContent(
                     description = uiState.preferences.controlButtonsPosition.name(),
                     icon = NextIcons.ButtonsPosition,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControlButtonsDialog)) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_player_control_labels"),
@@ -270,7 +264,6 @@ private fun PlayerPreferencesContent(
                     icon = NextIcons.Title,
                     isChecked = uiState.preferences.shouldHidePlayerControlLabels,
                     onClick = { onEvent(PlayerPreferencesUiEvent.TogglePlayerControlLabels) },
-                    isLastItem = true,
                 )
             }
         }

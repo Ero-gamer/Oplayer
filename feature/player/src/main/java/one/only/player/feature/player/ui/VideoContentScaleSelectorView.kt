@@ -74,8 +74,6 @@ fun VideoContentScaleSelectorContent(
                     isSelected = !isCustomZoomActive && contentScale == videoContentScale,
                     text = stringResource(contentScale.nameRes()),
                     testTag = "btn_video_scale_${contentScale.name.lowercase()}",
-                    isFirstItem = index == 0,
-                    isLastItem = index == VideoContentScale.entries.lastIndex,
                     onClick = {
                         onVideoContentScaleChanged(contentScale)
                         onDismiss()

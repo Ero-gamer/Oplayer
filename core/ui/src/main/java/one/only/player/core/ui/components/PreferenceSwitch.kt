@@ -18,11 +18,9 @@ fun PreferenceSwitch(
     isEnabled: Boolean = true,
     isChecked: Boolean = true,
     onClick: (() -> Unit) = {},
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem, isLastItem),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = modifier,
     ) {

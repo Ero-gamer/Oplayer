@@ -52,9 +52,9 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
 import one.only.player.core.ui.components.ListSectionTitle
+import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextSearchTopAppBar
-import one.only.player.core.ui.components.NextSegmentedListItem
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
@@ -410,8 +410,6 @@ private fun SuggestionsContent(
                     isRecentlyPlayedFolder = false,
                     preferences = preferences.copy(mediaLayoutMode = MediaLayoutMode.LIST),
                     modifier = Modifier.padding(horizontal = 8.dp),
-                    isFirstItem = index == 0,
-                    isLastItem = index == popularFolders.lastIndex,
                     onClick = { onFolderClick(folder) },
                 )
             }
@@ -425,7 +423,7 @@ private fun SearchHistoryItem(
     onClick: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = Modifier.padding(horizontal = 8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         onClick = onClick,

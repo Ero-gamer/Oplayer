@@ -19,12 +19,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -94,7 +94,7 @@ private fun AudioPreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_audio_language"),
@@ -103,7 +103,6 @@ private fun AudioPreferencesContent(
                         .takeIf { it.isNotBlank() } ?: stringResource(R.string.preferred_audio_lang_description),
                     icon = NextIcons.Language,
                     onClick = { onEvent(AudioPreferencesUiEvent.ShowDialog(AudioPreferenceDialog.AudioLanguageDialog)) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_remember_track"),
@@ -111,12 +110,11 @@ private fun AudioPreferencesContent(
                     icon = NextIcons.Audio,
                     isChecked = uiState.preferences.shouldRememberAudioTrack,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleRememberAudioTrack) },
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_require_focus"),
@@ -125,7 +123,6 @@ private fun AudioPreferencesContent(
                     icon = NextIcons.Focus,
                     isChecked = uiState.preferences.shouldRequireAudioFocus,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleRequireAudioFocus) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_pause_on_headset_disconnect"),
@@ -142,12 +139,11 @@ private fun AudioPreferencesContent(
                     icon = NextIcons.Headset,
                     isChecked = uiState.preferences.shouldShowSystemVolumePanel,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleShowSystemVolumePanel) },
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_remember_volume"),
@@ -156,7 +152,6 @@ private fun AudioPreferencesContent(
                     icon = NextIcons.VolumeUp,
                     isChecked = uiState.preferences.shouldRememberPlayerVolume,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleRememberPlayerVolume) },
-                    isFirstItem = true,
                 )
                 PreferenceSlider(
                     modifier = Modifier.testTag("item_settings_audio_initial_volume_limit"),
@@ -168,7 +163,6 @@ private fun AudioPreferencesContent(
                     value = uiState.preferences.maxInitialPlayerVolumePercentage.toFloat(),
                     valueRange = initialVolumeLimitRange,
                     onValueChange = { onEvent(AudioPreferencesUiEvent.UpdateMaxInitialPlayerVolume(it.toInt())) },
-                    isLastItem = true,
                     trailingContent = {
                         NextResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_audio_initial_volume_limit"),
@@ -187,7 +181,7 @@ private fun AudioPreferencesContent(
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_normalization"),
@@ -196,7 +190,6 @@ private fun AudioPreferencesContent(
                     icon = NextIcons.VolumeUp,
                     isChecked = uiState.preferences.isVolumeNormalizationEnabled,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleVolumeNormalization) },
-                    isFirstItem = true,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_boost"),
@@ -205,7 +198,6 @@ private fun AudioPreferencesContent(
                     icon = NextIcons.VolumeUp,
                     isChecked = uiState.preferences.isVolumeBoostEnabled,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleVolumeBoost) },
-                    isLastItem = true,
                 )
             }
         }

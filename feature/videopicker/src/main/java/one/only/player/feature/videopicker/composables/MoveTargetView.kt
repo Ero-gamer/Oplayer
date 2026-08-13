@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,8 +25,9 @@ import one.only.player.core.media.services.MediaMoveSpaceCheck
 import one.only.player.core.media.services.MediaMoveTargetDirectory
 import one.only.player.core.media.services.MediaMoveTargetDirectoryContent
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ListSectionTitle
-import one.only.player.core.ui.components.NextSegmentedListItem
+import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.designsystem.NextIcons
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Icon
@@ -157,6 +158,7 @@ private fun MoveTargetDirectoryList(
             end = 12.dp,
             bottom = 8.dp,
         ),
+        verticalArrangement = Arrangement.spacedBy(CardItemGap),
     ) {
         item {
             ListSectionTitle(
@@ -164,26 +166,22 @@ private fun MoveTargetDirectoryList(
                 contentPadding = PaddingValues(
                     start = 4.dp,
                     top = 4.dp,
-                    bottom = 8.dp,
+                    bottom = 0.dp,
                 ),
             )
         }
-        itemsIndexed(
+        items(
             items = directories,
-            key = { _, directory -> directory.path },
-        ) { index, directory ->
+            key = { directory -> directory.path },
+        ) { directory ->
             if (isStorageRoot && directory.storage != null) {
                 StorageTargetItem(
                     directory = directory,
-                    isFirstItem = index == 0,
-                    isLastItem = index == directories.lastIndex,
                     onClick = { onDirectoryClick(directory) },
                 )
             } else {
                 FolderTargetItem(
                     directory = directory,
-                    isFirstItem = index == 0,
-                    isLastItem = index == directories.lastIndex,
                     onClick = { onDirectoryClick(directory) },
                 )
             }
@@ -194,8 +192,6 @@ private fun MoveTargetDirectoryList(
 @Composable
 private fun StorageTargetItem(
     directory: MediaMoveTargetDirectory,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     onClick: () -> Unit,
 ) {
     val storage = requireNotNull(directory.storage)
@@ -208,11 +204,9 @@ private fun StorageTargetItem(
     }
     val usedFraction = availablePercent?.let { percent -> 1f - percent / 100f }
 
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = Modifier.testTag("item_move_target_${directory.path}"),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         onClick = onClick,
         leadingContent = {
             MoveTargetIcon(
@@ -274,15 +268,11 @@ private fun StorageTargetItem(
 @Composable
 private fun FolderTargetItem(
     directory: MediaMoveTargetDirectory,
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
     onClick: () -> Unit,
 ) {
-    NextSegmentedListItem(
+    NextCardListItem(
         modifier = Modifier.testTag("item_move_target_${directory.path}"),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
-        isFirstItem = isFirstItem,
-        isLastItem = isLastItem,
         onClick = onClick,
         leadingContent = {
             Icon(

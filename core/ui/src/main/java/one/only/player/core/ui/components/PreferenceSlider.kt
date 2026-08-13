@@ -16,8 +16,6 @@ fun PreferenceSlider(
     icon: ImageVector? = null,
     isEnabled: Boolean = true,
     isSliderEnabled: Boolean = isEnabled,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     onValueChange: (Float) -> Unit,
@@ -25,7 +23,7 @@ fun PreferenceSlider(
     trailingContent: @Composable () -> Unit = {},
 ) {
     Surface(
-        shape = preferenceSegmentShape(isFirstItem, isLastItem),
+        shape = preferenceCardShape(),
         color = MiuixTheme.colorScheme.surfaceContainer,
         modifier = modifier,
     ) {

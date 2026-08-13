@@ -69,8 +69,6 @@ fun ToggleOptionSelectorContent(
                 isSelected = isEnabled == option.isEnabled,
                 text = stringResource(option.labelRes),
                 testTag = option.testTag,
-                isFirstItem = index == 0,
-                isLastItem = index == options.lastIndex,
                 onClick = {
                     onEnabledChanged(option.isEnabled)
                     onDismiss()

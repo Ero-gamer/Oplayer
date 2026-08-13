@@ -25,9 +25,9 @@ import one.only.player.core.common.createManageExternalStorageAccessIntent
 import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.components.SegmentedItemGap
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
@@ -129,7 +129,7 @@ private fun MediaLibraryPreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_mark_last_played"),
@@ -140,8 +140,6 @@ private fun MediaLibraryPreferencesContent(
                     icon = NextIcons.Check,
                     isChecked = preferences.shouldMarkLastPlayedMedia,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleMarkLastPlayedMedia) },
-                    isFirstItem = true,
-                    isLastItem = false,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_restore_last_played_in_folders"),
@@ -150,8 +148,6 @@ private fun MediaLibraryPreferencesContent(
                     icon = NextIcons.History,
                     isChecked = preferences.shouldRestoreLastPlayedMediaInFolders,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRestoreLastPlayedMediaInFolders) },
-                    isFirstItem = false,
-                    isLastItem = false,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_all_files_access"),
@@ -159,8 +155,6 @@ private fun MediaLibraryPreferencesContent(
                     description = stringResource(id = R.string.media_library_all_files_access_desc),
                     icon = NextIcons.Settings,
                     onClick = onOpenAllFilesAccessSettings,
-                    isFirstItem = false,
-                    isLastItem = false,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_recycle_bin"),
@@ -170,13 +164,11 @@ private fun MediaLibraryPreferencesContent(
                     isEnabled = hasAllFilesAccess,
                     isChecked = preferences.isRecycleBinEnabled,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRecycleBinEnabled) },
-                    isFirstItem = false,
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_ignore_nomedia"),
@@ -188,8 +180,6 @@ private fun MediaLibraryPreferencesContent(
                     onClick = {
                         onToggleIgnoreNoMediaFiles(!preferences.shouldIgnoreNoMediaFiles)
                     },
-                    isFirstItem = true,
-                    isLastItem = false,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_scan_folders"),
@@ -197,8 +187,6 @@ private fun MediaLibraryPreferencesContent(
                     description = stringResource(id = R.string.scan_folders_desc),
                     icon = NextIcons.Folder,
                     onClick = onScanFolderSettingClick,
-                    isFirstItem = false,
-                    isLastItem = false,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_folders"),
@@ -206,13 +194,11 @@ private fun MediaLibraryPreferencesContent(
                     description = stringResource(id = R.string.manage_folders_desc),
                     icon = NextIcons.FolderOff,
                     onClick = onFolderSettingClick,
-                    isFirstItem = false,
-                    isLastItem = true,
                 )
             }
 
             Column(
-                verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_thumbnails"),
@@ -224,8 +210,6 @@ private fun MediaLibraryPreferencesContent(
                     },
                     icon = NextIcons.Image,
                     onClick = onThumbnailSettingClick,
-                    isFirstItem = true,
-                    isLastItem = true,
                 )
             }
         }

@@ -52,12 +52,10 @@ fun PanelOptionRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     testTag: String? = null,
-    isFirstItem: Boolean = false,
-    isLastItem: Boolean = false,
     isEnabled: Boolean = true,
 ) {
     val tokens = rememberPlayerPanelTokens()
-    val shape = tokens.optionShape(isFirstItem, isLastItem)
+    val shape = tokens.optionShape
     val containerColor = if (isSelected) tokens.itemSelectedColor else tokens.itemColor
     val contentColor = if (isSelected) tokens.itemSelectedContentColor else tokens.itemContentColor
     val checkTint = if (tokens.itemSelectedColor == tokens.accentColor) tokens.onAccentColor else tokens.accentColor
@@ -155,7 +153,7 @@ fun PanelSwitchRow(
     testTag: String? = null,
 ) {
     val tokens = rememberPlayerPanelTokens()
-    val shape = tokens.optionShape(isFirstItem = true, isLastItem = true)
+    val shape = tokens.optionShape
     Row(
         modifier = modifier
             .then(

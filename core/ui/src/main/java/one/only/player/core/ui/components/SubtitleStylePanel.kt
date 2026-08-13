@@ -24,7 +24,7 @@ fun SubtitleStylePanel(
         .coerceIn(SUBTITLE_POSITION_RANGE)
         .roundToStep(PlayerPreferences.SUBTITLE_BOTTOM_PADDING_FRACTION_STEP)
     Column(
-        verticalArrangement = Arrangement.spacedBy(SegmentedItemGap),
+        verticalArrangement = Arrangement.spacedBy(CardItemGap),
     ) {
         PreferenceSwitch(
             modifier = Modifier.testTag("switch_settings_subtitle_bold"),
@@ -34,7 +34,6 @@ fun SubtitleStylePanel(
             isEnabled = isEnabled,
             isChecked = preferences.shouldUseBoldSubtitleText,
             onClick = { onPreferencesChange(preferences.copy(shouldUseBoldSubtitleText = !preferences.shouldUseBoldSubtitleText)) },
-            isFirstItem = true,
         )
         PreferenceSlider(
             modifier = Modifier.testTag("item_settings_subtitle_size"),
@@ -171,7 +170,6 @@ fun SubtitleStylePanel(
             value = preferences.subtitleShadowStrength,
             valueRange = SUBTITLE_SHADOW_STRENGTH_RANGE,
             onValueChange = { onPreferencesChange(preferences.copy(subtitleShadowStrength = it)) },
-            isLastItem = true,
             trailingContent = {
                 NextResetIconButton(
                     modifier = Modifier.testTag("btn_reset_settings_subtitle_shadow_strength"),

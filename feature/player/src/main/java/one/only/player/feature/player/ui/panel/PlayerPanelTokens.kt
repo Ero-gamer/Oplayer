@@ -33,20 +33,9 @@ data class PlayerPanelTokens(
     val tileCornerRadius: Dp,
 )
 
-// 分段式分组列表：首条目圆上角、末条目圆下角，中间条目小圆角。
-fun PlayerPanelTokens.optionShape(
-    isFirstItem: Boolean,
-    isLastItem: Boolean,
-): RoundedCornerShape {
-    val edgeRadius = itemCornerRadius
-    val innerRadius = 6.dp
-    return RoundedCornerShape(
-        topStart = if (isFirstItem) edgeRadius else innerRadius,
-        topEnd = if (isFirstItem) edgeRadius else innerRadius,
-        bottomStart = if (isLastItem) edgeRadius else innerRadius,
-        bottomEnd = if (isLastItem) edgeRadius else innerRadius,
-    )
-}
+// 独立卡片列表：每个条目使用统一的完整圆角。
+val PlayerPanelTokens.optionShape: RoundedCornerShape
+    get() = RoundedCornerShape(itemCornerRadius)
 
 @Composable
 fun rememberPlayerPanelTokens(): PlayerPanelTokens {
@@ -65,7 +54,7 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
                 accentColor = primary,
                 onAccentColor = onPrimary,
                 itemCornerRadius = 20.dp,
-                itemSpacing = 2.dp,
+                itemSpacing = 8.dp,
                 itemVerticalPadding = 14.dp,
                 itemColor = Color.White.copy(alpha = 0.1f),
                 itemSelectedColor = primary,
@@ -83,7 +72,7 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
                 accentColor = primary,
                 onAccentColor = onPrimary,
                 itemCornerRadius = 20.dp,
-                itemSpacing = 2.dp,
+                itemSpacing = 8.dp,
                 itemVerticalPadding = 14.dp,
                 itemColor = Color.White.copy(alpha = 0.72f),
                 itemSelectedColor = primary,
