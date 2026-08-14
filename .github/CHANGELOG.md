@@ -1,16 +1,12 @@
-- 支持为媒体库设置自定义扫描目录，并在扫描日志中保护目录标识
-- 支持调整 ASS/PGS 字幕大小，并修复 WebM 内嵌 VTT 字幕识别
-- 优化播放器章节和播放列表面板，支持章节预览、跳转和手势切换
-- 改进媒体库选择操作、批量播放状态标记和快捷设置的可见度
-- 优化播放器面板和媒体列表卡片的视觉层次
+- 底部导航栏现在会持续显示，不再跟着页面切换消失
+- 用 MIUIX 风格重新设计了快速设置界面，选择操作统一移到顶栏菜单
+- 修复云端浏览页面顶栏折叠与下拉刷新的协调问题
 
 <details>
 <summary>English Version</summary>
 
-- Add custom media library scan folders and protect folder identifiers in scan logs
-- Add ASS/PGS subtitle scaling and fix embedded VTT subtitle detection in WebM videos
-- Improve chapter and playlist panels with chapter previews, seeking, and gesture navigation
-- Improve media selection actions, batch playback status marking, and quick settings visibility
-- Refine the visual hierarchy of player panels and media list cards
+- Bottom navigation bar now stays persistent across pages
+- Redesigned quick settings in MIUIX style and unified selection actions into top bar menu
+- Fixed coordination between cloud browse top bar collapse and pull-to-refresh
 
 </details>
