@@ -222,7 +222,7 @@ class VideoThumbnailDecoder(
 
     private fun cloudDocumentCacheKeySuffix(): String {
         if (!isCloudDocumentSource()) return ""
-        return ":cloudLocalFrames=1"
+        return ":cloudPlatformMp4Frames=1"
     }
 
     private fun primaryCandidateTimeMs(duration: Long): Long = strategy.primaryTimeMs(duration)
@@ -271,6 +271,16 @@ class VideoThumbnailDecoder(
             )
         }
 
+        if (isCloudDocumentSource() && mimeType.isMp4MimeType()) {
+            tryLoadPlatformThumbnail()?.scaleToFit()?.let { rawBitmap ->
+                val bitmap = writeToDiskCache(rawBitmap)
+                return DecodeResult(
+                    image = bitmap.toDrawable(options.context.resources).asImage(),
+                    isSampled = true,
+                )
+            }
+        }
+
         if (shouldPreferMediaInfo) {
             hasTriedPatchedMpegTsThumbnail = mpegTsProgramMapPidFix != null
             tryDecodeMediaInfoThumbnail(
@@ -312,6 +322,31 @@ class VideoThumbnailDecoder(
 
         logThumbnail { "decode fail strategy=${strategy.logName} key=$key" }
         throw IllegalStateException("Failed to get video thumbnail for key=$key")
+    }
+
+    // 云端 MP4 优先读取关键帧，避免精确抽帧长时间占用串行队列。
+    private fun tryLoadPlatformThumbnail(): Bitmap? {
+        val metadata = source.metadata as? ContentMetadata ?: return null
+        val uri = metadata.uri.toAndroidUri()
+        val retriever = MediaMetadataRetriever()
+        val start = System.currentTimeMillis()
+        return try {
+            retriever.setDataSource(options.context, uri)
+            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull()
+                ?: 0L
+            val timeUs = primaryCandidateTimeMs(duration).coerceAtLeast(0L) * 1_000L
+            retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC).also { frame ->
+                logThumbnail {
+                    "platformThumbnail ${System.currentTimeMillis() - start}ms timeUs=$timeUs result=${frame != null} key=$diskCacheKey"
+                }
+            }
+        } catch (e: Exception) {
+            logThumbnail { "platformThumbnail fail ${System.currentTimeMillis() - start}ms key=$diskCacheKey err=${e.message}" }
+            null
+        } finally {
+            retriever.release()
+        }
     }
 
     private suspend fun tryDecodeMediaInfoThumbnail(
@@ -902,6 +937,12 @@ private fun String?.isMpegTsMimeType(): Boolean = when (this?.lowercase()) {
     "video/mp2ts" -> true
     "video/mpeg2ts" -> true
     "video/vnd.dlna.mpeg-tts" -> true
+    else -> false
+}
+
+private fun String?.isMp4MimeType(): Boolean = when (this?.lowercase()) {
+    "application/mp4" -> true
+    "video/mp4" -> true
     else -> false
 }
 
