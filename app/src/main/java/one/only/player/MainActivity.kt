@@ -440,12 +440,16 @@ class MainActivity : AppCompatActivity() {
                     shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
                     floatingBlurBackdrop = floatingBlurBackdrop,
                     onTabSelected = { destination ->
-                        val isReturningFromDetailPage = mainNavController.popBackStack(RootPagerRoute, inclusive = false)
-                        if (isReturningFromDetailPage) {
-                            // 详情页返回时 pager 尚未重新挂载，animateTo 读取的布局信息不可靠，直接跳页
-                            rootNavigationState.jumpTo(destination)
-                        } else {
+                        if (mainNavController.currentDestination?.hasRoute(
+                                route = RootPagerRoute::class.qualifiedName!!,
+                                arguments = null,
+                            ) == true
+                        ) {
                             rootNavigationState.animateTo(destination)
+                        } else {
+                            // 先定位目标页，让返回动画直接揭示正确的根页面。
+                            rootNavigationState.jumpTo(destination)
+                            mainNavController.popBackStack(RootPagerRoute, inclusive = false)
                         }
                     },
                     modifier = Modifier.align(Alignment.BottomCenter),
