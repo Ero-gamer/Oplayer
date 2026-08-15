@@ -49,7 +49,8 @@ suspend fun Context.uriToSubtitleConfiguration(
     val label = getFilenameFromUri(uri)
     val mimeType = uri.getSubtitleMime(displayName = label)
     val utf8ConvertedUri = convertToUTF8(uri = uri, charset = charset)
-    val subtitleUri = normalizeAssFonts(uri = utf8ConvertedUri, label = label, mimeType = mimeType)
+    val samiConvertedUri = convertSamiToSubrip(uri = utf8ConvertedUri, label = label)
+    val subtitleUri = normalizeAssFonts(uri = samiConvertedUri, label = label, mimeType = mimeType)
     Logger.debug(
         "SubtitleConfig",
         "source=${uri.toSubtitleLogSummary()}, converted=${utf8ConvertedUri.toSubtitleLogSummary()}, subtitle=${subtitleUri.toSubtitleLogSummary()}, mime=$mimeType",
@@ -60,6 +61,96 @@ suspend fun Context.uriToSubtitleConfiguration(
         setLabel(label)
         if (isSelected) setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
     }.build()
+}
+
+private suspend fun Context.convertSamiToSubrip(
+    uri: Uri,
+    label: String,
+): Uri {
+    if (!label.isSamiSubtitle()) return uri
+
+    return withContext(Dispatchers.IO) {
+        try {
+            if (uri.scheme?.let { it in NETWORK_URI_SCHEMES } == true) return@withContext uri
+            val sourceText = contentResolver.openInputStream(uri)?.use { inputStream ->
+                inputStream.reader(StandardCharsets.UTF_8).readText()
+            } ?: return@withContext uri
+            val convertedText = sourceText.convertSamiToSubrip()
+            if (convertedText == sourceText) return@withContext uri
+
+            val file = File(subtitleCacheDir, convertedSamiFileName(label = label, uri = uri))
+            file.writeText(convertedText, StandardCharsets.UTF_8)
+            Uri.fromFile(file)
+        } catch (exception: Exception) {
+            Logger.error(SUBTITLE_CONFIG_TAG, "Failed to convert SAMI subtitle", exception)
+            uri
+        }
+    }
+}
+
+internal fun String.convertSamiToSubrip(): String {
+    val matches = SAMI_SYNC_REGEX.findAll(this).toList()
+    if (matches.isEmpty()) return this
+
+    val cues = ArrayList<SamiCue>(matches.size)
+    for (index in matches.indices) {
+        val startMs = matches[index].groupValues[1].toLong()
+        val contentStart = matches[index].range.last + 1
+        val contentEnd = matches.getOrNull(index + 1)?.range?.first ?: length
+        cues += SamiCue(
+            startMs = startMs,
+            text = substring(contentStart, contentEnd).samiCueText(),
+        )
+    }
+    if (cues.none { cue -> cue.text.isNotBlank() }) return this
+
+    return buildString {
+        var cueNumber = 1
+        cues.forEachIndexed { index, cue ->
+            if (cue.text.isBlank()) return@forEachIndexed
+            val endMs = cues.getOrNull(index + 1)?.startMs ?: (cue.startMs + DEFAULT_SAMI_CUE_DURATION_MS)
+            if (cueNumber > 1) appendLine()
+            appendLine(cueNumber)
+            append(cue.startMs.toSubripTimestamp())
+            append(" --> ")
+            appendLine(endMs.toSubripTimestamp())
+            appendLine(cue.text)
+            cueNumber++
+        }
+    }
+}
+
+private fun String.samiCueText(): String {
+    val withBreaks = SAMI_BREAK_REGEX.replace(this, "\n")
+    val withoutTags = SAMI_TAG_REGEX.replace(withBreaks, "")
+    return withoutTags
+        .replace("&nbsp;", " ", ignoreCase = true)
+        .replace("&amp;", "&", ignoreCase = true)
+        .replace("&lt;", "<", ignoreCase = true)
+        .replace("&gt;", ">", ignoreCase = true)
+        .replace("&quot;", "\"", ignoreCase = true)
+        .lineSequence()
+        .map { line -> line.trim() }
+        .filter { line -> line.isNotEmpty() }
+        .joinToString(separator = "\n")
+}
+
+private fun Long.toSubripTimestamp(): String {
+    val totalMs = coerceAtLeast(0L)
+    val hours = totalMs / 3_600_000L
+    val minutes = (totalMs % 3_600_000L) / 60_000L
+    val seconds = (totalMs % 60_000L) / 1_000L
+    val millis = totalMs % 1_000L
+    return "%02d:%02d:%02d,%03d".format(Locale.US, hours, minutes, seconds, millis)
+}
+
+private fun String.isSamiSubtitle(): Boolean = endsWith(".smi", ignoreCase = true) ||
+    endsWith(".sami", ignoreCase = true)
+
+private fun convertedSamiFileName(label: String, uri: Uri): String {
+    val baseName = label.ifBlank { "subtitle" }.substringBeforeLast('.', missingDelimiterValue = label.ifBlank { "subtitle" })
+    val cacheKey = uri.toString().hashCode().toUInt().toString(radix = 16)
+    return "$baseName-$cacheKey.sami.srt"
 }
 
 private suspend fun Context.normalizeAssFonts(
@@ -247,6 +338,18 @@ fun Bundle.getParcelableUriArray(key: String): ArrayList<Uri>? = BundleCompat.ge
 
 private const val SUBTITLE_CONFIG_TAG = "SubtitleConfig"
 private const val ASS_ANDROID_FALLBACK_FONT = "Roboto"
+private const val DEFAULT_SAMI_CUE_DURATION_MS = 3_000L
+private val SAMI_SYNC_REGEX = Regex(
+    """<SYNC\s+Start\s*=\s*["']?(\d+)["']?\s*>""",
+    setOf(RegexOption.IGNORE_CASE),
+)
+private val SAMI_BREAK_REGEX = Regex("""<\s*br\s*/?\s*>""", RegexOption.IGNORE_CASE)
+private val SAMI_TAG_REGEX = Regex("""<[^>]+>""")
+
+private data class SamiCue(
+    val startMs: Long,
+    val text: String,
+)
 
 private enum class AssSection {
     Style,

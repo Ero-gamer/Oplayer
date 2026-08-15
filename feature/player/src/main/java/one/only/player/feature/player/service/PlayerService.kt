@@ -167,7 +167,6 @@ class PlayerService : MediaSessionService() {
         private const val LOCAL_BUFFER_FOR_PLAYBACK_MS = 150
         private const val LOCAL_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 150
         private const val DEFAULT_AMBIENCE_TARGET_ASPECT_RATIO = 16f / 9f
-        private val FAST_SEEK_PARAMETERS = SeekParameters.CLOSEST_SYNC
         private val EXACT_SEEK_PARAMETERS = SeekParameters.DEFAULT
         private val REMOTE_SOURCE_URI_SCHEMES = setOf("smb", "ftp")
     }
@@ -1275,14 +1274,8 @@ class PlayerService : MediaSessionService() {
     }
 
     private fun applySeekParameters(player: ExoPlayer) {
-        val mediaItem = player.currentMediaItem
-        player.setSeekParameters(
-            if (mediaItem.shouldUseFastSeek()) {
-                FAST_SEEK_PARAMETERS
-            } else {
-                EXACT_SEEK_PARAMETERS
-            },
-        )
+        // 用户拖进度必须落到目标时间；CLOSEST_SYNC 在关键帧稀疏时会停在开头附近
+        player.setSeekParameters(EXACT_SEEK_PARAMETERS)
     }
 
     private fun MediaItem?.shouldUseFastSeek(): Boolean {
@@ -1642,7 +1635,7 @@ class PlayerService : MediaSessionService() {
             .setRenderersFactory(renderersFactory.withAssSupport(assHandler))
             .setTrackSelector(trackSelector)
             .setLoadControl(createLoadControl())
-            .setSeekParameters(FAST_SEEK_PARAMETERS)
+            .setSeekParameters(EXACT_SEEK_PARAMETERS)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)

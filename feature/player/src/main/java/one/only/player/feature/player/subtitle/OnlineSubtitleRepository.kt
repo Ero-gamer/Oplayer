@@ -139,7 +139,7 @@ class OnlineSubtitleRepository(
         const val MAX_SUBTITLE_BYTES = 10L * 1024 * 1024
         const val SUBTITLE_TTL_MILLIS = 7L * 24 * 60 * 60 * 1000
         val SUPPORTED_SCHEMES = setOf("http", "https")
-        val SUPPORTED_EXTENSIONS = setOf("srt", "ass", "ssa", "vtt", "webvtt")
+        val SUPPORTED_EXTENSIONS = setOf("srt", "ass", "ssa", "vtt", "webvtt", "smi", "sami")
 
         fun downloadWithOkHttp(url: String): DownloadStream {
             val request = Request.Builder()

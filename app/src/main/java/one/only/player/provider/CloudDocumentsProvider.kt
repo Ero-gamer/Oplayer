@@ -890,6 +890,8 @@ class CloudDocumentsProvider : DocumentsProvider() {
 
         private val SUBTITLE_EXTENSIONS = setOf(
             "ass",
+            "sami",
+            "smi",
             "srt",
             "ssa",
             "sub",

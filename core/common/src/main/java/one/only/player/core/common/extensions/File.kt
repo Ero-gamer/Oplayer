@@ -105,4 +105,4 @@ fun Iterable<String>.excludeNoMediaPaths(): List<String> = filterNot { path ->
 val File.prettyName: String
     get() = this.name.takeIf { this.path != Environment.getExternalStorageDirectory()?.path } ?: "Internal Storage"
 
-private val SUBTITLE_EXTENSIONS = setOf("srt", "ssa", "ass", "vtt", "webvtt", "ttml")
+private val SUBTITLE_EXTENSIONS = setOf("srt", "ssa", "ass", "vtt", "webvtt", "ttml", "smi", "sami")
