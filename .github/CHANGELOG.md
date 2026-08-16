@@ -1,8 +1,10 @@
-- 修复高 DPI 或可用高度较小时，快捷设置底部的取消和确认按钮显示不完整的问题
+- 在 Android 17 上补上本地网络权限，云盘和局域网设备可以正常访问了
+- 修复外观设置被底部导航栏挡住、主题选项卡住看不全的问题
 
 <details>
 <summary>English Version</summary>
 
-- Fixed incomplete Cancel and Confirm buttons in Quick Settings on high-DPI or limited-height displays
+- Added local network permission on Android 17 so cloud and LAN devices can be reached
+- Fixed appearance settings being covered by the bottom bar and theme options that got stuck and could not be fully shown
 
 </details>
