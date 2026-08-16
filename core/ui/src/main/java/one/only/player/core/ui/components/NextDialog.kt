@@ -36,7 +36,9 @@ fun NextDialog(
     ) {
         Column {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false),
             ) {
                 content()
             }
