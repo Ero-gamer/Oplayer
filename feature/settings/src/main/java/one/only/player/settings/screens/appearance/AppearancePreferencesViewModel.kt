@@ -206,4 +206,7 @@ sealed interface AppearancePreferencesEvent {
 sealed interface AppearancePreferenceDialog {
     data object Theme : AppearancePreferenceDialog
     data object AppLanguage : AppearancePreferenceDialog
+    data object ThemeColor : AppearancePreferenceDialog
+    data object PaletteStyle : AppearancePreferenceDialog
+    data object ColorSpec : AppearancePreferenceDialog
 }
