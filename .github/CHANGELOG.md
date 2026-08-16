@@ -1,10 +1,8 @@
-- 支持读取并转换 SAMI（`.smi` / `.sami`）字幕，在线字幕源也能识别这类格式
-- 修复关键帧稀疏视频拖动进度时停在错误位置的问题，恢复详情页切换到根页面时的过渡动画
+- 修复高 DPI 或可用高度较小时，快捷设置底部的取消和确认按钮显示不完整的问题
 
 <details>
 <summary>English Version</summary>
 
-- Added support for reading and converting SAMI (`.smi` / `.sami`) subtitles, including online subtitle sources
-- Fixed seeking in sparse-keyframe videos and restored navigation transitions when switching from detail pages to root tabs
+- Fixed incomplete Cancel and Confirm buttons in Quick Settings on high-DPI or limited-height displays
 
 </details>
