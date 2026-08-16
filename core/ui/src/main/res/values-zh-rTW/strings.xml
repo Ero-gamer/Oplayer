@@ -165,6 +165,8 @@
     <string name="name">名稱</string>
     <string name="extension">副檔名</string>
     <string name="permission_settings">Only Player 應用程式需要 \"%1$s\" 權限以存取或播放媒體。沒有它，媒體存取與播放功能將無法工作。要完整地使用此應用程式，請從設定中授予權限，因為它已經被永久地拒絕。</string>
+    <string name="local_network_permission_info">Only Player 需要「附近的裝置」權限才能連線 192.168.*.* 等區域網路裝置。請授予此權限後繼續。</string>
+    <string name="local_network_permission_settings">Only Player 需要「附近的裝置」權限才能連線 192.168.*.* 等區域網路裝置。請在系統設定中授予此權限後繼續。</string>
     <string name="monospace">等寬字型</string>
     <string name="path">路徑</string>
     <string name="appearance_description">調整此應用程式以符合您的喜好</string>

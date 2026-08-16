@@ -3,11 +3,14 @@ package one.only.player.core.common
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.core.content.ContextCompat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -15,6 +18,17 @@ import kotlin.math.abs
 val storagePermission = when {
     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> Manifest.permission.READ_MEDIA_VIDEO
     else -> Manifest.permission.READ_EXTERNAL_STORAGE
+}
+
+const val LOCAL_NETWORK_PERMISSION = "android.permission.ACCESS_LOCAL_NETWORK"
+
+@ChecksSdkIntAtLeast(api = 37)
+fun needsLocalNetworkPermission(): Boolean = Build.VERSION.SDK_INT >= 37
+
+fun hasLocalNetworkPermission(context: Context): Boolean {
+    if (!needsLocalNetworkPermission()) return true
+    return ContextCompat.checkSelfPermission(context, LOCAL_NETWORK_PERMISSION) ==
+        PackageManager.PERMISSION_GRANTED
 }
 
 fun hasManageExternalStorageAccess(): Boolean = Environment.isExternalStorageManager()

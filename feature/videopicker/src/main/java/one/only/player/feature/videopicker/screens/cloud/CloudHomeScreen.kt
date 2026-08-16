@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import one.only.player.core.common.needsLocalNetworkPermission
 import one.only.player.core.model.RemoteServer
 import one.only.player.core.model.ServerProtocol
 import one.only.player.core.ui.R
@@ -46,6 +48,8 @@ import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.composables.MediaMessageState
+import one.only.player.feature.videopicker.composables.RequestLocalNetworkPermissionIfNeeded
+import one.only.player.feature.videopicker.composables.rememberLocalNetworkPermissionState
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.DropdownItem
@@ -67,11 +71,31 @@ fun CloudHomeRoute(
     onServerClick: (Long) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val localNetworkPermissionState = rememberLocalNetworkPermissionState()
+    var pendingServerId by rememberSaveable { mutableStateOf<Long?>(null) }
+
+    RequestLocalNetworkPermissionIfNeeded(permissionState = localNetworkPermissionState)
+
+    LaunchedEffect(localNetworkPermissionState.isGranted, pendingServerId) {
+        val serverId = pendingServerId ?: return@LaunchedEffect
+        if (needsLocalNetworkPermission() && !localNetworkPermissionState.isGranted) {
+            return@LaunchedEffect
+        }
+        pendingServerId = null
+        onServerClick(serverId)
+    }
 
     CloudHomeScreen(
         uiState = uiState,
         onNavigateUp = onNavigateUp,
-        onServerClick = onServerClick,
+        onServerClick = { serverId ->
+            if (needsLocalNetworkPermission() && !localNetworkPermissionState.isGranted) {
+                pendingServerId = serverId
+                localNetworkPermissionState.launchPermissionRequest()
+                return@CloudHomeScreen
+            }
+            onServerClick(serverId)
+        },
         onEvent = viewModel::onEvent,
     )
 }

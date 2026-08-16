@@ -59,6 +59,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import java.security.MessageDigest
 import kotlin.math.abs
+import one.only.player.core.common.needsLocalNetworkPermission
 import one.only.player.core.data.models.RemotePlaybackInfo
 import one.only.player.core.model.CloudQuickSettings
 import one.only.player.core.model.MediaLayoutMode
@@ -74,13 +75,16 @@ import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.composables.InfoChip
+import one.only.player.feature.videopicker.composables.LocalNetworkPermissionMissingScreen
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.QuickSettingsTarget
+import one.only.player.feature.videopicker.composables.RequestLocalNetworkPermissionIfNeeded
 import one.only.player.feature.videopicker.composables.SelectionCheckIndicator
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
+import one.only.player.feature.videopicker.composables.rememberLocalNetworkPermissionState
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
@@ -103,11 +107,29 @@ fun CloudBrowseRoute(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val localNetworkPermissionState = rememberLocalNetworkPermissionState()
+    val isLocalNetworkReady = !needsLocalNetworkPermission() || localNetworkPermissionState.isGranted
+
+    RequestLocalNetworkPermissionIfNeeded(permissionState = localNetworkPermissionState)
+
+    LaunchedEffect(isLocalNetworkReady) {
+        if (!isLocalNetworkReady) return@LaunchedEffect
+        viewModel.onEvent(CloudBrowseEvent.Retry)
+    }
 
     // 从播放器返回时刷新播放状态
     LifecycleResumeEffect(Unit) {
         viewModel.onEvent(CloudBrowseEvent.RefreshPlaybackStates)
         onPauseOrDispose {}
+    }
+
+    if (!isLocalNetworkReady) {
+        LocalNetworkPermissionMissingScreen(
+            shouldShowRationale = localNetworkPermissionState.shouldShowRationale,
+            onGrantClick = localNetworkPermissionState::launchPermissionRequest,
+            onNavigateUp = onNavigateUp,
+        )
+        return
     }
 
     CloudBrowseScreen(

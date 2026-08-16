@@ -1,11 +1,13 @@
 package one.only.player.feature.videopicker.screens.cloud
 
+import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 import one.only.player.core.common.Dispatcher
 import one.only.player.core.common.NextDispatchers
 import one.only.player.core.common.Utils
+import one.only.player.core.common.hasLocalNetworkPermission
 import one.only.player.core.data.models.RemotePlaybackInfo
 import one.only.player.core.data.remote.RemoteMediaResolver
 import one.only.player.core.data.repository.FavoriteRepository
@@ -38,6 +41,7 @@ import one.only.player.core.model.Video
 @HiltViewModel
 class CloudBrowseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    @ApplicationContext private val context: Context,
     private val repository: RemoteServerRepository,
     private val mediaRepository: MediaRepository,
     private val favoriteRepository: FavoriteRepository,
@@ -54,6 +58,7 @@ class CloudBrowseViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
     private var fileInfoJob: Job? = null
     private var fileInfoRequestId = 0L
+    private var hasStarted = false
 
     init {
         viewModelScope.launch {
@@ -69,18 +74,31 @@ class CloudBrowseViewModel @Inject constructor(
                 }
             }
         }
-        loadServer()
+        startIfAllowed()
     }
 
     fun onEvent(event: CloudBrowseEvent) {
         when (event) {
             is CloudBrowseEvent.LoadFileInfo -> loadFileInfo(event.file, event.documentUri)
             CloudBrowseEvent.DismissFileInfo -> dismissFileInfo()
-            CloudBrowseEvent.Retry -> loadCurrentDirectory(forceRefresh = true)
+            CloudBrowseEvent.Retry -> {
+                if (_uiState.value.server == null) {
+                    startIfAllowed()
+                } else {
+                    loadCurrentDirectory(forceRefresh = true)
+                }
+            }
             CloudBrowseEvent.RefreshPlaybackStates -> loadPlaybackStates()
             is CloudBrowseEvent.AddFavorites -> addFavorites(event.files)
             is CloudBrowseEvent.UpdateQuickSettings -> updateQuickSettings(event.preferences)
         }
+    }
+
+    private fun startIfAllowed() {
+        if (!hasLocalNetworkPermission(context)) return
+        if (hasStarted) return
+        hasStarted = true
+        loadServer()
     }
 
     private fun loadServer() {
