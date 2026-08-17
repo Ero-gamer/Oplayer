@@ -16,6 +16,7 @@ data class FavoriteItem(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = createdAt,
     val sortOrder: Long = createdAt,
+    val video: Video? = null,
 )
 
 enum class FavoriteTargetType {

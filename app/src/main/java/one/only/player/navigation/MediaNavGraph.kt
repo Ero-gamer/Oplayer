@@ -17,13 +17,17 @@ import one.only.player.feature.player.PlayerActivity
 import one.only.player.feature.player.PortraitPlayerActivity
 import one.only.player.feature.player.extensions.toActivityOrientation
 import one.only.player.feature.player.service.PlayerService
-import one.only.player.feature.videopicker.navigation.MediaPickerRoute as MediaPickerDestination
+import one.only.player.feature.videopicker.navigation.MediaPickerRoute
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
+import one.only.player.feature.videopicker.navigation.historyScreen
 import one.only.player.feature.videopicker.navigation.mediaPickerScreen
+import one.only.player.feature.videopicker.navigation.navigateToHistory
 import one.only.player.feature.videopicker.navigation.navigateToMediaPickerScreen
 import one.only.player.feature.videopicker.navigation.navigateToMoveTargetScreen
+import one.only.player.feature.videopicker.navigation.navigateToPlaylists
 import one.only.player.feature.videopicker.navigation.navigateToRecycleBinScreen
 import one.only.player.feature.videopicker.navigation.navigateToSearch
+import one.only.player.feature.videopicker.navigation.playlistsScreen
 import one.only.player.feature.videopicker.navigation.searchScreen
 import one.only.player.feature.videopicker.screens.mediapicker.MediaPickerRoute as MediaPickerScreenRoute
 
@@ -52,6 +56,8 @@ fun MediaRootPage(
         },
         onRecycleBinClick = navController::navigateToRecycleBinScreen,
         onSearchClick = navController::navigateToSearch,
+        onHistoryClick = navController::navigateToHistory,
+        onPlaylistsClick = navController::navigateToPlaylists,
         onCloudClick = { onRootSelected(RootDestination.CLOUD) },
         onFavoritesClick = { onRootSelected(RootDestination.FAVORITES) },
         onExitAppClick = { context.exitApp() },
@@ -84,6 +90,8 @@ fun NavGraphBuilder.mediaDetailNavGraph(
         },
         onRecycleBinClick = navController::navigateToRecycleBinScreen,
         onSearchClick = navController::navigateToSearch,
+        onHistoryClick = navController::navigateToHistory,
+        onPlaylistsClick = navController::navigateToPlaylists,
         onCloudClick = { onRootSelected(RootDestination.CLOUD) },
         onFavoritesClick = { onRootSelected(RootDestination.FAVORITES) },
         onExitAppClick = { context.exitApp() },
@@ -108,6 +116,27 @@ fun NavGraphBuilder.mediaDetailNavGraph(
         },
         onMoveSelectionStarted = navController::openMoveTarget,
     )
+
+    historyScreen(
+        onNavigateUp = navController::navigateUp,
+        onPlayVideo = { video, playerPreferences ->
+            context.startPlayerActivity(
+                uri = video.uriString.toUri(),
+                launchOrientation = video.resolveLaunchOrientation(playerPreferences),
+            )
+        },
+    )
+
+    playlistsScreen(
+        onNavigateUp = navController::navigateUp,
+        onPlayVideos = { video, playerPreferences, playlist ->
+            context.startPlayerActivity(
+                uri = video.uriString.toUri(),
+                launchOrientation = video.resolveLaunchOrientation(playerPreferences),
+                playlist = playlist,
+            )
+        },
+    )
 }
 
 private fun NavHostController.openMoveTarget() {
@@ -115,7 +144,7 @@ private fun NavHostController.openMoveTarget() {
 }
 
 private fun NavHostController.closeMoveTarget() {
-    popBackStack(MediaPickerDestination(), inclusive = true)
+    popBackStack(MediaPickerRoute(), inclusive = true)
 }
 
 private fun Context.exitApp() {

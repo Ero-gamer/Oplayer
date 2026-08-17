@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,6 +73,7 @@ import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.preview.VideoPickerPreviewParameterProvider
 import one.only.player.core.ui.theme.OnlyPlayerTheme
+import one.only.player.feature.videopicker.composables.AddToPlaylistDialog
 import one.only.player.feature.videopicker.composables.MediaView
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
@@ -110,6 +112,8 @@ fun MediaPickerRoute(
     onFolderClick: (folderPath: String, screenMode: MediaPickerScreenMode) -> Unit,
     onRecycleBinClick: () -> Unit,
     onSearchClick: () -> Unit,
+    onHistoryClick: () -> Unit,
+    onPlaylistsClick: () -> Unit,
     onCloudClick: () -> Unit,
     onFavoritesClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -130,6 +134,8 @@ fun MediaPickerRoute(
         onFolderClick = onFolderClick,
         onRecycleBinClick = onRecycleBinClick,
         onSearchClick = onSearchClick,
+        onHistoryClick = onHistoryClick,
+        onPlaylistsClick = onPlaylistsClick,
         onCloudClick = onCloudClick,
         onFavoritesClick = onFavoritesClick,
         onSettingsClick = onSettingsClick,
@@ -160,6 +166,8 @@ internal fun MediaPickerScreen(
     onFolderClick: (String, MediaPickerScreenMode) -> Unit = { _, _ -> },
     onRecycleBinClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
+    onHistoryClick: () -> Unit = {},
+    onPlaylistsClick: () -> Unit = {},
     onCloudClick: () -> Unit = {},
     onFavoritesClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
@@ -183,6 +191,7 @@ internal fun MediaPickerScreen(
     var shouldShowMainMenu by rememberSaveable { mutableStateOf(false) }
     var shouldShowSelectionMenu by rememberSaveable { mutableStateOf(false) }
     var shouldShowUrlDialog by rememberSaveable { mutableStateOf(false) }
+    var pendingPlaylistSelection by remember { mutableStateOf<Pair<List<Video>, List<Folder>>?>(null) }
 
     var showRenameActionFor: Video? by rememberSaveable { mutableStateOf(null) }
     var showInfoActionFor: Video? by rememberSaveable { mutableStateOf(null) }
@@ -208,7 +217,6 @@ internal fun MediaPickerScreen(
     }
     val selectedItemsSize = selectionManager.selectedFolders.size + selectionManager.selectedVideos.size
     val totalItemsSize = (uiState.mediaDataState as? DataState.Success)?.value?.run { folderList.size + mediaList.size } ?: 0
-    val recentlyPlayedVideo = (uiState.mediaDataState as? DataState.Success)?.value?.recentlyPlayedVideo
     val moveResult = uiState.moveResult
     val moveResultMessage = when {
         moveResult == null -> null
@@ -351,6 +359,9 @@ internal fun MediaPickerScreen(
                             uiState = uiState,
                             onEvent = onEvent,
                             onMoveSelectionStarted = onMoveSelectionStarted,
+                            onAddToPlaylist = { videos, folders ->
+                                pendingPlaylistSelection = videos to folders
+                            },
                         )
                         val overflowActions = selectionOverflowActions(
                             isLibraryMode = isLibraryMode,
@@ -431,11 +442,10 @@ internal fun MediaPickerScreen(
                                 expanded = shouldShowMainMenu,
                                 onDismissRequest = { shouldShowMainMenu = false },
                                 groups = mainMenuActionGroups(
+                                    onHistoryClick = onHistoryClick,
+                                    onPlaylistsClick = onPlaylistsClick,
                                     onOpenNetworkStream = { shouldShowUrlDialog = true },
                                     onOpenLocalVideo = { selectVideoFileLauncher.launch("video/*") },
-                                    onOpenRecentlyPlayed = recentlyPlayedVideo?.let { video ->
-                                        { onPlayVideo(video, uiState.playerPreferences) }
-                                    },
                                     onExit = onExitAppClick,
                                 ),
                             )
@@ -641,6 +651,23 @@ internal fun MediaPickerScreen(
         NetworkUrlDialog(
             onDismiss = { shouldShowUrlDialog = false },
             onDone = { onPlayUri(it.toUri()) },
+        )
+    }
+
+    pendingPlaylistSelection?.let { (videos, folders) ->
+        AddToPlaylistDialog(
+            playlists = uiState.playlists,
+            onDismiss = { pendingPlaylistSelection = null },
+            onSelectPlaylist = { playlistId ->
+                onEvent(MediaPickerUiEvent.AddToPlaylist(playlistId, videos, folders))
+                pendingPlaylistSelection = null
+                selectionManager.exitSelectionMode()
+            },
+            onCreatePlaylist = { title ->
+                onEvent(MediaPickerUiEvent.CreatePlaylistAndAdd(title, videos, folders))
+                pendingPlaylistSelection = null
+                selectionManager.exitSelectionMode()
+            },
         )
     }
 
@@ -1035,6 +1062,7 @@ private fun selectionPrimaryActions(
     uiState: MediaPickerUiState,
     onEvent: (MediaPickerUiEvent) -> Unit,
     onMoveSelectionStarted: () -> Unit,
+    onAddToPlaylist: (List<Video>, List<Folder>) -> Unit,
 ): List<MenuAction> {
     val actions = mutableListOf<MenuAction>()
     if (isRecycleBinMode) {
@@ -1071,6 +1099,21 @@ private fun selectionPrimaryActions(
                 }
                 onEvent(MediaPickerUiEvent.AddFavorites(selectedVideos, selectedFolders))
                 selectionManager.exitSelectionMode()
+            },
+        )
+        actions += MenuAction(
+            text = stringResource(id = R.string.add_to_playlist),
+            icon = NextIcons.PlaylistPlay,
+            testTag = "item_selection_add_playlist",
+            onClick = {
+                val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@MenuAction
+                val selectedVideos = selectionManager.selectedVideos.mapNotNull { selectedVideo ->
+                    rootFolder.allMediaList.firstOrNull { video -> video.uriString == selectedVideo.uriString }
+                }
+                val selectedFolders = selectionManager.selectedFolders.mapNotNull { selectedFolder ->
+                    rootFolder.folderList.firstOrNull { folder -> folder.path == selectedFolder.path }
+                }
+                onAddToPlaylist(selectedVideos, selectedFolders)
             },
         )
         actions += MenuAction(
@@ -1189,12 +1232,27 @@ private fun selectionOverflowActions(
 // 顶栏主菜单：打开入口为一组，退出单独一组，靠 miuix 分组分隔线区隔。
 @Composable
 private fun mainMenuActionGroups(
+    onHistoryClick: () -> Unit,
+    onPlaylistsClick: () -> Unit,
     onOpenNetworkStream: () -> Unit,
     onOpenLocalVideo: () -> Unit,
-    onOpenRecentlyPlayed: (() -> Unit)?,
     onExit: () -> Unit,
 ): List<List<MenuAction>> {
-    val openActions = mutableListOf(
+    val libraryActions = listOf(
+        MenuAction(
+            text = stringResource(id = R.string.watch_history),
+            icon = NextIcons.History,
+            testTag = "item_main_menu_history",
+            onClick = onHistoryClick,
+        ),
+        MenuAction(
+            text = stringResource(id = R.string.playlists),
+            icon = NextIcons.PlaylistPlay,
+            testTag = "item_main_menu_playlists",
+            onClick = onPlaylistsClick,
+        ),
+    )
+    val openActions = listOf(
         MenuAction(
             text = stringResource(id = R.string.open_network_stream),
             icon = NextIcons.Link,
@@ -1208,14 +1266,6 @@ private fun mainMenuActionGroups(
             onClick = onOpenLocalVideo,
         ),
     )
-    if (onOpenRecentlyPlayed != null) {
-        openActions += MenuAction(
-            text = stringResource(id = R.string.recently_played),
-            icon = NextIcons.History,
-            testTag = "item_main_menu_recently_played",
-            onClick = onOpenRecentlyPlayed,
-        )
-    }
     val exitActions = listOf(
         MenuAction(
             text = stringResource(id = R.string.exit),
@@ -1224,7 +1274,7 @@ private fun mainMenuActionGroups(
             onClick = onExit,
         ),
     )
-    return listOf(openActions, exitActions)
+    return listOf(libraryActions, openActions, exitActions)
 }
 
 @Composable

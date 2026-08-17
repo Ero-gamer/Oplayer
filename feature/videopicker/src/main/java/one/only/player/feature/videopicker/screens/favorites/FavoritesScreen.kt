@@ -6,14 +6,14 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -32,19 +32,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.io.File
+import one.only.player.core.common.extensions.prettyName
+import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
+import one.only.player.core.model.Video
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.CardItemGap
-import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
+import one.only.player.feature.videopicker.composables.FolderThumbnail
+import one.only.player.feature.videopicker.composables.LibraryEntryItem
+import one.only.player.feature.videopicker.composables.LibraryIconThumb
 import one.only.player.feature.videopicker.composables.MediaMessageState
+import one.only.player.feature.videopicker.composables.MenuAction
+import one.only.player.feature.videopicker.composables.VideoThumbnail
+import one.only.player.feature.videopicker.composables.libraryListThumbWidth
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -209,9 +218,11 @@ internal fun FavoritesScreen(
                     itemsIndexed(
                         uiState.visibleItems,
                         key = { _, item -> item.id },
-                    ) { index, item ->
+                    ) { _, item ->
                         FavoriteListItem(
                             item = item,
+                            allItems = uiState.allItems,
+                            preferences = uiState.preferences,
                             onClick = { onEvent(FavoritesUiEvent.OpenItem(item)) },
                             onMoveClick = { movingItem = item },
                             onDeleteClick = { deletingItem = item },
@@ -257,7 +268,7 @@ internal fun FavoritesScreen(
 }
 
 @Composable
-private fun EmptyFavoritesContent(contentPadding: androidx.compose.foundation.layout.PaddingValues) {
+private fun EmptyFavoritesContent(contentPadding: PaddingValues) {
     MediaMessageState(
         icon = NextIcons.LibraryBooks,
         title = stringResource(R.string.no_favorites),
@@ -268,43 +279,77 @@ private fun EmptyFavoritesContent(contentPadding: androidx.compose.foundation.la
 @Composable
 private fun FavoriteListItem(
     item: FavoriteItem,
+    allItems: List<FavoriteItem>,
+    preferences: ApplicationPreferences,
     onClick: () -> Unit,
     onMoveClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
-    NextCardListItem(
+    val chips = item.libraryChips(allItems, preferences)
+
+    LibraryEntryItem(
+        title = item.displayTitle(preferences.shouldShowExtensionField),
+        chips = chips,
+        testTag = "favorite_item_${item.id}",
         onClick = onClick,
-        modifier = Modifier.testTag("favorite_item_${item.id}"),
         leadingContent = {
-            MiuixIcon(
-                imageVector = item.icon(),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
+            FavoriteLeading(
+                item = item,
+                preferences = preferences,
             )
         },
-        supportingContent = item.subtitle.takeIf { it.isNotBlank() }?.let {
-            { Text(text = it) }
-        },
-        trailingContent = {
-            Row {
-                MiuixIconButton(onClick = onMoveClick) {
-                    MiuixIcon(
-                        imageVector = NextIcons.DriveFileMove,
-                        contentDescription = stringResource(R.string.move),
-                    )
-                }
-                MiuixIconButton(onClick = onDeleteClick) {
-                    MiuixIcon(
-                        imageVector = NextIcons.Delete,
-                        contentDescription = stringResource(R.string.delete),
-                    )
-                }
-            }
-        },
-        content = {
-            Text(text = item.title)
-        },
+        overflowActions = listOf(
+            MenuAction(
+                text = stringResource(R.string.move),
+                icon = NextIcons.DriveFileMove,
+                testTag = "item_favorite_move_${item.id}",
+                onClick = onMoveClick,
+            ),
+            MenuAction(
+                text = stringResource(R.string.delete),
+                icon = NextIcons.Delete,
+                testTag = "item_favorite_delete_${item.id}",
+                onClick = onDeleteClick,
+            ),
+        ),
     )
+}
+
+@Composable
+private fun FavoriteLeading(
+    item: FavoriteItem,
+    preferences: ApplicationPreferences,
+) {
+    when (item.targetType) {
+        FavoriteTargetType.LOCAL_VIDEO -> {
+            val video = item.video ?: Video.sample.copy(
+                uriString = item.localUri.orEmpty(),
+                path = item.localPath.orEmpty(),
+                nameWithExtension = item.title,
+                formattedDuration = "",
+                playbackPosition = 0,
+            )
+            VideoThumbnail(
+                video = video,
+                preferences = if (item.video != null) {
+                    preferences
+                } else {
+                    preferences.copy(
+                        shouldShowDurationField = false,
+                        shouldShowPlayedProgress = false,
+                    )
+                },
+                modifier = Modifier.width(libraryListThumbWidth()),
+            )
+        }
+        FavoriteTargetType.LOCAL_FOLDER,
+        FavoriteTargetType.FAVORITE_FOLDER,
+        -> FolderThumbnail()
+        FavoriteTargetType.REMOTE_FILE,
+        FavoriteTargetType.REMOTE_DIRECTORY,
+        FavoriteTargetType.REMOTE_SERVER_ROOT,
+        -> LibraryIconThumb(icon = NextIcons.Cloud)
+    }
 }
 
 @Composable
@@ -359,12 +404,14 @@ private fun MoveFavoriteDialog(
                     text = stringResource(R.string.favorites_root),
                     isSelected = item.parentId == null,
                     onClick = { onMove(null) },
+                    modifier = Modifier.testTag("option_favorite_move_root"),
                 )
                 folderItems.forEach { folder ->
                     RadioTextButton(
                         text = folder.title,
                         isSelected = item.parentId == folder.id,
                         onClick = { onMove(folder.id) },
+                        modifier = Modifier.testTag("option_favorite_move_${folder.id}"),
                     )
                 }
             }
@@ -406,15 +453,81 @@ private fun DeleteFavoriteDialog(
     )
 }
 
-private fun FavoriteItem.icon(): androidx.compose.ui.graphics.vector.ImageVector = when (targetType) {
-    FavoriteTargetType.FAVORITE_FOLDER -> NextIcons.LibraryBooks
+private fun FavoriteItem.displayTitle(shouldShowExtension: Boolean): String = when (targetType) {
+    FavoriteTargetType.LOCAL_VIDEO -> video?.let { current ->
+        if (shouldShowExtension) current.nameWithExtension else current.displayName
+    } ?: title.substringBeforeLast('.')
+    FavoriteTargetType.LOCAL_FOLDER,
+    FavoriteTargetType.FAVORITE_FOLDER,
+    FavoriteTargetType.REMOTE_FILE,
+    FavoriteTargetType.REMOTE_DIRECTORY,
+    FavoriteTargetType.REMOTE_SERVER_ROOT,
+    -> title
+}
+
+@Composable
+private fun FavoriteItem.libraryChips(
+    allItems: List<FavoriteItem>,
+    preferences: ApplicationPreferences,
+): List<String> {
+    if (targetType == FavoriteTargetType.FAVORITE_FOLDER) {
+        val children = allItems.filter { child -> child.parentId == id }
+        val videoCount = children.count { child -> child.isVideoFavorite() }
+        val folderCount = children.count { child -> child.isFolderFavorite() }
+        return buildList {
+            if (videoCount > 0) {
+                add(
+                    "$videoCount " + stringResource(
+                        id = R.string.video.takeIf { videoCount == 1 } ?: R.string.videos,
+                    ),
+                )
+            }
+            if (folderCount > 0) {
+                add(
+                    "$folderCount " + stringResource(
+                        id = R.string.folder.takeIf { folderCount == 1 } ?: R.string.folders,
+                    ),
+                )
+            }
+        }
+    }
+
+    return buildList {
+        val resolved = video
+        if (resolved != null && preferences.shouldShowSizeField) {
+            add(resolved.formattedFileSize)
+        }
+        if (resolved != null && preferences.shouldShowResolutionField && resolved.height > 0) {
+            add("${resolved.height}p")
+        }
+        locationLabel()?.let(::add)
+    }
+}
+
+private fun FavoriteItem.isVideoFavorite(): Boolean = when (targetType) {
     FavoriteTargetType.LOCAL_VIDEO,
     FavoriteTargetType.REMOTE_FILE,
-    -> NextIcons.Video
+    -> true
+    FavoriteTargetType.FAVORITE_FOLDER,
     FavoriteTargetType.LOCAL_FOLDER,
     FavoriteTargetType.REMOTE_DIRECTORY,
     FavoriteTargetType.REMOTE_SERVER_ROOT,
-    -> NextIcons.Folder
+    -> false
+}
+
+private fun FavoriteItem.isFolderFavorite(): Boolean = !isVideoFavorite()
+
+private fun FavoriteItem.locationLabel(): String? = when (targetType) {
+    FavoriteTargetType.FAVORITE_FOLDER -> null
+    FavoriteTargetType.LOCAL_VIDEO,
+    FavoriteTargetType.LOCAL_FOLDER,
+    -> localPath?.let { path ->
+        File(path).parentFile?.prettyName?.takeIf { it.isNotBlank() }
+    }
+    FavoriteTargetType.REMOTE_FILE,
+    FavoriteTargetType.REMOTE_DIRECTORY,
+    FavoriteTargetType.REMOTE_SERVER_ROOT,
+    -> remoteServerName?.takeIf { it.isNotBlank() }
 }
 
 private fun FavoriteItem.descendantIds(allItems: List<FavoriteItem>): Set<Long> {

@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaRepository
+import one.only.player.core.data.repository.PlaylistRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.SearchHistoryRepository
 import one.only.player.core.data.repository.toFavoriteItem
@@ -32,6 +33,7 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaViewMode
 import one.only.player.core.model.PlayerPreferences
+import one.only.player.core.model.Playlist
 import one.only.player.core.model.Video
 import one.only.player.feature.videopicker.screens.mediapicker.MediaPickerMoveSelection
 import one.only.player.feature.videopicker.screens.mediapicker.MediaPickerMoveSelectionStore
@@ -46,6 +48,7 @@ class SearchViewModel @Inject constructor(
     private val mediaService: MediaService,
     private val mediaRepository: MediaRepository,
     private val favoriteRepository: FavoriteRepository,
+    private val playlistRepository: PlaylistRepository,
     private val mediaInfoSynchronizer: MediaInfoSynchronizer,
     private val mediaSynchronizer: MediaSynchronizer,
     private val snapshotCache: MediaPickerSnapshotCache,
@@ -62,6 +65,7 @@ class SearchViewModel @Inject constructor(
         collectPopularFolders()
         collectPreferences()
         collectPlayerPreferences()
+        collectPlaylists()
         collectSearchResults()
     }
 
@@ -97,6 +101,14 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    private fun collectPlaylists() {
+        viewModelScope.launch {
+            playlistRepository.observePlaylists().collect { playlists ->
+                uiStateInternal.update { it.copy(playlists = playlists) }
+            }
+        }
+    }
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun collectSearchResults() {
         viewModelScope.launch {
@@ -127,6 +139,8 @@ class SearchViewModel @Inject constructor(
             is SearchUiEvent.CacheFolderSnapshot -> cacheFolderSnapshot(event.folder)
             is SearchUiEvent.StartMoveSelection -> startMoveSelection(event.videoUris, event.folderPaths)
             is SearchUiEvent.AddFavorites -> addFavorites(event.videos, event.folders)
+            is SearchUiEvent.AddToPlaylist -> addToPlaylist(event.playlistId, event.videos, event.folders)
+            is SearchUiEvent.CreatePlaylistAndAdd -> createPlaylistAndAdd(event.title, event.videos, event.folders)
             is SearchUiEvent.ShareVideos -> shareVideos(event.uris)
             is SearchUiEvent.MarkVideosPlayed -> markVideosPlayed(event.uris)
             is SearchUiEvent.MarkVideosUnplayed -> markVideosUnplayed(event.uris)
@@ -197,6 +211,33 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             folders.forEach { folder -> favoriteRepository.upsert(folder.toFavoriteItem()) }
             videos.forEach { video -> favoriteRepository.upsert(video.toFavoriteItem()) }
+        }
+    }
+
+    private fun addToPlaylist(
+        playlistId: Long,
+        videos: List<Video>,
+        folders: List<Folder>,
+    ) {
+        viewModelScope.launch {
+            playlistRepository.addVideos(
+                playlistId = playlistId,
+                videos = videos + folders.flatMap(Folder::allMediaList),
+            )
+        }
+    }
+
+    private fun createPlaylistAndAdd(
+        title: String,
+        videos: List<Video>,
+        folders: List<Folder>,
+    ) {
+        viewModelScope.launch {
+            val playlistId = playlistRepository.create(title)
+            playlistRepository.addVideos(
+                playlistId = playlistId,
+                videos = videos + folders.flatMap(Folder::allMediaList),
+            )
         }
     }
 
@@ -289,6 +330,7 @@ data class SearchUiState(
     val preferences: ApplicationPreferences = ApplicationPreferences(),
     val playerPreferences: PlayerPreferences = PlayerPreferences(),
     val deleteResult: SearchDeleteResult? = null,
+    val playlists: List<Playlist> = emptyList(),
 )
 
 sealed interface SearchUiEvent {
@@ -304,6 +346,16 @@ sealed interface SearchUiEvent {
         val folderPaths: List<String>,
     ) : SearchUiEvent
     data class AddFavorites(
+        val videos: List<Video>,
+        val folders: List<Folder>,
+    ) : SearchUiEvent
+    data class AddToPlaylist(
+        val playlistId: Long,
+        val videos: List<Video>,
+        val folders: List<Folder>,
+    ) : SearchUiEvent
+    data class CreatePlaylistAndAdd(
+        val title: String,
         val videos: List<Video>,
         val folders: List<Folder>,
     ) : SearchUiEvent

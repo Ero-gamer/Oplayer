@@ -20,10 +20,13 @@ import one.only.player.core.common.NextDispatchers
 import one.only.player.core.data.remote.RemoteMediaResolver
 import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaRepository
+import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.RemoteServerRepository
+import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
 import one.only.player.core.model.RemoteFile
+import one.only.player.core.model.Video
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
@@ -31,6 +34,7 @@ class FavoritesViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val remoteServerRepository: RemoteServerRepository,
     private val remoteMediaResolver: RemoteMediaResolver,
+    preferencesRepository: PreferencesRepository,
     @Dispatcher(NextDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
@@ -40,26 +44,28 @@ class FavoritesViewModel @Inject constructor(
     private val message = MutableStateFlow<String?>(null)
 
     val uiState = combine(
-        favoriteRepository.observeAll(),
-        searchQuery,
-        currentParentId,
-        openTarget,
-        message,
-    ) { allItems, query, parentId, target, message ->
+        combine(favoriteRepository.observeAll(), searchQuery, currentParentId, ::Triple),
+        combine(openTarget, message, preferencesRepository.applicationPreferences, ::Triple),
+        mediaRepository.getVideosFlow(),
+    ) { itemsState, overlayState, videos ->
+        val (allItems, query, parentId) = itemsState
+        val (target, message, preferences) = overlayState
+        val resolvedItems = allItems.resolveLocalVideos(videos)
         val normalizedQuery = query.trim()
         val visibleItems = if (normalizedQuery.isBlank()) {
-            allItems.filter { item -> item.parentId == parentId }
+            resolvedItems.filter { item -> item.parentId == parentId }
         } else {
-            allItems.filter { item -> item.matches(normalizedQuery) }
+            resolvedItems.filter { item -> item.matches(normalizedQuery) }
         }
         FavoritesUiState(
-            allItems = allItems,
+            allItems = resolvedItems,
             visibleItems = visibleItems,
             searchQuery = query,
             currentParentId = parentId,
-            currentTitle = allItems.firstOrNull { it.id == parentId }?.title,
+            currentTitle = resolvedItems.firstOrNull { it.id == parentId }?.title,
             openTarget = target,
             message = message,
+            preferences = preferences,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -222,6 +228,17 @@ class FavoritesViewModel @Inject constructor(
         remoteServerName.orEmpty().contains(query, ignoreCase = true)
 }
 
+private fun List<FavoriteItem>.resolveLocalVideos(videos: List<Video>): List<FavoriteItem> {
+    val videoByUri = videos.associateBy(Video::uriString)
+    val videoByPath = videos.associateBy(Video::path)
+    return map { item ->
+        if (item.targetType != FavoriteTargetType.LOCAL_VIDEO) return@map item
+        val video = item.localUri?.let(videoByUri::get)
+            ?: item.localPath.takeIf { item.localUri.isNullOrBlank() }?.let(videoByPath::get)
+        if (video == null) item else item.copy(video = video)
+    }
+}
+
 @Stable
 data class FavoritesUiState(
     val allItems: List<FavoriteItem> = emptyList(),
@@ -231,6 +248,7 @@ data class FavoritesUiState(
     val currentTitle: String? = null,
     val openTarget: FavoriteOpenTarget? = null,
     val message: String? = null,
+    val preferences: ApplicationPreferences = ApplicationPreferences(),
 )
 
 sealed interface FavoritesUiEvent {

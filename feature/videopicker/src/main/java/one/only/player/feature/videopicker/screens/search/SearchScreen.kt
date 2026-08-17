@@ -60,6 +60,7 @@ import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
+import one.only.player.feature.videopicker.composables.AddToPlaylistDialog
 import one.only.player.feature.videopicker.composables.FolderItem
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MediaView
@@ -114,6 +115,7 @@ internal fun SearchScreen(
     var showInfoActionFor: Video? by rememberSaveable { mutableStateOf(null) }
     var shouldShowDeleteConfirmation by rememberSaveable { mutableStateOf(false) }
     var shouldShowSelectionMenu by rememberSaveable { mutableStateOf(false) }
+    var pendingPlaylistSelection by remember { mutableStateOf<Pair<List<Video>, List<Folder>>?>(null) }
     val rootFolder = uiState.searchResults.asRootFolder()
     val selectedVideos = remember(selectionManager.selectedVideos, rootFolder) {
         selectionManager.selectedVideos.mapNotNull { selectedVideo ->
@@ -208,6 +210,9 @@ internal fun SearchScreen(
                             selectedVideoUris = selectedVideoUris,
                             onEvent = onEvent,
                             onMoveSelectionStarted = onMoveSelectionStarted,
+                            onAddToPlaylist = { videos, folders ->
+                                pendingPlaylistSelection = videos to folders
+                            },
                         )
                         val overflowActions = searchSelectionOverflowActions(
                             selectionManager = selectionManager,
@@ -303,6 +308,23 @@ internal fun SearchScreen(
         VideoInfoDialog(
             video = video,
             onDismiss = { showInfoActionFor = null },
+        )
+    }
+
+    pendingPlaylistSelection?.let { (videos, folders) ->
+        AddToPlaylistDialog(
+            playlists = uiState.playlists,
+            onDismiss = { pendingPlaylistSelection = null },
+            onSelectPlaylist = { playlistId ->
+                onEvent(SearchUiEvent.AddToPlaylist(playlistId, videos, folders))
+                pendingPlaylistSelection = null
+                selectionManager.exitSelectionMode()
+            },
+            onCreatePlaylist = { title ->
+                onEvent(SearchUiEvent.CreatePlaylistAndAdd(title, videos, folders))
+                pendingPlaylistSelection = null
+                selectionManager.exitSelectionMode()
+            },
         )
     }
 
@@ -507,6 +529,7 @@ private fun searchSelectionPrimaryActions(
     selectedVideoUris: List<String>,
     onEvent: (SearchUiEvent) -> Unit,
     onMoveSelectionStarted: () -> Unit,
+    onAddToPlaylist: (List<Video>, List<Folder>) -> Unit,
 ): List<MenuAction> = listOf(
     MenuAction(
         text = stringResource(id = R.string.share),
@@ -523,6 +546,14 @@ private fun searchSelectionPrimaryActions(
         onClick = {
             onEvent(SearchUiEvent.AddFavorites(selectedVideos, selectedFolders))
             selectionManager.exitSelectionMode()
+        },
+    ),
+    MenuAction(
+        text = stringResource(id = R.string.add_to_playlist),
+        icon = NextIcons.PlaylistPlay,
+        testTag = "item_search_selection_add_playlist",
+        onClick = {
+            onAddToPlaylist(selectedVideos, selectedFolders)
         },
     ),
     MenuAction(

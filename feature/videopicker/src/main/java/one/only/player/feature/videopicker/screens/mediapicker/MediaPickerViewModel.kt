@@ -25,6 +25,7 @@ import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaMoveProgress
 import one.only.player.core.data.repository.MediaMoveSummary
 import one.only.player.core.data.repository.MediaRepository
+import one.only.player.core.data.repository.PlaylistRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.toFavoriteItem
 import one.only.player.core.domain.GetSortedMediaUseCase
@@ -36,6 +37,7 @@ import one.only.player.core.media.sync.MediaSynchronizer
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.PlayerPreferences
+import one.only.player.core.model.Playlist
 import one.only.player.core.model.Video
 import one.only.player.core.ui.base.DataState
 import one.only.player.feature.videopicker.navigation.FolderArgs
@@ -49,6 +51,7 @@ class MediaPickerViewModel @Inject constructor(
     private val mediaService: MediaService,
     private val mediaRepository: MediaRepository,
     private val favoriteRepository: FavoriteRepository,
+    private val playlistRepository: PlaylistRepository,
     private val preferencesRepository: PreferencesRepository,
     private val mediaInfoSynchronizer: MediaInfoSynchronizer,
     private val mediaSynchronizer: MediaSynchronizer,
@@ -145,6 +148,14 @@ class MediaPickerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            playlistRepository.observePlaylists().collect { playlists ->
+                uiStateInternal.update { currentState ->
+                    currentState.copy(playlists = playlists)
+                }
+            }
+        }
+
+        viewModelScope.launch {
             moveSelectionStore.selection.collectLatest { selection ->
                 uiStateInternal.update { currentState ->
                     currentState.copy(
@@ -182,6 +193,8 @@ class MediaPickerViewModel @Inject constructor(
             is MediaPickerUiEvent.PermanentlyDeleteVideos -> permanentlyDeleteVideos(event.videos)
             is MediaPickerUiEvent.ShareVideos -> shareVideos(event.videos)
             is MediaPickerUiEvent.AddFavorites -> addFavorites(event.videos, event.folders)
+            is MediaPickerUiEvent.AddToPlaylist -> addToPlaylist(event.playlistId, event.videos, event.folders)
+            is MediaPickerUiEvent.CreatePlaylistAndAdd -> createPlaylistAndAdd(event.title, event.videos, event.folders)
             is MediaPickerUiEvent.ExcludeFolders -> excludeFolders(event.paths)
             is MediaPickerUiEvent.MarkVideosPlayed -> markVideosPlayed(event.videos)
             is MediaPickerUiEvent.MarkVideosUnplayed -> markVideosUnplayed(event.videos)
@@ -377,6 +390,33 @@ class MediaPickerViewModel @Inject constructor(
         }
     }
 
+    private fun addToPlaylist(
+        playlistId: Long,
+        videos: List<Video>,
+        folders: List<Folder>,
+    ) {
+        viewModelScope.launch {
+            playlistRepository.addVideos(
+                playlistId = playlistId,
+                videos = videos + folders.flatMap(Folder::allMediaList),
+            )
+        }
+    }
+
+    private fun createPlaylistAndAdd(
+        title: String,
+        videos: List<Video>,
+        folders: List<Folder>,
+    ) {
+        viewModelScope.launch {
+            val playlistId = playlistRepository.create(title)
+            playlistRepository.addVideos(
+                playlistId = playlistId,
+                videos = videos + folders.flatMap(Folder::allMediaList),
+            )
+        }
+    }
+
     private fun markVideosPlayed(uris: List<String>) {
         viewModelScope.launch {
             mediaRepository.markVideosAsPlayed(uris)
@@ -509,6 +549,7 @@ data class MediaPickerUiState(
     val moveResult: MediaMoveSummary? = null,
     val moveSelectionResolution: MediaPickerMoveSelectionResolution? = null,
     val deleteResult: MediaPickerDeleteResult? = null,
+    val playlists: List<Playlist> = emptyList(),
 )
 
 sealed interface MediaPickerUiEvent {
@@ -527,6 +568,16 @@ sealed interface MediaPickerUiEvent {
     data class PermanentlyDeleteVideos(val videos: List<SelectedVideo>) : MediaPickerUiEvent
     data class ShareVideos(val videos: List<String>) : MediaPickerUiEvent
     data class AddFavorites(
+        val videos: List<Video>,
+        val folders: List<Folder>,
+    ) : MediaPickerUiEvent
+    data class AddToPlaylist(
+        val playlistId: Long,
+        val videos: List<Video>,
+        val folders: List<Folder>,
+    ) : MediaPickerUiEvent
+    data class CreatePlaylistAndAdd(
+        val title: String,
         val videos: List<Video>,
         val folders: List<Folder>,
     ) : MediaPickerUiEvent

@@ -22,14 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -95,11 +93,10 @@ private fun VideoListItem(
         onClick = onClick,
         onLongClick = onLongClick,
         leadingContent = {
-            ThumbnailView(
+            VideoThumbnail(
                 video = video,
                 preferences = preferences,
-                modifier = Modifier
-                    .width(min(150.dp, LocalConfiguration.current.screenWidthDp.dp * 0.35f)),
+                modifier = Modifier.width(libraryListThumbWidth()),
             )
         },
         trailingContent = {
@@ -169,7 +166,7 @@ private fun VideoGridItem(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ThumbnailView(
+                VideoThumbnail(
                     video = video,
                     preferences = preferences,
                 )
@@ -191,7 +188,7 @@ private fun VideoGridItem(
 }
 
 @Composable
-private fun ThumbnailView(
+internal fun VideoThumbnail(
     modifier: Modifier = Modifier,
     video: Video,
     preferences: ApplicationPreferences,
