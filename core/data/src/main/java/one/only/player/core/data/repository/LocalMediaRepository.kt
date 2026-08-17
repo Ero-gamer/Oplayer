@@ -36,6 +36,7 @@ class LocalMediaRepository @Inject constructor(
     private val mediaService: MediaService,
     private val mediaSynchronizer: MediaSynchronizer,
     private val favoriteRepository: FavoriteRepository,
+    private val playlistRepository: PlaylistRepository,
     private val playbackMarkRepository: PlaybackMarkRepository,
     @ApplicationScope private val applicationScope: CoroutineScope,
 ) : MediaRepository {
@@ -90,6 +91,14 @@ class LocalMediaRepository @Inject constructor(
                 lastPlayedTime = lastPlayedTime,
             ),
         )
+    }
+
+    override suspend fun clearMediumLastPlayedTime(uri: String) {
+        mediumStateDao.clearLastPlayedTime(resolveCanonicalMediaUri(uri))
+    }
+
+    override suspend fun clearAllLastPlayedTimes() {
+        mediumStateDao.clearAllLastPlayedTimes()
     }
 
     override suspend fun updateMediumPosition(uri: String, position: Long) {
@@ -274,6 +283,12 @@ class LocalMediaRepository @Inject constructor(
                 newTitle = moved.fileName,
                 newMediaStoreId = medium.mediaStoreId,
             )
+            playlistRepository.updateLocalVideoTarget(
+                oldLocalUri = uriString,
+                newLocalUri = movedUriString,
+                newLocalPath = moved.path,
+                newTitle = moved.fileName,
+            )
             refreshMediaPathAsync(moved.path)
             movedUris += movedUriString
         }
@@ -419,6 +434,10 @@ class LocalMediaRepository @Inject constructor(
                         oldPath = folderPath,
                         newPath = movedFolderPath,
                     )
+                    playlistRepository.updateLocalFolderPath(
+                        oldPath = folderPath,
+                        newPath = movedFolderPath,
+                    )
                     movedCount++
                 }
                 result.movedMedia.isNotEmpty() -> partiallyMovedCount++
@@ -495,6 +514,12 @@ class LocalMediaRepository @Inject constructor(
                 newTitle = restored.fileName,
                 newMediaStoreId = medium.mediaStoreId,
             )
+            playlistRepository.updateLocalVideoTarget(
+                oldLocalUri = uriString,
+                newLocalUri = restoredUriString,
+                newLocalPath = restored.path,
+                newTitle = restored.fileName,
+            )
             refreshMediaPathAsync(restored.path)
             restoredUris += restoredUriString
         }
@@ -536,6 +561,12 @@ class LocalMediaRepository @Inject constructor(
             newLocalPath = moved.path,
             newTitle = moved.fileName,
             newMediaStoreId = medium.mediaStoreId,
+        )
+        playlistRepository.updateLocalVideoTarget(
+            oldLocalUri = uriString,
+            newLocalUri = movedUriString,
+            newLocalPath = moved.path,
+            newTitle = moved.fileName,
         )
     }
 

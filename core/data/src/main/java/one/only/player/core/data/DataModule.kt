@@ -10,12 +10,14 @@ import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.LocalFavoriteRepository
 import one.only.player.core.data.repository.LocalMediaRepository
 import one.only.player.core.data.repository.LocalPlaybackMarkRepository
+import one.only.player.core.data.repository.LocalPlaylistRepository
 import one.only.player.core.data.repository.LocalPreferencesRepository
 import one.only.player.core.data.repository.LocalRemoteServerRepository
 import one.only.player.core.data.repository.LocalSearchHistoryRepository
 import one.only.player.core.data.repository.LocalSubtitleFontRepository
 import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PlaybackMarkRepository
+import one.only.player.core.data.repository.PlaylistRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.RemoteServerRepository
 import one.only.player.core.data.repository.SearchHistoryRepository
@@ -60,6 +62,12 @@ interface DataModule {
     fun bindsPlaybackMarkRepository(
         playbackMarkRepository: LocalPlaybackMarkRepository,
     ): PlaybackMarkRepository
+
+    @Binds
+    @Singleton
+    fun bindsPlaylistRepository(
+        playlistRepository: LocalPlaylistRepository,
+    ): PlaylistRepository
 
     @Binds
     @Singleton

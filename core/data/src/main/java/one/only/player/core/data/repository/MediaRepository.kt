@@ -20,6 +20,8 @@ interface MediaRepository {
     suspend fun getRemotePlaybackStates(stateKeys: List<String>): Map<String, RemotePlaybackInfo>
 
     suspend fun updateMediumLastPlayedTime(uri: String, lastPlayedTime: Long)
+    suspend fun clearMediumLastPlayedTime(uri: String)
+    suspend fun clearAllLastPlayedTimes()
     suspend fun updateMediumPosition(uri: String, position: Long)
     suspend fun markVideosAsPlayed(uris: List<String>)
     suspend fun markVideosAsUnplayed(uris: List<String>)
