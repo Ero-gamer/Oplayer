@@ -43,6 +43,8 @@ class DebugCommandProvider : ContentProvider() {
             in CLOUD_QUICK_SETTINGS_METHODS -> context.runCloudQuickSettingsCommand(method.removePrefix("cloud.quick_settings."), arg, extras)
             in QUICK_SETTINGS_METHODS -> context.runQuickSettingsCommand(method.removePrefix("quick_settings."), arg, extras)
             in FAVORITE_METHODS -> context.runFavoriteCommand(method.removePrefix("favorite."), arg, extras)
+            in PLAYLIST_METHODS -> context.runPlaylistCommand(method.removePrefix("playlist."), arg, extras)
+            in HISTORY_METHODS -> context.runHistoryCommand(method.removePrefix("history."), arg, extras)
             in MEDIA_METHODS -> context.runMediaCommand(method.removePrefix("media."), arg, extras)
             in PLAYER_ACTION_METHODS -> context.runPlayerAction(method.removePrefix("player."), arg, extras.withTarget(arg))
             in PLAYER_GET_METHODS -> context.runPlayerGet(method.removePrefix("player."))

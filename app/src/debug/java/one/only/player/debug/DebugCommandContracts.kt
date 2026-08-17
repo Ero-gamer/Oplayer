@@ -10,6 +10,7 @@ import one.only.player.core.data.remote.RemoteMediaResolver
 import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PlaybackMarkRepository
+import one.only.player.core.data.repository.PlaylistRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.RemoteServerRepository
 import one.only.player.core.data.repository.SubtitleFontRepository
@@ -80,6 +81,21 @@ internal val FAVORITE_METHODS = setOf(
     "favorite.delete",
     "favorite.move",
     "favorite.clear",
+)
+
+internal val PLAYLIST_METHODS = setOf(
+    "playlist.create",
+    "playlist.add",
+    "playlist.list",
+    "playlist.items",
+    "playlist.delete",
+    "playlist.clear",
+)
+
+internal val HISTORY_METHODS = setOf(
+    "history.list",
+    "history.remove",
+    "history.clear",
 )
 
 internal val MEDIA_METHODS = setOf(
@@ -338,6 +354,8 @@ interface DebugCommandEntryPoint {
     fun mediaRepository(): MediaRepository
 
     fun favoriteRepository(): FavoriteRepository
+
+    fun playlistRepository(): PlaylistRepository
 
     fun playbackMarkRepository(): PlaybackMarkRepository
 
