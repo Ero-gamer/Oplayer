@@ -139,6 +139,7 @@
     <string name="reset_initial_volume_limit">重設初始音量上限</string>
     <string name="volume_normalization">音量標準化</string>
     <string name="volume_normalization_desc">透過動態範圍處理緩和音量忽大忽小</string>
+    <string name="spatial_audio">空間音訊</string>
     <string name="player_description">播放器外觀、播放控制元件</string>
     <string name="seek_gesture_description">橫向滑動以向前或向後跳轉</string>
     <string name="quick_settings">快速設定</string>

@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
-import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -81,6 +80,7 @@ import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import one.only.player.core.common.Logger
+import one.only.player.core.common.audio.DolbyAudioCapabilities
 import one.only.player.core.common.extensions.deleteFiles
 import one.only.player.core.common.extensions.getFilenameFromUri
 import one.only.player.core.common.extensions.getPath
@@ -133,6 +133,8 @@ import one.only.player.feature.player.model.extractVideoChapters
 import one.only.player.feature.player.model.toBundle
 import one.only.player.feature.player.service.artwork.PlaybackArtworkLoader
 import one.only.player.feature.player.service.audio.AudioEffectsCoordinator
+import one.only.player.feature.player.service.audio.toPlaybackAudioAttributes
+import one.only.player.feature.player.service.decoder.DolbyPreferringMediaCodecSelector
 import one.only.player.feature.player.service.decoder.NormalizingRenderersFactory
 import one.only.player.feature.player.service.decoder.extensionRendererMode
 import one.only.player.feature.player.service.decoder.logName
@@ -1609,19 +1611,22 @@ class PlayerService : MediaSessionService() {
         val extensionRendererMode = decoderPriority.extensionRendererMode()
         val shouldEnableDecoderFallback = decoderPriority.shouldEnableDecoderFallback()
         val shouldUseAudioExtensionFallback = decoderPriority.shouldUseAudioExtensionFallback()
+        val preferences = playerPreferences
+        val spatializer = DolbyAudioCapabilities.spatializerStatus(applicationContext)
+        val oemDolby = DolbyAudioCapabilities.oemDolbyProcessing(applicationContext)
         Logger.info(
             TAG,
-            "Create player decoder=${decoderPriority.logName()} policy=$decoderPriority extensionRendererMode=$extensionRendererMode decoderFallback=$shouldEnableDecoderFallback audioExtensionFallback=$shouldUseAudioExtensionFallback",
+            "Create player decoder=${decoderPriority.logName()} policy=$decoderPriority extensionRendererMode=$extensionRendererMode decoderFallback=$shouldEnableDecoderFallback audioExtensionFallback=$shouldUseAudioExtensionFallback spatial=${preferences.isSpatialAudioEnabled} spatializer(supported=${spatializer.isSupported}, available=${spatializer.isAvailable}, enabled=${spatializer.isEnabled}) oemDolby(present=${oemDolby.isPresent}, implementer=${oemDolby.implementer}, effect=${oemDolby.effectName})",
         )
         val renderersFactory = NormalizingRenderersFactory(
             context = applicationContext,
             volumeNormalizationAudioProcessor = audioEffectsCoordinator.volumeNormalizationAudioProcessor,
             shouldUseAudioExtensionFallback = shouldUseAudioExtensionFallback,
         )
+            .setMediaCodecSelector(DolbyPreferringMediaCodecSelector)
             .setEnableDecoderFallback(shouldEnableDecoderFallback)
             .setExtensionRendererMode(extensionRendererMode)
 
-        val preferences = playerPreferences
         val trackSelector = DefaultTrackSelector(applicationContext).apply {
             setParameters(
                 buildUponParameters()
@@ -1637,10 +1642,7 @@ class PlayerService : MediaSessionService() {
             .setLoadControl(createLoadControl())
             .setSeekParameters(EXACT_SEEK_PARAMETERS)
             .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
+                preferences.toPlaybackAudioAttributes(),
                 preferences.shouldRequireAudioFocus,
             )
             .setHandleAudioBecomingNoisy(preferences.shouldPauseOnHeadsetDisconnect)
@@ -1693,6 +1695,19 @@ class PlayerService : MediaSessionService() {
                 .distinctUntilChanged { old, new -> old.isVolumeNormalizationEnabled == new.isVolumeNormalizationEnabled }
                 .collect { preferences ->
                     audioEffectsCoordinator.applyVolumeNormalization(preferences.isVolumeNormalizationEnabled)
+                }
+        }
+        serviceScope.launch {
+            preferencesRepository.playerPreferences
+                .distinctUntilChanged { old, new ->
+                    old.isSpatialAudioEnabled == new.isSpatialAudioEnabled &&
+                        old.shouldRequireAudioFocus == new.shouldRequireAudioFocus
+                }
+                .collect { preferences ->
+                    mediaSession?.player?.setAudioAttributes(
+                        preferences.toPlaybackAudioAttributes(),
+                        preferences.shouldRequireAudioFocus,
+                    )
                 }
         }
         serviceScope.launch {

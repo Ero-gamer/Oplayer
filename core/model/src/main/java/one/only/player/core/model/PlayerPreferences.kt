@@ -74,6 +74,7 @@ data class PlayerPreferences(
     val playerVolumePercentage: Int = DEFAULT_PLAYER_VOLUME_PERCENTAGE,
     val maxInitialPlayerVolumePercentage: Int = DEFAULT_MAX_INITIAL_PLAYER_VOLUME_PERCENTAGE,
     val isVolumeNormalizationEnabled: Boolean = false,
+    val isSpatialAudioEnabled: Boolean = true,
 
     // 字幕偏好
     val isSubtitleAutoLoadEnabled: Boolean = true,

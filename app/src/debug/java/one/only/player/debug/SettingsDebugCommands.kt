@@ -312,6 +312,7 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         }
         "audio.normalization" -> updatePlayerBoolean(value) { preferences, isEnabled -> preferences.copy(isVolumeNormalizationEnabled = isEnabled) }
         "audio.boost" -> updatePlayerBoolean(value) { preferences, isEnabled -> preferences.copy(isVolumeBoostEnabled = isEnabled) }
+        "audio.spatial" -> updatePlayerBoolean(value) { preferences, isEnabled -> preferences.copy(isSpatialAudioEnabled = isEnabled) }
         "subtitle.auto_load" -> updatePlayerBoolean(value) { preferences, isEnabled -> preferences.copy(isSubtitleAutoLoadEnabled = isEnabled) }
         "subtitle.remember_track" -> updatePlayerBoolean(value) { preferences, isEnabled -> preferences.copy(shouldRememberSubtitleTrack = isEnabled) }
         "subtitle.language" -> updatePlayerString(value) { preferences, stringValue -> preferences.copy(preferredSubtitleLanguage = stringValue) }
@@ -420,6 +421,7 @@ internal suspend fun DebugCommandEntryPoint.toggleSetting(target: String?) {
         "audio.remember_track" -> togglePlayer { it.copy(shouldRememberAudioTrack = !it.shouldRememberAudioTrack) }
         "audio.normalization" -> togglePlayer { it.copy(isVolumeNormalizationEnabled = !it.isVolumeNormalizationEnabled) }
         "audio.boost" -> togglePlayer { it.copy(isVolumeBoostEnabled = !it.isVolumeBoostEnabled) }
+        "audio.spatial" -> togglePlayer { it.copy(isSpatialAudioEnabled = !it.isSpatialAudioEnabled) }
         "subtitle.auto_load" -> togglePlayer { it.copy(isSubtitleAutoLoadEnabled = !it.isSubtitleAutoLoadEnabled) }
         "subtitle.remember_track" -> togglePlayer { it.copy(shouldRememberSubtitleTrack = !it.shouldRememberSubtitleTrack) }
         "subtitle.bold" -> togglePlayer { it.copy(shouldUseBoldSubtitleText = !it.shouldUseBoldSubtitleText) }

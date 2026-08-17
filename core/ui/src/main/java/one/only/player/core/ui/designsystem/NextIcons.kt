@@ -86,6 +86,7 @@ import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.Straighten
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.Subtitles
+import androidx.compose.material.icons.rounded.SurroundSound
 import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material.icons.rounded.Timer
@@ -156,6 +157,7 @@ object NextIcons {
     val SkipPrevious = Icons.Rounded.SkipPrevious
     val SmartButton = Icons.Rounded.SmartButton
     val Style = Icons.Rounded.Style
+    val SurroundSound = Icons.Rounded.SurroundSound
     val Subtitle = Icons.Rounded.Subtitles
     val Size = Icons.AutoMirrored.Rounded.CompareArrows
     val Sensitivity = Icons.Rounded.Tune

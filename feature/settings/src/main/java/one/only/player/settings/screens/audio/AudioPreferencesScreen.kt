@@ -184,6 +184,13 @@ private fun AudioPreferencesContent(
                 verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 PreferenceSwitch(
+                    modifier = Modifier.testTag("switch_settings_audio_spatial"),
+                    title = stringResource(id = R.string.spatial_audio),
+                    icon = NextIcons.SurroundSound,
+                    isChecked = uiState.preferences.isSpatialAudioEnabled,
+                    onClick = { onEvent(AudioPreferencesUiEvent.ToggleSpatialAudio) },
+                )
+                PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_normalization"),
                     title = stringResource(id = R.string.volume_normalization),
                     description = stringResource(id = R.string.volume_normalization_desc),

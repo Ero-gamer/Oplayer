@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.only.player.core.common.Utils
 import one.only.player.core.model.Video
+import one.only.player.core.model.displayCodecName
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.NextDialog
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -94,7 +95,7 @@ fun VideoInfoDialog(
                     }
                     MediaInfoText(
                         title = stringResource(id = R.string.codec),
-                        subText = audioStream.codecName,
+                        subText = audioStream.displayCodecName(),
                     )
                     MediaInfoText(
                         title = stringResource(id = R.string.sample_rate),

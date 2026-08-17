@@ -46,6 +46,7 @@ class AudioPreferencesViewModel @Inject constructor(
             AudioPreferencesUiEvent.ToggleRememberAudioTrack -> toggleRememberAudioTrack()
             AudioPreferencesUiEvent.ToggleVolumeNormalization -> toggleVolumeNormalization()
             AudioPreferencesUiEvent.ToggleVolumeBoost -> toggleVolumeBoost()
+            AudioPreferencesUiEvent.ToggleSpatialAudio -> toggleSpatialAudio()
         }
     }
 
@@ -116,6 +117,14 @@ class AudioPreferencesViewModel @Inject constructor(
         }
     }
 
+    private fun toggleSpatialAudio() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(isSpatialAudioEnabled = !it.isSpatialAudioEnabled)
+            }
+        }
+    }
+
     private fun toggleVolumeNormalization() {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
@@ -154,4 +163,5 @@ sealed interface AudioPreferencesUiEvent {
     data object ToggleRememberAudioTrack : AudioPreferencesUiEvent
     data object ToggleVolumeNormalization : AudioPreferencesUiEvent
     data object ToggleVolumeBoost : AudioPreferencesUiEvent
+    data object ToggleSpatialAudio : AudioPreferencesUiEvent
 }
