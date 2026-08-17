@@ -43,7 +43,6 @@ fun SettingsScreen(
     var isSearchActive by rememberSaveable { mutableStateOf(false) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = MiuixScrollBehavior()
-    // 与外观页一致：低版本不索引悬浮栏模糊文案
     val shouldIndexFloatingNavigationBarBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     // resolve 标题、描述和子设置项文本，全部用于搜索匹配

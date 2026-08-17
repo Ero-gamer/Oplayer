@@ -89,8 +89,7 @@ private fun AppearancePreferencesContent(
     val preferences = uiState.preferences
     val appLanguages = remember { LocalesHelper.appSupportedLocales }
     val shouldShowPredictiveBack = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-    // 悬浮栏模糊依赖 RuntimeShader（API 33+）
-    val shouldShowFloatingNavigationBarBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+    val shouldShowNavigationBarBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     // 语言下拉：首项为系统默认，其后为受支持语言
     val languageTags = remember(appLanguages) { listOf("") + appLanguages.map { it.second } }
@@ -230,14 +229,13 @@ private fun AppearancePreferencesContent(
                         onEvent(AppearancePreferencesEvent.ToggleUseFloatingNavigationBar)
                     },
                 )
-                if (shouldShowFloatingNavigationBarBlur) {
+                if (shouldShowNavigationBarBlur) {
                     SwitchPreference(
                         modifier = Modifier.testTag("switch_settings_appearance_floating_navigation_bar_blur"),
                         title = stringResource(id = R.string.floating_navigation_bar_blur),
                         summary = stringResource(id = R.string.floating_navigation_bar_blur_description),
                         startAction = { PrefIcon(NextIcons.BlurOn) },
                         checked = preferences.shouldBlurFloatingNavigationBar,
-                        enabled = preferences.shouldUseFloatingNavigationBar,
                         onCheckedChange = {
                             onEvent(AppearancePreferencesEvent.ToggleBlurFloatingNavigationBar)
                         },

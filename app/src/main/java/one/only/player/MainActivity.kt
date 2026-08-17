@@ -21,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -56,6 +58,8 @@ import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
 import one.only.player.core.ui.theme.DEFAULT_SEED_COLOR
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.player.PlayerActivity
+import one.only.player.feature.videopicker.navigation.navigateToHistory
+import one.only.player.feature.videopicker.navigation.navigateToPlaylists
 import one.only.player.feature.videopicker.navigation.navigateToRecycleBinScreen
 import one.only.player.feature.videopicker.navigation.navigateToSearch
 import one.only.player.navigation.CloudRootPage
@@ -78,8 +82,8 @@ import one.only.player.navigation.pageEnterTransition
 import one.only.player.navigation.pageExitTransition
 import one.only.player.navigation.pagePopEnterTransition
 import one.only.player.navigation.pagePopExitTransition
+import one.only.player.navigation.rememberRootBlurBackdrop
 import one.only.player.navigation.rememberRootBottomBarPadding
-import one.only.player.navigation.rememberRootFloatingBlurBackdrop
 import one.only.player.navigation.rememberRootNavigationState
 import one.only.player.navigation.settingsDetailNavGraph
 import one.only.player.settings.navigation.navigateToAboutPreferences
@@ -100,6 +104,7 @@ import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -244,6 +249,14 @@ class MainActivity : AppCompatActivity() {
                 navController.navigateToRecycleBinScreen()
             }
             DebugPageRoute.FAVORITES -> rootNavigationState.jumpTo(RootDestination.FAVORITES)
+            DebugPageRoute.PLAYLISTS -> {
+                rootNavigationState.jumpTo(RootDestination.HOME)
+                navController.navigateToPlaylists()
+            }
+            DebugPageRoute.HISTORY -> {
+                rootNavigationState.jumpTo(RootDestination.HOME)
+                navController.navigateToHistory()
+            }
             DebugPageRoute.CLOUD -> rootNavigationState.jumpTo(RootDestination.CLOUD)
             DebugPageRoute.SETTINGS -> rootNavigationState.jumpTo(RootDestination.SETTINGS)
             DebugPageRoute.SETTINGS_APPEARANCE -> {
@@ -334,9 +347,12 @@ class MainActivity : AppCompatActivity() {
             onMediaAccessAvailable()
         }
 
+        val surfaceColor = MiuixTheme.colorScheme.surface
+        val shouldBlurNavigationBar = shouldBlurFloatingNavigationBar && isRuntimeShaderSupported()
         NavigationBarColorEffect(
             activity = this@MainActivity,
-            color = MiuixTheme.colorScheme.surface,
+            color = if (shouldBlurNavigationBar) Color.Transparent else surfaceColor,
+            shouldUseDarkIcons = surfaceColor.luminance() > 0.5f,
         )
 
         if (storagePermissionState.isGranted && !hasAllFilesAccess) {
@@ -355,9 +371,8 @@ class MainActivity : AppCompatActivity() {
         val mainNavController = rememberNavController()
         val rootNavigationState = rememberRootNavigationState()
         val bottomBarPadding = rememberRootBottomBarPadding(shouldUseFloatingNavigationBar)
-        val floatingBlurBackdrop = rememberRootFloatingBlurBackdrop(
-            shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
-            shouldBlurFloatingNavigationBar = shouldBlurFloatingNavigationBar,
+        val floatingBlurBackdrop = rememberRootBlurBackdrop(
+            shouldBlurNavigationBar = shouldBlurFloatingNavigationBar,
         )
         LaunchedEffect(mainNavController, rootNavigationState, pendingDebugPageRoute) {
             val pageRoute = pendingDebugPageRoute ?: return@LaunchedEffect

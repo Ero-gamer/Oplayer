@@ -12,11 +12,12 @@ import one.only.player.core.common.extensions.applyNavigationBarStyle
 fun NavigationBarColorEffect(
     activity: Activity,
     color: Color,
+    shouldUseDarkIcons: Boolean = color.luminance() > 0.5f,
 ) {
-    LaunchedEffect(activity, color) {
+    LaunchedEffect(activity, color, shouldUseDarkIcons) {
         activity.applyNavigationBarStyle(
             color = color.toArgb(),
-            shouldUseDarkIcons = color.luminance() > 0.5f,
+            shouldUseDarkIcons = shouldUseDarkIcons,
         )
     }
 }

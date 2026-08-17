@@ -10,6 +10,8 @@ internal enum class DebugPageRoute(val id: String) {
     SEARCH("search"),
     RECYCLE_BIN("recycle_bin"),
     FAVORITES("favorites"),
+    PLAYLISTS("playlists"),
+    HISTORY("history"),
     CLOUD("cloud"),
     SETTINGS("settings"),
     SETTINGS_APPEARANCE("settings.appearance"),
