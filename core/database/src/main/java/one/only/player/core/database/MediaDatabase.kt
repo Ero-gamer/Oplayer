@@ -9,6 +9,7 @@ import one.only.player.core.database.dao.FavoriteItemDao
 import one.only.player.core.database.dao.MediumDao
 import one.only.player.core.database.dao.MediumStateDao
 import one.only.player.core.database.dao.PlaybackMarkDao
+import one.only.player.core.database.dao.PlaylistDao
 import one.only.player.core.database.dao.RemoteServerDao
 import one.only.player.core.database.entities.AudioStreamInfoEntity
 import one.only.player.core.database.entities.DirectoryEntity
@@ -16,6 +17,8 @@ import one.only.player.core.database.entities.FavoriteItemEntity
 import one.only.player.core.database.entities.MediumEntity
 import one.only.player.core.database.entities.MediumStateEntity
 import one.only.player.core.database.entities.PlaybackMarkEntity
+import one.only.player.core.database.entities.PlaylistEntity
+import one.only.player.core.database.entities.PlaylistItemEntity
 import one.only.player.core.database.entities.RemoteServerEntity
 import one.only.player.core.database.entities.SubtitleStreamInfoEntity
 import one.only.player.core.database.entities.VideoStreamInfoEntity
@@ -31,8 +34,10 @@ import one.only.player.core.database.entities.VideoStreamInfoEntity
         RemoteServerEntity::class,
         FavoriteItemEntity::class,
         PlaybackMarkEntity::class,
+        PlaylistEntity::class,
+        PlaylistItemEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true,
 )
 abstract class MediaDatabase : RoomDatabase() {
@@ -48,6 +53,8 @@ abstract class MediaDatabase : RoomDatabase() {
     abstract fun favoriteItemDao(): FavoriteItemDao
 
     abstract fun playbackMarkDao(): PlaybackMarkDao
+
+    abstract fun playlistDao(): PlaylistDao
 
     companion object {
         const val DATABASE_NAME = "media_db"
@@ -289,6 +296,42 @@ abstract class MediaDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_media_parent_path` ON `media` (`parent_path`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_directories_parent_path` ON `directories` (`parent_path`)")
+            }
+        }
+
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `playlist_item`")
+                db.execSQL("DROP TABLE IF EXISTS `playlist`")
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `playlist` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `created_at` INTEGER NOT NULL,
+                        `updated_at` INTEGER NOT NULL,
+                        `sort_order` INTEGER NOT NULL
+                    )
+                    """,
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `playlist_item` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `playlist_id` INTEGER NOT NULL,
+                        `media_uri` TEXT NOT NULL,
+                        `media_path` TEXT NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `sort_order` INTEGER NOT NULL,
+                        `added_at` INTEGER NOT NULL
+                    )
+                    """,
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_playlist_item_playlist_id_media_uri` ON `playlist_item` (`playlist_id`, `media_uri`)",
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_playlist_item_playlist_id` ON `playlist_item` (`playlist_id`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_playlist_item_media_uri` ON `playlist_item` (`media_uri`)")
             }
         }
     }

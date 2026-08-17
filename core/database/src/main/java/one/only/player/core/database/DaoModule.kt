@@ -8,6 +8,7 @@ import one.only.player.core.database.dao.DirectoryDao
 import one.only.player.core.database.dao.FavoriteItemDao
 import one.only.player.core.database.dao.MediumDao
 import one.only.player.core.database.dao.PlaybackMarkDao
+import one.only.player.core.database.dao.PlaylistDao
 import one.only.player.core.database.dao.RemoteServerDao
 
 @Module
@@ -31,4 +32,7 @@ object DaoModule {
 
     @Provides
     fun providePlaybackMarkDao(db: MediaDatabase): PlaybackMarkDao = db.playbackMarkDao()
+
+    @Provides
+    fun providePlaylistDao(db: MediaDatabase): PlaylistDao = db.playlistDao()
 }
