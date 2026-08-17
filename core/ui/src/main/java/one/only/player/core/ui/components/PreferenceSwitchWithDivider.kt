@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.designsystem.NextIcons
 import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.preference.CheckboxLocation
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
@@ -32,11 +31,7 @@ fun PreferenceSwitchWithDivider(
     onClick: (() -> Unit) = {},
     onChecked: () -> Unit = {},
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-        modifier = modifier,
-    ) {
+    PreferenceContainer(modifier = modifier) {
         BasicComponent(
             title = title,
             summary = description,
@@ -88,10 +83,7 @@ fun PreferenceCheckbox(
     onClick: (() -> Unit) = {},
     onLongClick: (() -> Unit) = {},
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-    ) {
+    PreferenceContainer {
         CheckboxPreference(
             title = title,
             summary = description,

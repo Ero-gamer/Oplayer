@@ -3,9 +3,7 @@ package one.only.player.core.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.preference.SliderPreference
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun PreferenceSlider(
@@ -22,11 +20,7 @@ fun PreferenceSlider(
     onValueChangeFinished: () -> Unit = {},
     trailingContent: @Composable () -> Unit = {},
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-        modifier = modifier,
-    ) {
+    PreferenceContainer(modifier = modifier) {
         SliderPreference(
             value = value,
             onValueChange = onValueChange,

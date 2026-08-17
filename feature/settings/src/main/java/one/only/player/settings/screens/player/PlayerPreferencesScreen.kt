@@ -35,10 +35,10 @@ import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextResetIconButton
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
@@ -112,9 +112,7 @@ private fun PlayerPreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_player_controller_timeout"),
                     title = stringResource(R.string.controller_timeout),
@@ -132,6 +130,9 @@ private fun PlayerPreferencesContent(
                     isChecked = uiState.preferences.shouldDimVideoWhenControlsVisible,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleDimVideoWhenControlsVisible) },
                 )
+            }
+
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_player_screen_orientation"),
                     title = stringResource(id = R.string.player_screen_orientation),
@@ -149,6 +150,19 @@ private fun PlayerPreferencesContent(
                     isChecked = uiState.preferences.shouldRememberPlayerScreenOrientation,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberPlayerScreenOrientation) },
                 )
+                PreferenceSwitch(
+                    modifier = Modifier.testTag("switch_settings_player_remember_brightness"),
+                    title = stringResource(id = R.string.remember_brightness_level),
+                    description = stringResource(
+                        id = R.string.remember_brightness_level_description,
+                    ),
+                    icon = NextIcons.Brightness,
+                    isChecked = uiState.preferences.shouldRememberPlayerBrightness,
+                    onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel) },
+                )
+            }
+
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_player_controls_style"),
                     title = stringResource(id = R.string.player_controls_style),
@@ -165,11 +179,24 @@ private fun PlayerPreferencesContent(
                         onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PlayerIconStyleDialog)) },
                     )
                 }
+                ClickablePreferenceItem(
+                    modifier = Modifier.testTag("item_settings_player_control_buttons_position"),
+                    title = stringResource(id = R.string.control_buttons_alignment),
+                    description = uiState.preferences.controlButtonsPosition.name(),
+                    icon = NextIcons.ButtonsPosition,
+                    onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControlButtonsDialog)) },
+                )
+                PreferenceSwitch(
+                    modifier = Modifier.testTag("switch_settings_player_control_labels"),
+                    title = stringResource(id = R.string.player_control_labels),
+                    description = stringResource(id = R.string.player_control_labels_description),
+                    icon = NextIcons.Title,
+                    isChecked = uiState.preferences.shouldHidePlayerControlLabels,
+                    onClick = { onEvent(PlayerPreferencesUiEvent.TogglePlayerControlLabels) },
+                )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_player_resume"),
                     title = stringResource(id = R.string.resume),
@@ -213,6 +240,9 @@ private fun PlayerPreferencesContent(
                     isChecked = uiState.preferences.shouldPauseAtEndOfQueue,
                     onClick = { onEvent(PlayerPreferencesUiEvent.TogglePauseAtEndOfQueue) },
                 )
+            }
+
+            PreferenceGroup {
                 if (isPipFeatureSupported) {
                     PreferenceSwitch(
                         modifier = Modifier.testTag("switch_settings_player_auto_pip"),
@@ -234,36 +264,6 @@ private fun PlayerPreferencesContent(
                     icon = NextIcons.Headset,
                     isChecked = uiState.preferences.shouldAutoPlayInBackground,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleAutoBackgroundPlay) },
-                )
-                PreferenceSwitch(
-                    modifier = Modifier.testTag("switch_settings_player_remember_brightness"),
-                    title = stringResource(id = R.string.remember_brightness_level),
-                    description = stringResource(
-                        id = R.string.remember_brightness_level_description,
-                    ),
-                    icon = NextIcons.Brightness,
-                    isChecked = uiState.preferences.shouldRememberPlayerBrightness,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel) },
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_player_control_buttons_position"),
-                    title = stringResource(id = R.string.control_buttons_alignment),
-                    description = uiState.preferences.controlButtonsPosition.name(),
-                    icon = NextIcons.ButtonsPosition,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControlButtonsDialog)) },
-                )
-                PreferenceSwitch(
-                    modifier = Modifier.testTag("switch_settings_player_control_labels"),
-                    title = stringResource(id = R.string.player_control_labels),
-                    description = stringResource(id = R.string.player_control_labels_description),
-                    icon = NextIcons.Title,
-                    isChecked = uiState.preferences.shouldHidePlayerControlLabels,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.TogglePlayerControlLabels) },
                 )
             }
         }

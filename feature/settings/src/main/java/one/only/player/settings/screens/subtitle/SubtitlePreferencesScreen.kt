@@ -29,8 +29,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.nio.charset.Charset
 import one.only.player.core.model.Font
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
@@ -132,9 +132,7 @@ private fun SubtitlePreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_subtitle_auto_load"),
                     title = stringResource(id = R.string.subtitle_auto_load),
@@ -168,9 +166,7 @@ private fun SubtitlePreferencesContent(
                 )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_subtitle_system_caption_style"),
                     switchModifier = Modifier.testTag("switch_settings_subtitle_system_caption_style"),
@@ -199,9 +195,7 @@ private fun SubtitlePreferencesContent(
                 }
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_font"),
                     title = stringResource(id = R.string.subtitle_font),

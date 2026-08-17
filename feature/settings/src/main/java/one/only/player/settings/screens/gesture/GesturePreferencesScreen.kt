@@ -25,9 +25,9 @@ import one.only.player.core.common.extensions.toString
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.NextDialogWithDoneAndCancelButtons
 import one.only.player.core.ui.components.NextResetIconButton
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.PreferenceSwitchWithDivider
@@ -98,9 +98,7 @@ private fun GesturePreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_seek"),
                     title = stringResource(id = R.string.seek_gesture),
@@ -128,6 +126,26 @@ private fun GesturePreferencesContent(
                         )
                     },
                 )
+                PreferenceSlider(
+                    modifier = Modifier.testTag("item_settings_gesture_seek_increment"),
+                    sliderModifier = Modifier.testTag("slider_settings_gesture_seek_increment"),
+                    title = stringResource(R.string.seek_increment),
+                    description = stringResource(R.string.seconds, uiState.preferences.seekIncrement),
+                    icon = NextIcons.Replay,
+                    value = uiState.preferences.seekIncrement.toFloat(),
+                    valueRange = 1.0f..PlayerPreferences.MAX_SEEK_INCREMENT.toFloat(),
+                    onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(it.toInt())) },
+                    trailingContent = {
+                        NextResetIconButton(
+                            modifier = Modifier.testTag("btn_reset_settings_gesture_seek_increment"),
+                            onClick = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(PlayerPreferences.DEFAULT_SEEK_INCREMENT)) },
+                            contentDescription = stringResource(id = R.string.reset_seek_increment),
+                        )
+                    },
+                )
+            }
+
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_brightness"),
                     title = stringResource(id = R.string.brightness_gesture),
@@ -155,6 +173,9 @@ private fun GesturePreferencesContent(
                         )
                     },
                 )
+            }
+
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_volume"),
                     title = stringResource(id = R.string.volume_gesture),
@@ -184,9 +205,7 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_gesture_double_tap"),
                     switchModifier = Modifier.testTag("switch_settings_gesture_double_tap"),
@@ -199,9 +218,7 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_gesture_long_press"),
                     switchModifier = Modifier.testTag("switch_settings_gesture_long_press"),
@@ -223,9 +240,7 @@ private fun GesturePreferencesContent(
                 )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_gesture_zoom"),
                     title = stringResource(id = R.string.zoom_gesture),
@@ -242,28 +257,6 @@ private fun GesturePreferencesContent(
                     isEnabled = uiState.preferences.shouldUseZoomControls,
                     isChecked = uiState.preferences.isPanGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnablePanGesture) },
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
-                PreferenceSlider(
-                    modifier = Modifier.testTag("item_settings_gesture_seek_increment"),
-                    sliderModifier = Modifier.testTag("slider_settings_gesture_seek_increment"),
-                    title = stringResource(R.string.seek_increment),
-                    description = stringResource(R.string.seconds, uiState.preferences.seekIncrement),
-                    icon = NextIcons.Replay,
-                    value = uiState.preferences.seekIncrement.toFloat(),
-                    valueRange = 1.0f..PlayerPreferences.MAX_SEEK_INCREMENT.toFloat(),
-                    onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(it.toInt())) },
-                    trailingContent = {
-                        NextResetIconButton(
-                            modifier = Modifier.testTag("btn_reset_settings_gesture_seek_increment"),
-                            onClick = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(PlayerPreferences.DEFAULT_SEEK_INCREMENT)) },
-                            contentDescription = stringResource(id = R.string.reset_seek_increment),
-                        )
-                    },
                 )
             }
         }

@@ -171,7 +171,6 @@ private fun AppearancePreferencesContent(
                     SwitchPreference(
                         modifier = Modifier.testTag("switch_settings_appearance_dynamic_colors"),
                         title = stringResource(id = R.string.dynamic_theme),
-                        summary = stringResource(id = R.string.dynamic_theme_description),
                         startAction = { PrefIcon(NextIcons.Appearance) },
                         checked = preferences.shouldUseDynamicColors,
                         onCheckedChange = { onEvent(AppearancePreferencesEvent.ToggleUseDynamicColors) },

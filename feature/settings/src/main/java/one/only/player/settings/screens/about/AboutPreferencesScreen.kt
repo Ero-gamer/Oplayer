@@ -46,9 +46,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.extensions.appIcon
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.SettingsContentTopPadding
@@ -120,9 +120,7 @@ fun AboutPreferencesScreen(
                 currentVersionName = currentVersionName,
                 onEvent = viewModel::onEvent,
             )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceItem(
                     title = stringResource(R.string.architecture),
                     description = rememberDeviceArchitecture(),
@@ -149,9 +147,7 @@ fun AboutPreferencesScreen(
 private fun DiagnosticsSection(
     onLogsClick: () -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(CardItemGap),
-    ) {
+    PreferenceGroup {
         ClickablePreferenceItem(
             modifier = Modifier.testTag("item_settings_about_logs"),
             title = stringResource(R.string.app_logs),
@@ -171,9 +167,7 @@ private fun UpdateSection(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(CardItemGap),
-    ) {
+    PreferenceGroup {
         ClickablePreferenceItem(
             modifier = Modifier.testTag("item_settings_about_check_updates"),
             title = stringResource(R.string.check_for_updates),

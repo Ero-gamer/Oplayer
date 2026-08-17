@@ -79,7 +79,6 @@
     <string name="video_zoom">Video zoom</string>
     <string name="mirror_video">Mirror video</string>
     <string name="dynamic_theme">Dynamic color theme</string>
-    <string name="dynamic_theme_description">Use system wallpaper colors when enabled and original Miuix colors when disabled</string>
     <string name="theme_color">Theme color</string>
     <string name="theme_color_description">Use system wallpaper colors or a custom theme color</string>
     <string name="theme_palette_style">Palette style</string>

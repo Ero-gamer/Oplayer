@@ -22,10 +22,10 @@ import java.util.Locale
 import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.NextSwitch
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
@@ -94,9 +94,7 @@ private fun DecoderPreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_decoder_priority"),
                     title = stringResource(R.string.decoder_priority),
@@ -142,9 +140,7 @@ private fun VideoFiltersSettings(
     preferences: PlayerPreferences,
     onEvent: (DecoderPreferencesUiEvent) -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(CardItemGap),
-    ) {
+    PreferenceGroup {
         PreferenceSwitch(
             modifier = Modifier.testTag("switch_settings_video_filters"),
             title = stringResource(R.string.enable_video_filters),

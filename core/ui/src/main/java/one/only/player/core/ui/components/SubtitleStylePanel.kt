@@ -24,165 +24,173 @@ fun SubtitleStylePanel(
         .coerceIn(SUBTITLE_POSITION_RANGE)
         .roundToStep(PlayerPreferences.SUBTITLE_BOTTOM_PADDING_FRACTION_STEP)
     Column(
-        verticalArrangement = Arrangement.spacedBy(CardItemGap),
+        verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
     ) {
-        PreferenceSwitch(
-            modifier = Modifier.testTag("switch_settings_subtitle_bold"),
-            title = stringResource(id = R.string.subtitle_text_bold),
-            description = stringResource(id = R.string.subtitle_text_bold_desc),
-            icon = NextIcons.Bold,
-            isEnabled = isEnabled,
-            isChecked = preferences.shouldUseBoldSubtitleText,
-            onClick = { onPreferencesChange(preferences.copy(shouldUseBoldSubtitleText = !preferences.shouldUseBoldSubtitleText)) },
-        )
-        PreferenceSlider(
-            modifier = Modifier.testTag("item_settings_subtitle_size"),
-            sliderModifier = Modifier.testTag("slider_settings_subtitle_size"),
-            title = stringResource(id = R.string.subtitle_text_size),
-            description = preferences.subtitleTextSize.toDisplayText(),
-            icon = NextIcons.FontSize,
-            isEnabled = isEnabled,
-            value = preferences.subtitleTextSize,
-            valueRange = SUBTITLE_TEXT_SIZE_RANGE,
-            onValueChange = { onPreferencesChange(preferences.copy(subtitleTextSize = it.roundToStep(PlayerPreferences.SUBTITLE_TEXT_SIZE_STEP))) },
-            trailingContent = {
-                NextResetIconButton(
-                    modifier = Modifier.testTag("btn_reset_settings_subtitle_size"),
-                    enabled = isEnabled,
-                    contentDescription = stringResource(id = R.string.reset_subtitle_text_size),
-                    onClick = {
-                        onPreferencesChange(
-                            preferences.copy(subtitleTextSize = PlayerPreferences.DEFAULT_SUBTITLE_TEXT_SIZE),
-                        )
-                    },
-                )
-            },
-        )
-        PreferenceSlider(
-            modifier = Modifier.testTag("item_settings_subtitle_bottom_padding"),
-            sliderModifier = Modifier.testTag("slider_settings_subtitle_bottom_padding"),
-            title = stringResource(id = R.string.subtitle_position),
-            description = subtitleBottomPaddingFraction.toSubtitlePositionDisplayText(),
-            icon = NextIcons.Length,
-            isEnabled = isEnabled,
-            value = subtitleBottomPaddingFraction,
-            valueRange = SUBTITLE_POSITION_RANGE,
-            onValueChange = {
-                onPreferencesChange(
-                    preferences.copy(
-                        subtitleBottomPaddingFraction = it
-                            .coerceIn(SUBTITLE_POSITION_RANGE)
-                            .roundToStep(PlayerPreferences.SUBTITLE_BOTTOM_PADDING_FRACTION_STEP),
-                    ),
-                )
-            },
-            trailingContent = {
-                NextResetIconButton(
-                    modifier = Modifier.testTag("btn_reset_settings_subtitle_bottom_padding"),
-                    enabled = isEnabled,
-                    contentDescription = stringResource(id = R.string.reset_subtitle_position),
-                    onClick = {
-                        onPreferencesChange(
-                            preferences.copy(
-                                subtitleBottomPaddingFraction = PlayerPreferences.DEFAULT_SUBTITLE_BOTTOM_PADDING_FRACTION,
-                            ),
-                        )
-                    },
-                )
-            },
-        )
-        PreferenceSlider(
-            modifier = Modifier.testTag("item_settings_subtitle_scale"),
-            sliderModifier = Modifier.testTag("slider_settings_subtitle_scale"),
-            title = stringResource(id = R.string.subtitle_scale),
-            description = preferences.subtitleScale.toSubtitleScaleDisplayText(),
-            icon = NextIcons.Pinch,
-            value = preferences.subtitleScale,
-            valueRange = SUBTITLE_SCALE_RANGE,
-            onValueChange = { onPreferencesChange(preferences.copy(subtitleScale = it.roundToStep(PlayerPreferences.SUBTITLE_SCALE_STEP))) },
-            trailingContent = {
-                NextResetIconButton(
-                    modifier = Modifier.testTag("btn_reset_settings_subtitle_scale"),
-                    contentDescription = stringResource(id = R.string.reset_subtitle_scale),
-                    onClick = {
-                        onPreferencesChange(
-                            preferences.copy(subtitleScale = PlayerPreferences.DEFAULT_SUBTITLE_SCALE),
-                        )
-                    },
-                )
-            },
-        )
-        PreferenceSwitch(
-            modifier = Modifier.testTag("switch_settings_subtitle_background"),
-            title = stringResource(id = R.string.subtitle_background),
-            description = stringResource(id = R.string.subtitle_background_desc),
-            icon = NextIcons.Background,
-            isEnabled = isEnabled,
-            isChecked = preferences.shouldShowSubtitleBackground,
-            onClick = { onPreferencesChange(preferences.copy(shouldShowSubtitleBackground = !preferences.shouldShowSubtitleBackground)) },
-        )
-        ClickablePreferenceItem(
-            modifier = Modifier.testTag("item_settings_subtitle_color"),
-            title = stringResource(id = R.string.subtitle_text_color),
-            description = preferences.subtitleColor.displayName(),
-            icon = NextIcons.Appearance,
-            isEnabled = isEnabled,
-            onClick = { onPreferencesChange(preferences.copy(subtitleColor = preferences.subtitleColor.next())) },
-        )
-        ClickablePreferenceItem(
-            modifier = Modifier.testTag("item_settings_subtitle_edge_style"),
-            title = stringResource(id = R.string.subtitle_edge_style),
-            description = preferences.subtitleEdgeStyle.displayName(),
-            icon = NextIcons.Style,
-            isEnabled = isEnabled,
-            onClick = { onPreferencesChange(preferences.copy(subtitleEdgeStyle = preferences.subtitleEdgeStyle.next())) },
-        )
-        PreferenceSlider(
-            modifier = Modifier.testTag("item_settings_subtitle_outline_thickness"),
-            sliderModifier = Modifier.testTag("slider_settings_subtitle_outline_thickness"),
-            title = stringResource(id = R.string.subtitle_outline_thickness),
-            description = preferences.subtitleOutlineThickness.toString(),
-            icon = NextIcons.Style,
-            isEnabled = isEnabled,
-            value = preferences.subtitleOutlineThickness,
-            valueRange = SUBTITLE_OUTLINE_THICKNESS_RANGE,
-            onValueChange = { onPreferencesChange(preferences.copy(subtitleOutlineThickness = it)) },
-            trailingContent = {
-                NextResetIconButton(
-                    modifier = Modifier.testTag("btn_reset_settings_subtitle_outline_thickness"),
-                    enabled = isEnabled,
-                    contentDescription = stringResource(id = R.string.reset_subtitle_outline_thickness),
-                    onClick = {
-                        onPreferencesChange(
-                            preferences.copy(subtitleOutlineThickness = PlayerPreferences.DEFAULT_SUBTITLE_OUTLINE_THICKNESS),
-                        )
-                    },
-                )
-            },
-        )
-        PreferenceSlider(
-            modifier = Modifier.testTag("item_settings_subtitle_shadow_strength"),
-            sliderModifier = Modifier.testTag("slider_settings_subtitle_shadow_strength"),
-            title = stringResource(id = R.string.subtitle_shadow_strength),
-            description = preferences.subtitleShadowStrength.toString(),
-            icon = NextIcons.Style,
-            isEnabled = isEnabled,
-            value = preferences.subtitleShadowStrength,
-            valueRange = SUBTITLE_SHADOW_STRENGTH_RANGE,
-            onValueChange = { onPreferencesChange(preferences.copy(subtitleShadowStrength = it)) },
-            trailingContent = {
-                NextResetIconButton(
-                    modifier = Modifier.testTag("btn_reset_settings_subtitle_shadow_strength"),
-                    enabled = isEnabled,
-                    contentDescription = stringResource(id = R.string.reset_subtitle_shadow_strength),
-                    onClick = {
-                        onPreferencesChange(
-                            preferences.copy(subtitleShadowStrength = PlayerPreferences.DEFAULT_SUBTITLE_SHADOW_STRENGTH),
-                        )
-                    },
-                )
-            },
-        )
+        PreferenceGroup {
+            PreferenceSwitch(
+                modifier = Modifier.testTag("switch_settings_subtitle_bold"),
+                title = stringResource(id = R.string.subtitle_text_bold),
+                description = stringResource(id = R.string.subtitle_text_bold_desc),
+                icon = NextIcons.Bold,
+                isEnabled = isEnabled,
+                isChecked = preferences.shouldUseBoldSubtitleText,
+                onClick = { onPreferencesChange(preferences.copy(shouldUseBoldSubtitleText = !preferences.shouldUseBoldSubtitleText)) },
+            )
+            PreferenceSlider(
+                modifier = Modifier.testTag("item_settings_subtitle_size"),
+                sliderModifier = Modifier.testTag("slider_settings_subtitle_size"),
+                title = stringResource(id = R.string.subtitle_text_size),
+                description = preferences.subtitleTextSize.toDisplayText(),
+                icon = NextIcons.FontSize,
+                isEnabled = isEnabled,
+                value = preferences.subtitleTextSize,
+                valueRange = SUBTITLE_TEXT_SIZE_RANGE,
+                onValueChange = { onPreferencesChange(preferences.copy(subtitleTextSize = it.roundToStep(PlayerPreferences.SUBTITLE_TEXT_SIZE_STEP))) },
+                trailingContent = {
+                    NextResetIconButton(
+                        modifier = Modifier.testTag("btn_reset_settings_subtitle_size"),
+                        enabled = isEnabled,
+                        contentDescription = stringResource(id = R.string.reset_subtitle_text_size),
+                        onClick = {
+                            onPreferencesChange(
+                                preferences.copy(subtitleTextSize = PlayerPreferences.DEFAULT_SUBTITLE_TEXT_SIZE),
+                            )
+                        },
+                    )
+                },
+            )
+            PreferenceSwitch(
+                modifier = Modifier.testTag("switch_settings_subtitle_background"),
+                title = stringResource(id = R.string.subtitle_background),
+                description = stringResource(id = R.string.subtitle_background_desc),
+                icon = NextIcons.Background,
+                isEnabled = isEnabled,
+                isChecked = preferences.shouldShowSubtitleBackground,
+                onClick = { onPreferencesChange(preferences.copy(shouldShowSubtitleBackground = !preferences.shouldShowSubtitleBackground)) },
+            )
+            ClickablePreferenceItem(
+                modifier = Modifier.testTag("item_settings_subtitle_color"),
+                title = stringResource(id = R.string.subtitle_text_color),
+                description = preferences.subtitleColor.displayName(),
+                icon = NextIcons.Appearance,
+                isEnabled = isEnabled,
+                onClick = { onPreferencesChange(preferences.copy(subtitleColor = preferences.subtitleColor.next())) },
+            )
+        }
+
+        PreferenceGroup {
+            PreferenceSlider(
+                modifier = Modifier.testTag("item_settings_subtitle_bottom_padding"),
+                sliderModifier = Modifier.testTag("slider_settings_subtitle_bottom_padding"),
+                title = stringResource(id = R.string.subtitle_position),
+                description = subtitleBottomPaddingFraction.toSubtitlePositionDisplayText(),
+                icon = NextIcons.Length,
+                isEnabled = isEnabled,
+                value = subtitleBottomPaddingFraction,
+                valueRange = SUBTITLE_POSITION_RANGE,
+                onValueChange = {
+                    onPreferencesChange(
+                        preferences.copy(
+                            subtitleBottomPaddingFraction = it
+                                .coerceIn(SUBTITLE_POSITION_RANGE)
+                                .roundToStep(PlayerPreferences.SUBTITLE_BOTTOM_PADDING_FRACTION_STEP),
+                        ),
+                    )
+                },
+                trailingContent = {
+                    NextResetIconButton(
+                        modifier = Modifier.testTag("btn_reset_settings_subtitle_bottom_padding"),
+                        enabled = isEnabled,
+                        contentDescription = stringResource(id = R.string.reset_subtitle_position),
+                        onClick = {
+                            onPreferencesChange(
+                                preferences.copy(
+                                    subtitleBottomPaddingFraction = PlayerPreferences.DEFAULT_SUBTITLE_BOTTOM_PADDING_FRACTION,
+                                ),
+                            )
+                        },
+                    )
+                },
+            )
+            PreferenceSlider(
+                modifier = Modifier.testTag("item_settings_subtitle_scale"),
+                sliderModifier = Modifier.testTag("slider_settings_subtitle_scale"),
+                title = stringResource(id = R.string.subtitle_scale),
+                description = preferences.subtitleScale.toSubtitleScaleDisplayText(),
+                icon = NextIcons.Pinch,
+                value = preferences.subtitleScale,
+                valueRange = SUBTITLE_SCALE_RANGE,
+                onValueChange = { onPreferencesChange(preferences.copy(subtitleScale = it.roundToStep(PlayerPreferences.SUBTITLE_SCALE_STEP))) },
+                trailingContent = {
+                    NextResetIconButton(
+                        modifier = Modifier.testTag("btn_reset_settings_subtitle_scale"),
+                        contentDescription = stringResource(id = R.string.reset_subtitle_scale),
+                        onClick = {
+                            onPreferencesChange(
+                                preferences.copy(subtitleScale = PlayerPreferences.DEFAULT_SUBTITLE_SCALE),
+                            )
+                        },
+                    )
+                },
+            )
+        }
+
+        PreferenceGroup {
+            ClickablePreferenceItem(
+                modifier = Modifier.testTag("item_settings_subtitle_edge_style"),
+                title = stringResource(id = R.string.subtitle_edge_style),
+                description = preferences.subtitleEdgeStyle.displayName(),
+                icon = NextIcons.Style,
+                isEnabled = isEnabled,
+                onClick = { onPreferencesChange(preferences.copy(subtitleEdgeStyle = preferences.subtitleEdgeStyle.next())) },
+            )
+            PreferenceSlider(
+                modifier = Modifier.testTag("item_settings_subtitle_outline_thickness"),
+                sliderModifier = Modifier.testTag("slider_settings_subtitle_outline_thickness"),
+                title = stringResource(id = R.string.subtitle_outline_thickness),
+                description = preferences.subtitleOutlineThickness.toString(),
+                icon = NextIcons.Style,
+                isEnabled = isEnabled,
+                value = preferences.subtitleOutlineThickness,
+                valueRange = SUBTITLE_OUTLINE_THICKNESS_RANGE,
+                onValueChange = { onPreferencesChange(preferences.copy(subtitleOutlineThickness = it)) },
+                trailingContent = {
+                    NextResetIconButton(
+                        modifier = Modifier.testTag("btn_reset_settings_subtitle_outline_thickness"),
+                        enabled = isEnabled,
+                        contentDescription = stringResource(id = R.string.reset_subtitle_outline_thickness),
+                        onClick = {
+                            onPreferencesChange(
+                                preferences.copy(subtitleOutlineThickness = PlayerPreferences.DEFAULT_SUBTITLE_OUTLINE_THICKNESS),
+                            )
+                        },
+                    )
+                },
+            )
+            PreferenceSlider(
+                modifier = Modifier.testTag("item_settings_subtitle_shadow_strength"),
+                sliderModifier = Modifier.testTag("slider_settings_subtitle_shadow_strength"),
+                title = stringResource(id = R.string.subtitle_shadow_strength),
+                description = preferences.subtitleShadowStrength.toString(),
+                icon = NextIcons.Style,
+                isEnabled = isEnabled,
+                value = preferences.subtitleShadowStrength,
+                valueRange = SUBTITLE_SHADOW_STRENGTH_RANGE,
+                onValueChange = { onPreferencesChange(preferences.copy(subtitleShadowStrength = it)) },
+                trailingContent = {
+                    NextResetIconButton(
+                        modifier = Modifier.testTag("btn_reset_settings_subtitle_shadow_strength"),
+                        enabled = isEnabled,
+                        contentDescription = stringResource(id = R.string.reset_subtitle_shadow_strength),
+                        onClick = {
+                            onPreferencesChange(
+                                preferences.copy(subtitleShadowStrength = PlayerPreferences.DEFAULT_SUBTITLE_SHADOW_STRENGTH),
+                            )
+                        },
+                    )
+                },
+            )
+        }
     }
 }
 

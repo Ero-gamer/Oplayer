@@ -27,9 +27,9 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextResetIconButton
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
@@ -106,9 +106,8 @@ private fun ThumbnailPreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
-            Column(
+            PreferenceGroup(
                 modifier = Modifier.selectableGroup(),
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
             ) {
                 SingleSelectablePreference(
                     modifier = Modifier.testTag("option_settings_thumbnail_strategy_first_frame"),
@@ -140,39 +139,38 @@ private fun ThumbnailPreferencesContent(
                         pendingChange = ThumbnailPreferenceChange.Strategy(ThumbnailGenerationStrategy.HYBRID)
                     },
                 )
+                PreferenceSlider(
+                    isEnabled = preferences.thumbnailGenerationStrategy != ThumbnailGenerationStrategy.FIRST_FRAME,
+                    modifier = Modifier.testTag("item_settings_thumbnail_frame_position"),
+                    sliderModifier = Modifier.testTag("slider_settings_thumbnail_frame_position"),
+                    title = stringResource(R.string.frame_position),
+                    description = stringResource(R.string.frame_position_value, frameSliderValue),
+                    icon = NextIcons.Frame,
+                    value = frameSliderValue,
+                    valueRange = 0f..100f,
+                    onValueChange = { frameSliderValue = it },
+                    onValueChangeFinished = {
+                        val newPosition = frameSliderValue / 100f
+                        if (abs(newPosition - preferences.thumbnailFramePosition) > 0.0001f) {
+                            pendingChange = ThumbnailPreferenceChange.FramePosition(newPosition)
+                        }
+                    },
+                    trailingContent = {
+                        NextResetIconButton(
+                            modifier = Modifier.testTag("btn_reset_settings_thumbnail_frame_position"),
+                            enabled = preferences.thumbnailGenerationStrategy != ThumbnailGenerationStrategy.FIRST_FRAME,
+                            onClick = {
+                                val defaultPosition = ApplicationPreferences.DEFAULT_THUMBNAIL_FRAME_POSITION
+                                if (abs(defaultPosition - preferences.thumbnailFramePosition) > 0.0001f) {
+                                    frameSliderValue = defaultPosition * 100f
+                                    pendingChange = ThumbnailPreferenceChange.FramePosition(defaultPosition)
+                                }
+                            },
+                            contentDescription = stringResource(id = R.string.reset_seek_sensitivity),
+                        )
+                    },
+                )
             }
-
-            PreferenceSlider(
-                isEnabled = preferences.thumbnailGenerationStrategy != ThumbnailGenerationStrategy.FIRST_FRAME,
-                modifier = Modifier.testTag("item_settings_thumbnail_frame_position"),
-                sliderModifier = Modifier.testTag("slider_settings_thumbnail_frame_position"),
-                title = stringResource(R.string.frame_position),
-                description = stringResource(R.string.frame_position_value, frameSliderValue),
-                icon = NextIcons.Frame,
-                value = frameSliderValue,
-                valueRange = 0f..100f,
-                onValueChange = { frameSliderValue = it },
-                onValueChangeFinished = {
-                    val newPosition = frameSliderValue / 100f
-                    if (abs(newPosition - preferences.thumbnailFramePosition) > 0.0001f) {
-                        pendingChange = ThumbnailPreferenceChange.FramePosition(newPosition)
-                    }
-                },
-                trailingContent = {
-                    NextResetIconButton(
-                        modifier = Modifier.testTag("btn_reset_settings_thumbnail_frame_position"),
-                        enabled = preferences.thumbnailGenerationStrategy != ThumbnailGenerationStrategy.FIRST_FRAME,
-                        onClick = {
-                            val defaultPosition = ApplicationPreferences.DEFAULT_THUMBNAIL_FRAME_POSITION
-                            if (abs(defaultPosition - preferences.thumbnailFramePosition) > 0.0001f) {
-                                frameSliderValue = defaultPosition * 100f
-                                pendingChange = ThumbnailPreferenceChange.FramePosition(defaultPosition)
-                            }
-                        },
-                        contentDescription = stringResource(id = R.string.reset_seek_sensitivity),
-                    )
-                },
-            )
         }
 
         pendingChange?.let { change ->

@@ -2,7 +2,7 @@
 <resources>
     <string name="size">大小</string>
     <string name="force_rescan_storage">強制掃描儲存區</string>
-    <string name="dynamic_theme">動態色彩主題</string>
+    <string name="dynamic_theme">動態色主題</string>
     <string name="fields">欄位</string>
     <string name="navigate_up">向上巡覽</string>
     <string name="zoom_gesture_description">捏放以縮放影片</string>
@@ -240,7 +240,6 @@
     <string name="manage_folders">管理資料夾</string>
     <string name="default_playback_speed">預設播放速度</string>
     <string name="subtitle_desc">字幕外觀、播放選項</string>
-    <string name="dynamic_theme_description">開啟後使用系統桌布配色，關閉後使用 Miuix 原版配色</string>
     <string name="theme_color">主題色</string>
     <string name="theme_color_description">使用系統桌布色彩或自訂主題色</string>
     <string name="theme_palette_style">調色板樣式</string>

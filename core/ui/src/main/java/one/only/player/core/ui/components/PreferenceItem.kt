@@ -1,9 +1,14 @@
 package one.only.player.core.ui.components
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -11,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.designsystem.NextIcons
 import top.yukonga.miuix.kmp.basic.BasicComponent
+import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.preference.ArrowPreference
@@ -18,6 +24,41 @@ import top.yukonga.miuix.kmp.preference.CheckboxLocation
 import top.yukonga.miuix.kmp.preference.CheckboxPreference
 import top.yukonga.miuix.kmp.preference.RadioButtonPreference
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+private val LocalPreferenceGrouped = compositionLocalOf { false }
+
+@Composable
+fun PreferenceGroup(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    CompositionLocalProvider(LocalPreferenceGrouped provides true) {
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            content = content,
+        )
+    }
+}
+
+@Composable
+internal fun PreferenceContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    if (LocalPreferenceGrouped.current) {
+        Box(modifier = modifier) {
+            content()
+        }
+    } else {
+        Surface(
+            shape = preferenceCardShape(),
+            color = MiuixTheme.colorScheme.surfaceContainer,
+            modifier = modifier,
+        ) {
+            content()
+        }
+    }
+}
 
 @Composable
 fun PreferenceItem(
@@ -31,11 +72,7 @@ fun PreferenceItem(
     showArrow: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-        modifier = modifier,
-    ) {
+    PreferenceContainer(modifier = modifier) {
         if (showArrow) {
             ArrowPreference(
                 title = title,
@@ -84,11 +121,7 @@ fun SelectablePreference(
     onClick: () -> Unit = {},
     onLongClick: () -> Unit = {},
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-        modifier = modifier,
-    ) {
+    PreferenceContainer(modifier = modifier) {
         CheckboxPreference(
             title = title,
             summary = description,
@@ -108,11 +141,7 @@ fun SingleSelectablePreference(
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-        modifier = modifier,
-    ) {
+    PreferenceContainer(modifier = modifier) {
         RadioButtonPreference(
             title = title,
             summary = description,

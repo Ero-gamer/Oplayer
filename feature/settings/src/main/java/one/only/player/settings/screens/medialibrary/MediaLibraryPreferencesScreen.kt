@@ -25,8 +25,8 @@ import one.only.player.core.common.createManageExternalStorageAccessIntent
 import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
+import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
@@ -128,9 +128,7 @@ private fun MediaLibraryPreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_mark_last_played"),
                     title = stringResource(id = R.string.mark_last_played_media),
@@ -149,6 +147,9 @@ private fun MediaLibraryPreferencesContent(
                     isChecked = preferences.shouldRestoreLastPlayedMediaInFolders,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRestoreLastPlayedMediaInFolders) },
                 )
+            }
+
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_all_files_access"),
                     title = stringResource(id = R.string.all_files_access_title),
@@ -167,9 +168,7 @@ private fun MediaLibraryPreferencesContent(
                 )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_ignore_nomedia"),
                     title = stringResource(id = R.string.ignore_nomedia_files),
@@ -197,9 +196,7 @@ private fun MediaLibraryPreferencesContent(
                 )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(CardItemGap),
-            ) {
+            PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_thumbnails"),
                     title = stringResource(id = R.string.thumbnail_generation),

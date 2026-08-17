@@ -5,9 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import one.only.player.core.ui.designsystem.NextIcons
-import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.preference.SwitchPreference
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
 fun PreferenceSwitch(
@@ -19,11 +17,7 @@ fun PreferenceSwitch(
     isChecked: Boolean = true,
     onClick: (() -> Unit) = {},
 ) {
-    Surface(
-        shape = preferenceCardShape(),
-        color = MiuixTheme.colorScheme.surfaceContainer,
-        modifier = modifier,
-    ) {
+    PreferenceContainer(modifier = modifier) {
         SwitchPreference(
             title = title,
             summary = description,
