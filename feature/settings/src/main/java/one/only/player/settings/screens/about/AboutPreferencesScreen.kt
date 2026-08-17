@@ -3,12 +3,8 @@ package one.only.player.settings.screens.about
 import android.content.Context
 import android.os.Build
 import android.widget.Toast
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,10 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -38,7 +33,8 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.pm.PackageInfoCompat
@@ -51,10 +47,10 @@ import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
+import one.only.player.settings.screens.about.effect.FlowLightBackground
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -79,67 +75,67 @@ fun AboutPreferencesScreen(
         viewModel.maybeAutoCheck(currentVersionName)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = stringResource(id = R.string.about_name),
-                navigationIcon = {
-                    MiuixIconButton(
-                        onClick = onNavigateUp,
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .testTag("button_about_back"),
-                    ) {
-                        MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
-                            contentDescription = stringResource(id = R.string.navigate_up),
-                            tint = MiuixTheme.colorScheme.onBackground,
-                        )
-                    }
-                },
-            )
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
-        ) {
-            AboutApp(
-                onLibrariesClick = onLibrariesClick,
-            )
-            DiagnosticsSection(
-                onLogsClick = onLogsClick,
-            )
-            UpdateSection(
+    FlowLightBackground(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = stringResource(id = R.string.about_name),
+                    color = Color.Transparent,
+                    navigationIcon = {
+                        MiuixIconButton(
+                            onClick = onNavigateUp,
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .testTag("button_about_back"),
+                        ) {
+                            MiuixIcon(
+                                imageVector = NextIcons.ArrowBack,
+                                contentDescription = stringResource(id = R.string.navigate_up),
+                                tint = MiuixTheme.colorScheme.onBackground,
+                            )
+                        }
+                    },
+                )
+            },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(innerPadding.withBottomFallback())
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                AboutHero(onLibrariesClick = onLibrariesClick)
+                DiagnosticsSection(onLogsClick = onLogsClick)
+                UpdateSection(
+                    uiState = uiState,
+                    currentVersionName = currentVersionName,
+                    onEvent = viewModel::onEvent,
+                )
+                PreferenceGroup {
+                    PreferenceItem(
+                        title = stringResource(R.string.architecture),
+                        description = rememberDeviceArchitecture(),
+                        icon = NextIcons.Decoder,
+                        isEnabled = true,
+                    )
+                    PreferenceItem(
+                        title = stringResource(R.string.android_version),
+                        description = rememberAndroidVersion(),
+                        icon = NextIcons.Update,
+                        isEnabled = true,
+                    )
+                }
+            }
+
+            StartupUpdateDialog(
                 uiState = uiState,
-                currentVersionName = currentVersionName,
                 onEvent = viewModel::onEvent,
             )
-            PreferenceGroup {
-                PreferenceItem(
-                    title = stringResource(R.string.architecture),
-                    description = rememberDeviceArchitecture(),
-                    icon = NextIcons.Decoder,
-                    isEnabled = true,
-                )
-                PreferenceItem(
-                    title = stringResource(R.string.android_version),
-                    description = rememberAndroidVersion(),
-                    icon = NextIcons.Update,
-                    isEnabled = true,
-                )
-            }
         }
-
-        StartupUpdateDialog(
-            uiState = uiState,
-            onEvent = viewModel::onEvent,
-        )
     }
 }
 
@@ -239,8 +235,7 @@ private fun StartupUpdateDialog(
 }
 
 @Composable
-fun AboutApp(
-    modifier: Modifier = Modifier,
+private fun AboutHero(
     onLibrariesClick: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -248,89 +243,43 @@ fun AboutApp(
     val appVersion = remember { context.appVersion() }
     val appIcon = remember { context.appIcon()?.asImageBitmap() }
 
-    val colorPrimary = MiuixTheme.colorScheme.primaryContainer
-    val colorTertiary = MiuixTheme.colorScheme.tertiaryContainer
-
-    val transition = rememberInfiniteTransition()
-    val fraction by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 5000),
-            repeatMode = RepeatMode.Reverse,
-        ),
-    )
-    val cornerRadius = 24.dp
-
-    Box(
-        modifier = modifier
-            .padding(
-                vertical = 16.dp,
-                horizontal = 8.dp,
-            )
-            .drawWithCache {
-                val cx = size.width - size.width * fraction
-                val cy = size.height * fraction
-
-                val gradient = Brush.radialGradient(
-                    colors = listOf(colorPrimary, colorTertiary),
-                    center = Offset(cx, cy),
-                    radius = 800f,
-                )
-
-                onDrawBehind {
-                    drawRoundRect(
-                        brush = gradient,
-                        cornerRadius = CornerRadius(
-                            cornerRadius.toPx(),
-                            cornerRadius.toPx(),
-                        ),
-                    )
-                }
-            }
-            .padding(all = 24.dp)
-            .fillMaxWidth(),
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 40.dp, bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 64.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                .size(88.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color.White),
+            contentAlignment = Alignment.Center,
         ) {
-            appIcon?.let {
+            appIcon?.let { icon ->
                 Image(
-                    bitmap = it,
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(56.dp),
+                    bitmap = icon,
+                    contentDescription = stringResource(id = R.string.app_name),
+                    modifier = Modifier.size(74.dp),
                 )
-            }
-            Column(
-                modifier = Modifier.weight(1f),
-            ) {
-                MiuixText(
-                    text = stringResource(id = R.string.app_name),
-                    fontSize = 22.sp,
-                    color = MiuixTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Clip,
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    MiuixText(
-                        text = appVersion,
-                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                        fontSize = 12.sp,
-                    )
-                }
             }
         }
-
+        MiuixText(
+            modifier = Modifier.padding(top = 12.dp, bottom = 5.dp),
+            text = stringResource(id = R.string.app_name),
+            color = MiuixTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.Bold,
+            fontSize = 28.sp,
+            textAlign = TextAlign.Center,
+        )
+        MiuixText(
+            text = appVersion,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+        )
         Row(
-            modifier = Modifier.align(Alignment.BottomEnd),
+            modifier = Modifier.padding(top = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             AboutIconButton(
@@ -396,7 +345,6 @@ private fun AboutIconButton(
 private fun Context.appVersion(): String {
     val packageInfo = packageManager.getPackageInfo(packageName, 0)
     val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
-
     return "${packageInfo.versionName} ($versionCode)"
 }
 

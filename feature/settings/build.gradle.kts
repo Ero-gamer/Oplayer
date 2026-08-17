@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
 
     implementation(libs.aboutlibraries.core)
+    implementation(libs.miuix.shader)
 
     // Hilt 依赖
     implementation(libs.hilt.android)
