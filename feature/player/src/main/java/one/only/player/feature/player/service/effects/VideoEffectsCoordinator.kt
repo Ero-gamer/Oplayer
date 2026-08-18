@@ -80,12 +80,8 @@ internal class VideoEffectsCoordinator(
         player: ExoPlayer?,
         format: Format,
     ) {
-        val wasVideoHdr = isCurrentVideoHdr
         currentFormat = format
         isCurrentVideoHdr = format.isHdrVideoFormat()
-        if (wasVideoHdr != isCurrentVideoHdr || isEffectActive) {
-            player?.let { apply(it, currentPreferencesProvider(), force = true) }
-        }
     }
 
     fun markFirstFrameRendered(
@@ -94,6 +90,7 @@ internal class VideoEffectsCoordinator(
         preferences: PlayerPreferences,
     ) {
         isCurrentVideoHdr = format?.isHdrVideoFormat() == true
+        if (hasRenderedFirstFrameForCurrentItem) return
         hasRenderedFirstFrameForCurrentItem = true
         apply(player, preferences, force = true)
     }
@@ -166,7 +163,7 @@ internal class VideoEffectsCoordinator(
         Logger.debug(TAG, "Video effects availability: available=$isVideoEffectsAvailable decoder=$activeDecoderPriority")
     }
 
-    fun isAvailable(): Boolean = shouldApplyVideoEffects(activeDecoderPriority) && !isCurrentVideoHdr
+    fun isAvailable(): Boolean = shouldApplyVideoEffects(activeDecoderPriority)
 
     private fun schedule(
         player: ExoPlayer,
@@ -197,11 +194,20 @@ internal class VideoEffectsCoordinator(
             if (hasStalePreferences()) return@launch
 
             val decoderPriority = activeDecoderPriority
-            val nextTransition = transition.to(
-                targetFilters = videoFilters,
-                startMs = android.os.SystemClock.elapsedRealtime(),
-                durationMs = VIDEO_FILTER_TRANSITION_DURATION_MS,
-            )
+            val transitionStartMs = android.os.SystemClock.elapsedRealtime()
+            val nextTransition = if (player.playWhenReady) {
+                transition.to(
+                    targetFilters = videoFilters,
+                    startMs = transitionStartMs,
+                    durationMs = VIDEO_FILTER_TRANSITION_DURATION_MS,
+                )
+            } else {
+                VideoFilterTransition(
+                    startFilters = videoFilters,
+                    targetFilters = videoFilters,
+                    startMs = transitionStartMs,
+                )
+            }
             if (hasStalePreferences()) return@launch
 
             applyEffects(
@@ -257,17 +263,6 @@ internal class VideoEffectsCoordinator(
             isAmbientEnabled = isAmbientEnabled,
             ambientTargetAspectRatio = ambientTargetAspectRatio,
         )
-        if (!hasRenderedFirstFrameForCurrentItem && activeFilterEffect == null && activeAmbientEffect == null && effects.isNotEmpty()) {
-            currentState = VideoEffectsState(
-                filters = videoFilters,
-                decoderPriority = decoderPriority,
-                isAmbientEnabled = isAmbientEnabled,
-                ambientTargetAspectRatio = ambientTargetAspectRatio,
-                isPipelineInitialized = false,
-            )
-            Logger.debug(TAG, "Defer setVideoEffects until first frame to resolve HDR state")
-            return
-        }
         if (effects.isEmpty() && activeFilterEffect == null && activeAmbientEffect == null) {
             currentState = VideoEffectsState(
                 filters = videoFilters,
@@ -331,7 +326,7 @@ internal class VideoEffectsCoordinator(
     private fun shouldUseFilterEffect(
         filters: VideoFilterPreferences,
         decoderPriority: DecoderPriority,
-    ): Boolean = shouldApplyVideoEffects(decoderPriority) && !isCurrentVideoHdr && filters.shouldCreateEffect()
+    ): Boolean = shouldApplyVideoEffects(decoderPriority) && filters.shouldCreateEffect()
 
     private fun shouldUseAmbientEffect(
         isEnabled: Boolean,
