@@ -158,6 +158,9 @@ internal val PLAYER_ACTION_METHODS = setOf(
     "player.menu_back",
     "player.toggle_customize_controls",
     "player.stress_pan_zoom",
+    "player.panel_resize",
+    "player.panel_move",
+    "player.panel_state",
     "player.back",
 )
 
@@ -204,6 +207,9 @@ internal val UI_PLAYER_ACTIONS = setOf(
     PlayerDebugCommandBridge.ACTION_MENU_BACK,
     PlayerDebugCommandBridge.ACTION_TOGGLE_CUSTOMIZE_CONTROLS,
     PlayerDebugCommandBridge.ACTION_STRESS_PAN_ZOOM,
+    PlayerDebugCommandBridge.ACTION_PANEL_RESIZE,
+    PlayerDebugCommandBridge.ACTION_PANEL_MOVE,
+    PlayerDebugCommandBridge.ACTION_PANEL_STATE,
 )
 
 internal fun debugResult(

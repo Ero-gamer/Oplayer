@@ -3,8 +3,11 @@ package one.only.player.feature.player.ui
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.Player
 import one.only.player.core.model.DecoderPriority
@@ -17,11 +20,16 @@ import one.only.player.feature.player.extensions.noRippleClickable
 import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.state.SleepTimerState
 import one.only.player.feature.player.state.SubtitleOptionsEvent
+import one.only.player.feature.player.ui.panel.FloatingPlayerPanelState
+import one.only.player.feature.player.ui.panel.LocalFloatingPlayerPanelOnDismiss
+import one.only.player.feature.player.ui.panel.LocalFloatingPlayerPanelState
+import one.only.player.feature.player.ui.panel.rememberFloatingPlayerPanelState
 
 @Composable
 fun BoxScope.OverlayShowView(
     player: Player,
     overlayView: OverlayView?,
+    panelState: FloatingPlayerPanelState = rememberFloatingPlayerPanelState(),
     videoContentScale: VideoContentScale,
     isCustomVideoZoomActive: Boolean = false,
     playerPreferences: PlayerPreferences,
@@ -57,6 +65,9 @@ fun BoxScope.OverlayShowView(
     Box(
         modifier = Modifier
             .matchParentSize()
+            .onSizeChanged { size ->
+                panelState.updateViewport(size.width, size.height)
+            }
             .then(
                 if (overlayView != null) {
                     Modifier.noRippleClickable(onClick = onDismiss)
@@ -66,134 +77,141 @@ fun BoxScope.OverlayShowView(
             ),
     )
 
-    AudioTrackSelectorView(
-        shouldShow = overlayView == OverlayView.AUDIO_SELECTOR,
-        player = player,
-        onDismiss = onDismiss,
-    )
+    CompositionLocalProvider(
+        LocalFloatingPlayerPanelState provides panelState,
+        LocalFloatingPlayerPanelOnDismiss provides onDismiss,
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AudioTrackSelectorView(
+                shouldShow = overlayView == OverlayView.AUDIO_SELECTOR,
+                player = player,
+                onDismiss = onDismiss,
+            )
 
-    SubtitleSelectorView(
-        shouldShow = overlayView == OverlayView.SUBTITLE_SELECTOR,
-        player = player,
-        onSelectSubtitleClick = onSelectSubtitleClick,
-        onAddOnlineSubtitleClick = onAddOnlineSubtitleClick,
-        preferences = playerPreferences,
-        onPreferencesChange = onSubtitleStyleChanged,
-        onEvent = onSubtitleOptionEvent,
-        onDismiss = onDismiss,
-    )
+            SubtitleSelectorView(
+                shouldShow = overlayView == OverlayView.SUBTITLE_SELECTOR,
+                player = player,
+                onSelectSubtitleClick = onSelectSubtitleClick,
+                onAddOnlineSubtitleClick = onAddOnlineSubtitleClick,
+                preferences = playerPreferences,
+                onPreferencesChange = onSubtitleStyleChanged,
+                onEvent = onSubtitleOptionEvent,
+                onDismiss = onDismiss,
+            )
 
-    PlaybackSpeedSelectorView(
-        shouldShow = overlayView == OverlayView.PLAYBACK_SPEED,
-        player = player,
-    )
+            PlaybackSpeedSelectorView(
+                shouldShow = overlayView == OverlayView.PLAYBACK_SPEED,
+                player = player,
+            )
 
-    VideoContentScaleSelectorView(
-        shouldShow = overlayView == OverlayView.VIDEO_CONTENT_SCALE,
-        videoContentScale = videoContentScale,
-        isCustomZoomActive = isCustomVideoZoomActive,
-        onVideoContentScaleChanged = onVideoContentScaleChanged,
-        onShowVideoFilters = onShowVideoFilters,
-        onDismiss = onDismiss,
-    )
+            VideoContentScaleSelectorView(
+                shouldShow = overlayView == OverlayView.VIDEO_CONTENT_SCALE,
+                videoContentScale = videoContentScale,
+                isCustomZoomActive = isCustomVideoZoomActive,
+                onVideoContentScaleChanged = onVideoContentScaleChanged,
+                onShowVideoFilters = onShowVideoFilters,
+                onDismiss = onDismiss,
+            )
 
-    VideoFilterOverlayView(
-        shouldShow = overlayView == OverlayView.VIDEO_FILTERS,
-        preferences = playerPreferences,
-        onDismissRequest = onCloseVideoFilters,
-        onPreviewPreferences = onPreviewVideoFilters,
-        onConfirmPreferences = onConfirmVideoFilters,
-    )
+            VideoFilterOverlayView(
+                shouldShow = overlayView == OverlayView.VIDEO_FILTERS,
+                preferences = playerPreferences,
+                onDismissRequest = onCloseVideoFilters,
+                onPreviewPreferences = onPreviewVideoFilters,
+                onConfirmPreferences = onConfirmVideoFilters,
+            )
 
-    PlaylistView(
-        shouldShow = overlayView == OverlayView.PLAYLIST,
-        player = player,
-    )
+            PlaylistView(
+                shouldShow = overlayView == OverlayView.PLAYLIST,
+                player = player,
+            )
 
-    SleepTimerSelectorView(
-        shouldShow = overlayView == OverlayView.SLEEP_TIMER,
-        sleepTimerState = sleepTimerState,
-        onDismiss = onDismiss,
-    )
+            SleepTimerSelectorView(
+                shouldShow = overlayView == OverlayView.SLEEP_TIMER,
+                sleepTimerState = sleepTimerState,
+                onDismiss = onDismiss,
+            )
 
-    DecoderPrioritySelectorView(
-        shouldShow = overlayView == OverlayView.DECODER_PRIORITY,
-        currentDecoderPriority = playerPreferences.decoderPriority,
-        onDecoderPriorityClick = onDecoderPriorityChanged,
-        onDismiss = onDismiss,
-    )
+            DecoderPrioritySelectorView(
+                shouldShow = overlayView == OverlayView.DECODER_PRIORITY,
+                currentDecoderPriority = playerPreferences.decoderPriority,
+                onDecoderPriorityClick = onDecoderPriorityChanged,
+                onDismiss = onDismiss,
+            )
 
-    PlaybackMarksView(
-        shouldShow = overlayView == OverlayView.PLAYBACK_MARKS,
-        marks = playbackMarks,
-        onAddMarkClick = onAddPlaybackMarkClick,
-        onMarkClick = onPlaybackMarkClick,
-        onDeleteMarkClick = onDeletePlaybackMarkClick,
-    )
+            PlaybackMarksView(
+                shouldShow = overlayView == OverlayView.PLAYBACK_MARKS,
+                marks = playbackMarks,
+                onAddMarkClick = onAddPlaybackMarkClick,
+                onMarkClick = onPlaybackMarkClick,
+                onDeleteMarkClick = onDeletePlaybackMarkClick,
+            )
 
-    ChaptersView(
-        shouldShow = overlayView == OverlayView.CHAPTERS,
-        chapters = chapters,
-        positionMs = chapterPositionMs,
-        mediaUri = chapterMediaUri,
-        onChapterClick = onChapterClick,
-    )
+            ChaptersView(
+                shouldShow = overlayView == OverlayView.CHAPTERS,
+                chapters = chapters,
+                positionMs = chapterPositionMs,
+                mediaUri = chapterMediaUri,
+                onChapterClick = onChapterClick,
+            )
 
-    LoopModeSelectorView(
-        shouldShow = overlayView == OverlayView.LOOP_MODE,
-        player = player,
-        onDismiss = onDismiss,
-    )
+            LoopModeSelectorView(
+                shouldShow = overlayView == OverlayView.LOOP_MODE,
+                player = player,
+                onDismiss = onDismiss,
+            )
 
-    ShuffleModeSelectorView(
-        shouldShow = overlayView == OverlayView.SHUFFLE_MODE,
-        player = player,
-        onDismiss = onDismiss,
-    )
+            ShuffleModeSelectorView(
+                shouldShow = overlayView == OverlayView.SHUFFLE_MODE,
+                player = player,
+                onDismiss = onDismiss,
+            )
 
-    ToggleOptionSelectorView(
-        shouldShow = overlayView == OverlayView.CONTROL_LOCK,
-        titleRes = R.string.controls_lock_switch,
-        panelTestTag = "panel_control_lock",
-        isEnabled = isControlLockEnabled,
-        offTestTag = "btn_control_lock_off",
-        onTestTag = "btn_control_lock_on",
-        onEnabledChanged = onControlLockChanged,
-        onDismiss = onDismiss,
-    )
+            ToggleOptionSelectorView(
+                shouldShow = overlayView == OverlayView.CONTROL_LOCK,
+                titleRes = R.string.controls_lock_switch,
+                panelTestTag = "panel_control_lock",
+                isEnabled = isControlLockEnabled,
+                offTestTag = "btn_control_lock_off",
+                onTestTag = "btn_control_lock_on",
+                onEnabledChanged = onControlLockChanged,
+                onDismiss = onDismiss,
+            )
 
-    ToggleOptionSelectorView(
-        shouldShow = overlayView == OverlayView.MUTE,
-        titleRes = R.string.mute_switch,
-        panelTestTag = "panel_mute_switch",
-        isEnabled = isMuted,
-        offTestTag = "btn_mute_off",
-        onTestTag = "btn_mute_on",
-        onEnabledChanged = onMuteChanged,
-        onDismiss = onDismiss,
-    )
+            ToggleOptionSelectorView(
+                shouldShow = overlayView == OverlayView.MUTE,
+                titleRes = R.string.mute_switch,
+                panelTestTag = "panel_mute_switch",
+                isEnabled = isMuted,
+                offTestTag = "btn_mute_off",
+                onTestTag = "btn_mute_on",
+                onEnabledChanged = onMuteChanged,
+                onDismiss = onDismiss,
+            )
 
-    ToggleOptionSelectorView(
-        shouldShow = overlayView == OverlayView.AMBIENCE_MODE,
-        titleRes = R.string.ambience_mode,
-        panelTestTag = "panel_ambience_mode",
-        isEnabled = isAmbienceModeEnabled,
-        offTestTag = "btn_ambience_mode_off",
-        onTestTag = "btn_ambience_mode_on",
-        onEnabledChanged = onAmbienceModeChanged,
-        onDismiss = onDismiss,
-    )
+            ToggleOptionSelectorView(
+                shouldShow = overlayView == OverlayView.AMBIENCE_MODE,
+                titleRes = R.string.ambience_mode,
+                panelTestTag = "panel_ambience_mode",
+                isEnabled = isAmbienceModeEnabled,
+                offTestTag = "btn_ambience_mode_off",
+                onTestTag = "btn_ambience_mode_on",
+                onEnabledChanged = onAmbienceModeChanged,
+                onDismiss = onDismiss,
+            )
 
-    ToggleOptionSelectorView(
-        shouldShow = overlayView == OverlayView.MIRROR_VIDEO,
-        titleRes = R.string.mirror_video,
-        panelTestTag = "panel_mirror_video",
-        isEnabled = isVideoMirrored,
-        offTestTag = "btn_mirror_video_off",
-        onTestTag = "btn_mirror_video_on",
-        onEnabledChanged = onVideoMirroredChanged,
-        onDismiss = onDismiss,
-    )
+            ToggleOptionSelectorView(
+                shouldShow = overlayView == OverlayView.MIRROR_VIDEO,
+                titleRes = R.string.mirror_video,
+                panelTestTag = "panel_mirror_video",
+                isEnabled = isVideoMirrored,
+                offTestTag = "btn_mirror_video_off",
+                onTestTag = "btn_mirror_video_on",
+                onEnabledChanged = onVideoMirroredChanged,
+                onDismiss = onDismiss,
+            )
+        }
+    }
 }
 
 @Composable
