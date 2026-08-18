@@ -282,8 +282,15 @@
     <string name="format">格式</string>
     <string name="volume_boost_desc">提升音量高達 200%</string>
     <string name="volume_boost">音量增幅器</string>
-    <string name="pip_settings">子母畫面模式</string>
-    <string name="pip_settings_description">當輕觸主畫面按鈕時自動切換至迷你播放器</string>
+    <string name="pip_settings">子母畫面</string>
+    <string name="pip_auto_enter">自動進入子母畫面</string>
+    <string name="pip_auto_enter_description">輕觸主畫面按鈕時開啟所選的迷你播放器</string>
+    <string name="pip_mode">子母畫面樣式</string>
+    <string name="pip_mode_native">原生子母畫面</string>
+    <string name="pip_mode_custom">自繪懸浮播放器</string>
+    <string name="enable_custom_pip_from_settings">使用自繪懸浮播放器前，請允許顯示在其他應用程式上層。</string>
+    <string name="custom_pip_open_player">開啟播放器</string>
+    <string name="custom_pip_drag">移動懸浮播放器</string>
     <string name="player_panel_close">關閉</string>
     <string name="player_panel_drag">移動面板</string>
     <string name="player_panel_resize">縮放面板</string>

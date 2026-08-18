@@ -29,6 +29,7 @@ import one.only.player.core.common.extensions.isPipFeatureSupported
 import one.only.player.core.common.extensions.round
 import one.only.player.core.model.ControlButtonsPosition
 import one.only.player.core.model.ControllerAutoHidePreset
+import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
@@ -244,11 +245,20 @@ private fun PlayerPreferencesContent(
 
             PreferenceGroup {
                 if (isPipFeatureSupported) {
+                    ClickablePreferenceItem(
+                        modifier = Modifier.testTag("item_settings_player_pip_mode"),
+                        title = stringResource(id = R.string.pip_mode),
+                        description = uiState.preferences.pictureInPictureMode.displayName(),
+                        icon = NextIcons.Pip,
+                        onClick = {
+                            onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PictureInPictureModeDialog))
+                        },
+                    )
                     PreferenceSwitch(
                         modifier = Modifier.testTag("switch_settings_player_auto_pip"),
-                        title = stringResource(id = R.string.pip_settings),
+                        title = stringResource(id = R.string.pip_auto_enter),
                         description = stringResource(
-                            id = R.string.pip_settings_description,
+                            id = R.string.pip_auto_enter_description,
                         ),
                         icon = NextIcons.Pip,
                         isChecked = uiState.preferences.shouldAutoEnterPip,
@@ -360,9 +370,34 @@ private fun PlayerPreferencesContent(
                         }
                     }
                 }
+
+                PlayerPreferenceDialog.PictureInPictureModeDialog -> {
+                    OptionsDialog(
+                        text = stringResource(id = R.string.pip_mode),
+                        onDismissClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(null)) },
+                    ) {
+                        items(PictureInPictureMode.entries.toTypedArray()) {
+                            RadioTextButton(
+                                modifier = Modifier.testTag("option_settings_player_pip_mode_${it.name.lowercase()}"),
+                                text = it.displayName(),
+                                isSelected = it == uiState.preferences.pictureInPictureMode,
+                                onClick = {
+                                    onEvent(PlayerPreferencesUiEvent.UpdatePictureInPictureMode(it))
+                                    onEvent(PlayerPreferencesUiEvent.ShowDialog(null))
+                                },
+                            )
+                        }
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+private fun PictureInPictureMode.displayName(): String = when (this) {
+    PictureInPictureMode.NATIVE -> stringResource(R.string.pip_mode_native)
+    PictureInPictureMode.CUSTOM -> stringResource(R.string.pip_mode_custom)
 }
 
 @Composable

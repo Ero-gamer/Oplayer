@@ -23,6 +23,8 @@ enum class CustomCommands(val customAction: String) {
     GET_SUBTITLE_SPEED(customAction = "GET_SUBTITLE_SPEED"),
     SET_SUBTITLE_SPEED(customAction = "SET_SUBTITLE_SPEED"),
     STOP_PLAYER_SESSION(customAction = "STOP_PLAYER_SESSION"),
+    SHOW_CUSTOM_PIP(customAction = "SHOW_CUSTOM_PIP"),
+    HIDE_CUSTOM_PIP(customAction = "HIDE_CUSTOM_PIP"),
     IS_LOUDNESS_GAIN_SUPPORTED(customAction = "IS_LOUDNESS_GAIN_SUPPORTED"),
     SET_LOUDNESS_GAIN(customAction = "SET_LOUDNESS_GAIN"),
     GET_LOUDNESS_GAIN(customAction = "GET_LOUDNESS_GAIN"),
@@ -150,6 +152,15 @@ suspend fun MediaController.getSubtitleSpeed(): Float {
 
 fun MediaController.stopPlayerSession() {
     sendCustomCommand(CustomCommands.STOP_PLAYER_SESSION.sessionCommand, Bundle.EMPTY)
+}
+
+fun MediaController.showCustomPictureInPicture() = sendCustomCommand(
+    CustomCommands.SHOW_CUSTOM_PIP.sessionCommand,
+    Bundle.EMPTY,
+)
+
+fun MediaController.hideCustomPictureInPicture() {
+    sendCustomCommand(CustomCommands.HIDE_CUSTOM_PIP.sessionCommand, Bundle.EMPTY)
 }
 
 fun MediaController.setLoudnessGain(gain: Int) {

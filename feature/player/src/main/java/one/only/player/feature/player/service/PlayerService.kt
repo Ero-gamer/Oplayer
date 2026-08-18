@@ -3,6 +3,7 @@ package one.only.player.feature.player.service
 import android.app.PendingIntent
 import android.content.ContentResolver
 import android.content.Intent
+import android.content.res.Configuration
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
@@ -101,6 +102,7 @@ import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.LoopMode
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Resume
+import one.only.player.core.model.ThemeConfig
 import one.only.player.core.ui.R as coreUiR
 import one.only.player.feature.player.PlayerActivity
 import one.only.player.feature.player.datasource.FtpDataSource
@@ -145,6 +147,7 @@ import one.only.player.feature.player.service.effects.VideoEffectsCoordinator
 import one.only.player.feature.player.service.effects.isHdrVideoFormat
 import one.only.player.feature.player.service.effects.shouldApplyVideoEffects
 import one.only.player.feature.player.service.effects.toVideoFilterPreferences
+import one.only.player.feature.player.service.pip.CustomPictureInPictureOverlay
 import one.only.player.feature.player.service.playback.FolderPlaybackAnchorUpdater
 import one.only.player.feature.player.service.playback.PlaybackStartupAnalyticsListener
 import one.only.player.feature.player.service.playback.PlaybackStateCoordinator
@@ -251,6 +254,7 @@ class PlayerService : MediaSessionService() {
     private var assHandler: AssHandler? = null
     private var activeDecoderPriority: DecoderPriority = DecoderPriority.AUTOMATIC
     private var hasPausedAtEndOfQueue = false
+    private var customPictureInPictureOverlay: CustomPictureInPictureOverlay? = null
     private lateinit var fastStartMediaSourceFactory: DefaultMediaSourceFactory
     private lateinit var preciseSeekMediaSourceFactory: DefaultMediaSourceFactory
     private var sessionLoadErrorHandlingPolicy: LoadErrorHandlingPolicy? = null
@@ -1571,20 +1575,29 @@ class PlayerService : MediaSessionService() {
                     return@future SessionResult(SessionResult.RESULT_SUCCESS)
                 }
 
-                CustomCommands.STOP_PLAYER_SESSION -> {
-                    mediaSession?.run {
-                        serviceScope.launch {
-                            val currentMediaItem = player.currentMediaItem ?: return@launch
-                            val playbackStateUri = playbackStateCoordinator.resolvePlaybackStateUri(currentMediaItem)
-                            mediaRepository.updateMediumPosition(
-                                uri = playbackStateUri,
-                                position = player.currentPosition,
-                            )
-                        }
-                        player.clearMediaItems()
-                        player.stop()
+                CustomCommands.SHOW_CUSTOM_PIP -> {
+                    val player = mediaSession?.player
+                    if (player == null) {
+                        return@future SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE)
                     }
-                    stopSelf()
+                    val overlay = customPictureInPictureOverlay ?: CustomPictureInPictureOverlay(
+                        context = applicationContext,
+                        onStopPlayback = ::stopPlayerSession,
+                        isDarkTheme = ::isCustomPipDarkTheme,
+                    ).also { customPictureInPictureOverlay = it }
+                    val isShown = overlay.show(player)
+                    return@future SessionResult(
+                        if (isShown) SessionResult.RESULT_SUCCESS else SessionResult.RESULT_ERROR_PERMISSION_DENIED,
+                    )
+                }
+
+                CustomCommands.HIDE_CUSTOM_PIP -> {
+                    customPictureInPictureOverlay?.dismiss()
+                    return@future SessionResult(SessionResult.RESULT_SUCCESS)
+                }
+
+                CustomCommands.STOP_PLAYER_SESSION -> {
+                    stopPlayerSession()
                     return@future SessionResult(SessionResult.RESULT_SUCCESS)
                 }
             }
@@ -1592,6 +1605,15 @@ class PlayerService : MediaSessionService() {
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
+
+    private fun isCustomPipDarkTheme(): Boolean = when (preferencesRepository.applicationPreferences.value.themeConfig) {
+        ThemeConfig.SYSTEM -> {
+            val nightMask = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            nightMask == Configuration.UI_MODE_NIGHT_YES
+        }
+        ThemeConfig.OFF -> false
+        ThemeConfig.ON -> true
+    }
 
     private fun createLoadControl(): DefaultLoadControl = DefaultLoadControl.Builder()
         .setBufferDurationsMsForLocalPlayback(
@@ -1798,6 +1820,8 @@ class PlayerService : MediaSessionService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        customPictureInPictureOverlay?.dismiss()
+        customPictureInPictureOverlay = null
         audioEffectsCoordinator.releaseLoudnessEnhancer()
         preciseSeekCoordinator.release()
         assHandler?.let(AssHandlerRegistry::unregister)
@@ -1814,6 +1838,23 @@ class PlayerService : MediaSessionService() {
         mediaParserRetried.clear()
         softwareDecoderRetried.clear()
         serviceScope.cancel()
+    }
+
+    private fun stopPlayerSession() {
+        customPictureInPictureOverlay?.dismiss()
+        mediaSession?.run {
+            serviceScope.launch {
+                val currentMediaItem = player.currentMediaItem ?: return@launch
+                val playbackStateUri = playbackStateCoordinator.resolvePlaybackStateUri(currentMediaItem)
+                mediaRepository.updateMediumPosition(
+                    uri = playbackStateUri,
+                    position = player.currentPosition,
+                )
+            }
+            player.clearMediaItems()
+            player.stop()
+        }
+        stopSelf()
     }
 
     private suspend fun updatedMediaItemsWithMetadata(

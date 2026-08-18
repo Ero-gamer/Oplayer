@@ -12,6 +12,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Process
+import android.provider.Settings
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
@@ -43,15 +44,15 @@ fun rememberPictureInPictureState(
     shouldAutoEnter: Boolean = true,
 ): PictureInPictureState {
     val activity = LocalActivity.current
-    val pictureInPictureState = remember {
+    val pictureInPictureState = remember(player, activity, shouldAutoEnter) {
         PictureInPictureState(
             player = player,
             activity = activity as ComponentActivity,
             shouldAutoEnter = shouldAutoEnter,
         )
     }
-    DisposableEffect(activity) { pictureInPictureState.handleListeners(this) }
-    LaunchedEffect(player) { pictureInPictureState.observe() }
+    DisposableEffect(activity, pictureInPictureState) { pictureInPictureState.handleListeners(this) }
+    LaunchedEffect(player, pictureInPictureState) { pictureInPictureState.observe() }
     return pictureInPictureState
 }
 
@@ -79,6 +80,9 @@ class PictureInPictureState(
         } else {
             true
         }
+
+    val hasCustomPipPermission: Boolean
+        get() = Settings.canDrawOverlays(activity)
 
     var isInPictureInPictureMode: Boolean by mutableStateOf(false)
         private set
@@ -131,6 +135,14 @@ class PictureInPictureState(
         val intent = Intent("android.settings.PICTURE_IN_PICTURE_SETTINGS").apply {
             data = "package:${activity.packageName}".toUri()
         }
+        activity.startActivity(intent)
+    }
+
+    fun openCustomPictureInPictureSettings() {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            "package:${activity.packageName}".toUri(),
+        )
         activity.startActivity(intent)
     }
 

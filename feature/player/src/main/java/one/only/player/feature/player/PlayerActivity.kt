@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.KeyEvent
 import android.view.PixelCopy
 import android.view.SurfaceView
@@ -47,6 +48,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
@@ -77,6 +79,7 @@ import one.only.player.core.common.extensions.toPrivateLogSummary
 import one.only.player.core.common.storagePermission
 import one.only.player.core.media.container.isMpegTsStream
 import one.only.player.core.media.sync.MediaSynchronizer
+import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.model.ThemeConfig
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -90,6 +93,8 @@ import one.only.player.feature.player.extensions.toActivityOrientation
 import one.only.player.feature.player.extensions.uriToSubtitleConfiguration
 import one.only.player.feature.player.service.PlayerService
 import one.only.player.feature.player.service.addSubtitleTrack
+import one.only.player.feature.player.service.hideCustomPictureInPicture
+import one.only.player.feature.player.service.showCustomPictureInPicture
 import one.only.player.feature.player.service.stopPlayerSession
 import one.only.player.feature.player.subtitle.EmptyOnlineSubtitleException
 import one.only.player.feature.player.subtitle.InvalidOnlineSubtitleExtensionException
@@ -236,6 +241,7 @@ open class PlayerActivity : AppCompatActivity() {
         lifecycleScope.launch {
             maybeInitControllerFuture()
             mediaController = controllerFuture?.await()
+            mediaController?.hideCustomPictureInPicture()
             mediaController?.run {
                 updateKeepScreenOnFlag()
                 addListener(playbackStateListener)
@@ -284,7 +290,9 @@ open class PlayerActivity : AppCompatActivity() {
             LifecycleStartEffect(Unit) {
                 maybeInitControllerFuture()
                 lifecycleScope.launch {
-                    player = controllerFuture?.await()
+                    val controller = controllerFuture?.await()
+                    controller?.hideCustomPictureInPicture()
+                    player = controller
                 }
 
                 onStopOrDispose {
@@ -382,6 +390,7 @@ open class PlayerActivity : AppCompatActivity() {
 
             maybeInitControllerFuture()
             mediaController = controllerFuture?.await()
+            mediaController?.hideCustomPictureInPicture()
 
             mediaController?.run {
                 updateKeepScreenOnFlag()
@@ -389,6 +398,11 @@ open class PlayerActivity : AppCompatActivity() {
                 startPlayback()
             }
         }
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        maybeEnterCustomPictureInPicture()
     }
 
     override fun onStop() {
@@ -498,7 +512,9 @@ open class PlayerActivity : AppCompatActivity() {
                 "startPlayback reused current item returning=$isReturningFromBackground same=$isNewUriTheCurrentMediaItem uri=${uri.toPrivateLogSummary()}",
             )
             mediaController?.prepare()
-            mediaController?.playWhenReady = viewModel.shouldPlayWhenReady
+            if (isReturningFromBackground) {
+                mediaController?.playWhenReady = viewModel.shouldPlayWhenReady
+            }
             return
         }
 
@@ -864,6 +880,7 @@ open class PlayerActivity : AppCompatActivity() {
             applyLaunchOrientation(intent)
             setIntent(intent)
             isIntentNew = true
+            mediaController?.hideCustomPictureInPicture()
             if (mediaController != null) {
                 startPlayback()
             }
@@ -971,6 +988,25 @@ open class PlayerActivity : AppCompatActivity() {
     private fun finishAndStopPlayerSession() {
         finish()
         mediaController?.stopPlayerSession()
+    }
+
+    private fun maybeEnterCustomPictureInPicture() {
+        val preferences = playerPreferences ?: return
+        if (preferences.pictureInPictureMode != PictureInPictureMode.CUSTOM) return
+        if (!preferences.shouldAutoEnterPip) return
+        if (!Settings.canDrawOverlays(this)) return
+        val controller = mediaController ?: return
+        if (!controller.isPlaying) return
+
+        shouldPlayInBackground = true
+        lifecycleScope.launch {
+            val result = controller.showCustomPictureInPicture().await()
+            if (result.resultCode == SessionResult.RESULT_SUCCESS) {
+                finish()
+                return@launch
+            }
+            shouldPlayInBackground = false
+        }
     }
 
     override fun onWindowAttributesChanged(params: WindowManager.LayoutParams?) {

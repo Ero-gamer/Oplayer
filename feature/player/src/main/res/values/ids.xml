@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="custom_pip_play_pause" type="id" />
+    <item name="custom_pip_open" type="id" />
+    <item name="custom_pip_close" type="id" />
+    <item name="custom_pip_previous" type="id" />
+    <item name="custom_pip_next" type="id" />
+    <item name="custom_pip_controls" type="id" />
+</resources>

@@ -31,6 +31,7 @@ data class PlayerPreferences(
     val shouldAutoPlay: Boolean = true,
     val shouldPauseAtEndOfQueue: Boolean = false,
     val shouldAutoEnterPip: Boolean = true,
+    val pictureInPictureMode: PictureInPictureMode = PictureInPictureMode.NATIVE,
     val shouldAutoPlayInBackground: Boolean = false,
     val loopMode: LoopMode = LoopMode.OFF,
 
@@ -247,5 +248,11 @@ enum class ControllerAutoHidePreset {
     DISABLED,
     FIFTEEN_SECONDS,
     ONE_MINUTE,
+    CUSTOM,
+}
+
+@Serializable
+enum class PictureInPictureMode {
+    NATIVE,
     CUSTOM,
 }

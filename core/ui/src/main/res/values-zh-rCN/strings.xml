@@ -284,8 +284,15 @@
     <string name="format">格式</string>
     <string name="volume_boost_desc">将音量增强到最大 200%</string>
     <string name="volume_boost">音量增强</string>
-    <string name="pip_settings">画中画模式</string>
-    <string name="pip_settings_description">点按主屏幕按钮时自动切换到迷你播放器</string>
+    <string name="pip_settings">画中画</string>
+    <string name="pip_auto_enter">自动进入画中画</string>
+    <string name="pip_auto_enter_description">点按主屏幕按钮时打开所选的迷你播放器</string>
+    <string name="pip_mode">画中画样式</string>
+    <string name="pip_mode_native">原生画中画</string>
+    <string name="pip_mode_custom">自绘悬浮播放器</string>
+    <string name="enable_custom_pip_from_settings">使用自绘悬浮播放器前，请允许显示在其他应用上层。</string>
+    <string name="custom_pip_open_player">打开播放器</string>
+    <string name="custom_pip_drag">移动悬浮播放器</string>
     <string name="player_panel_close">关闭</string>
     <string name="player_panel_drag">移动面板</string>
     <string name="player_panel_resize">缩放面板</string>

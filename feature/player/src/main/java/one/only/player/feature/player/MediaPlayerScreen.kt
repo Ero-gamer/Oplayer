@@ -62,6 +62,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -72,6 +73,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -89,16 +91,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaController
 import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import one.only.player.core.common.Logger
 import one.only.player.core.data.repository.ExternalSubtitleFontSource
+import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlaybackMark
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.model.PlayerControlZone
@@ -122,6 +127,7 @@ import one.only.player.feature.player.extensions.seekToRequestedPosition
 import one.only.player.feature.player.input.PlayerKeyboardController
 import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.service.previewVideoFilters
+import one.only.player.feature.player.service.showCustomPictureInPicture
 import one.only.player.feature.player.state.ControlsVisibilityState
 import one.only.player.feature.player.state.VerticalGesture
 import one.only.player.feature.player.state.rememberBrightnessState
@@ -167,6 +173,7 @@ import one.only.player.feature.player.ui.controls.ControlsBottomView
 import one.only.player.feature.player.ui.controls.ControlsTopModernView
 import one.only.player.feature.player.ui.controls.ControlsTopView
 import one.only.player.feature.player.ui.controls.PlayerCustomizableControlButton
+import one.only.player.feature.player.ui.panel.rememberFloatingPlayerPanelState
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
@@ -257,7 +264,7 @@ internal fun MediaPlayerScreen(
     )
     val pictureInPictureState = rememberPictureInPictureState(
         player = player,
-        shouldAutoEnter = playerPreferences.shouldAutoEnterPip,
+        shouldAutoEnter = playerPreferences.shouldAutoEnterPip && playerPreferences.pictureInPictureMode == PictureInPictureMode.NATIVE,
     )
     val videoZoomAndContentScaleState = rememberVideoZoomAndContentScaleState(
         player = player,
@@ -364,6 +371,7 @@ internal fun MediaPlayerScreen(
     }
 
     var overlayView by remember { mutableStateOf<OverlayView?>(null) }
+    val floatingPanelState = rememberFloatingPlayerPanelState()
     val isModern = playerPreferences.controlsStyle == PlayerControlsStyle.MODERN
     var menuRouteStack by remember { mutableStateOf<List<MenuRoute>>(emptyList()) }
     var isCustomizingControls by remember { mutableStateOf(false) }
@@ -402,6 +410,7 @@ internal fun MediaPlayerScreen(
         PlayerControl.entries.toSet() - hiddenPlayerControls
     }
     var shouldShowOverlay by remember { mutableStateOf(false) }
+    var shouldAttachActivityVideoOutput by remember { mutableStateOf(true) }
     var videoFiltersInitialPreferences by remember { mutableStateOf<PlayerPreferences?>(null) }
     var subtitleStylePreviewPreferences by remember { mutableStateOf<PlayerPreferences?>(null) }
     var isVideoMirrored by remember { mutableStateOf(false) }
@@ -463,6 +472,43 @@ internal fun MediaPlayerScreen(
         restoreVideoFiltersPreview()
         overlayView = null
         menuRouteStack = emptyList()
+    }
+    fun confirmVideoFilters(preferences: PlayerPreferences) {
+        videoFiltersInitialPreferences = null
+        (player as? androidx.media3.session.MediaController)?.previewVideoFilters(preferences)
+        viewModel.updateVideoFilters(preferences)
+    }
+    fun enterPictureInPicture() {
+        when (playerPreferences.pictureInPictureMode) {
+            PictureInPictureMode.NATIVE -> {
+                if (!pictureInPictureState.hasPipPermission) {
+                    Toast.makeText(context, coreUiR.string.enable_pip_from_settings, Toast.LENGTH_SHORT).show()
+                    pictureInPictureState.openPictureInPictureSettings()
+                } else {
+                    pictureInPictureState.enterPictureInPictureMode()
+                }
+            }
+
+            PictureInPictureMode.CUSTOM -> {
+                if (!pictureInPictureState.hasCustomPipPermission) {
+                    Toast.makeText(context, coreUiR.string.enable_custom_pip_from_settings, Toast.LENGTH_SHORT).show()
+                    pictureInPictureState.openCustomPictureInPictureSettings()
+                    return
+                }
+                val controller = player as? MediaController ?: return
+                scope.launch {
+                    shouldAttachActivityVideoOutput = false
+                    withFrameNanos { }
+                    val result = controller.showCustomPictureInPicture().await()
+                    if (result.resultCode == androidx.media3.session.SessionResult.RESULT_SUCCESS) {
+                        onPlayInBackgroundClick()
+                    } else {
+                        shouldAttachActivityVideoOutput = true
+                        Toast.makeText(context, coreUiR.string.enable_custom_pip_from_settings, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
     fun dismissOverlay() {
         if (overlayView == OverlayView.VIDEO_FILTERS || menuRouteStack.contains(MenuRoute.VideoFilters)) {
@@ -875,11 +921,7 @@ internal fun MediaPlayerScreen(
             PlayerDebugCommandBridge.ACTION_SHOW_VIDEO_FILTERS -> showVideoFilters()
 
             PlayerDebugCommandBridge.ACTION_PIP -> {
-                if (!pictureInPictureState.hasPipPermission) {
-                    pictureInPictureState.openPictureInPictureSettings()
-                } else {
-                    pictureInPictureState.enterPictureInPictureMode()
-                }
+                enterPictureInPicture()
             }
 
             PlayerDebugCommandBridge.ACTION_SCREENSHOT -> onScreenshotClick()
@@ -958,6 +1000,22 @@ internal fun MediaPlayerScreen(
                 stressPanZoom(extras)
             }
 
+            PlayerDebugCommandBridge.ACTION_PANEL_RESIZE -> {
+                val command = extras?.getString("value").orEmpty()
+                if (!floatingPanelState.applyDebugCommand(command)) return false
+                extras?.putString("value", floatingPanelState.debugSnapshot())
+            }
+
+            PlayerDebugCommandBridge.ACTION_PANEL_MOVE -> {
+                val command = extras?.getString("value").orEmpty()
+                if (!floatingPanelState.applyDebugMove(command)) return false
+                extras?.putString("value", floatingPanelState.debugSnapshot())
+            }
+
+            PlayerDebugCommandBridge.ACTION_PANEL_STATE -> {
+                extras?.putString("value", floatingPanelState.debugSnapshot())
+            }
+
             else -> return false
         }
         return true
@@ -977,7 +1035,10 @@ internal fun MediaPlayerScreen(
             Box(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(Color.Black),
+                    .background(Color.Black)
+                    .onSizeChanged { size ->
+                        floatingPanelState.updateViewport(size.width, size.height)
+                    },
             ) {
                 val safeDrawingTopPadding = WindowInsets.safeDrawing
                     .asPaddingValues()
@@ -1031,6 +1092,7 @@ internal fun MediaPlayerScreen(
                         externalSubtitleFontSource = externalSubtitleFontSource,
                     ),
                     decoderPriority = playerPreferences.decoderPriority,
+                    shouldAttachVideoOutput = shouldAttachActivityVideoOutput,
                     shouldUseTextureView = isVideoMirrored,
                     isVideoMirrored = isVideoMirrored,
                     isChapterSwipeEnabled = chaptersState.chapters.size > 1,
@@ -1250,11 +1312,8 @@ internal fun MediaPlayerScreen(
                                         onPictureInPictureClick = {
                                             if (isCustomizingControls) {
                                                 toggleControlVisibility(PlayerControl.PIP)
-                                            } else if (!pictureInPictureState.hasPipPermission) {
-                                                Toast.makeText(context, coreUiR.string.enable_pip_from_settings, Toast.LENGTH_SHORT).show()
-                                                pictureInPictureState.openPictureInPictureSettings()
                                             } else {
-                                                pictureInPictureState.enterPictureInPictureMode()
+                                                enterPictureInPicture()
                                             }
                                         },
                                         onRotateClick = {
@@ -1506,11 +1565,8 @@ internal fun MediaPlayerScreen(
                                         onPictureInPictureClick = {
                                             if (isCustomizingControls) {
                                                 toggleControlVisibility(PlayerControl.PIP)
-                                            } else if (!pictureInPictureState.hasPipPermission) {
-                                                Toast.makeText(context, coreUiR.string.enable_pip_from_settings, Toast.LENGTH_SHORT).show()
-                                                pictureInPictureState.openPictureInPictureSettings()
                                             } else {
-                                                pictureInPictureState.enterPictureInPictureMode()
+                                                enterPictureInPicture()
                                             }
                                         },
                                     )
@@ -1642,9 +1698,11 @@ internal fun MediaPlayerScreen(
                     externalRoute = currentRoute,
                     title = titleForMenuRoute(currentRoute),
                     canGoBack = canGoBack,
+                    panelState = floatingPanelState,
                     onBack = {
                         if (canGoBack) popMenuRoute() else dismissOverlay()
                     },
+                    onDismiss = ::dismissOverlay,
                 ) { route ->
                     when (route) {
                         MenuRoute.Root -> MenuRootContent(
@@ -1653,12 +1711,7 @@ internal fun MediaPlayerScreen(
                             hasChapters = chaptersState.chapters.isNotEmpty(),
                             onNavigate = ::navigateToMenuRoute,
                             onPictureInPictureClick = {
-                                if (!pictureInPictureState.hasPipPermission) {
-                                    Toast.makeText(context, coreUiR.string.enable_pip_from_settings, Toast.LENGTH_SHORT).show()
-                                    pictureInPictureState.openPictureInPictureSettings()
-                                } else {
-                                    pictureInPictureState.enterPictureInPictureMode()
-                                }
+                                enterPictureInPicture()
                                 dismissOverlay()
                             },
                             onScreenshotClick = {
@@ -1746,7 +1799,7 @@ internal fun MediaPlayerScreen(
                             onPreviewPreferences = { previewPreferences ->
                                 (player as? androidx.media3.session.MediaController)?.previewVideoFilters(previewPreferences)
                             },
-                            onConfirmPreferences = viewModel::updateVideoFilters,
+                            onConfirmPreferences = ::confirmVideoFilters,
                         )
 
                         MenuRoute.Playlist -> PlaylistContent(
@@ -1800,6 +1853,7 @@ internal fun MediaPlayerScreen(
                 OverlayShowView(
                     player = player,
                     overlayView = overlayView,
+                    panelState = floatingPanelState,
                     videoContentScale = videoZoomAndContentScaleState.videoContentScale,
                     isCustomVideoZoomActive = !videoZoomAndContentScaleState.zoom.isDefaultVideoZoom(),
                     playerPreferences = activePlayerPreferences,
@@ -1817,7 +1871,7 @@ internal fun MediaPlayerScreen(
                     onPreviewVideoFilters = { previewPreferences ->
                         (player as? androidx.media3.session.MediaController)?.previewVideoFilters(previewPreferences)
                     },
-                    onConfirmVideoFilters = viewModel::updateVideoFilters,
+                    onConfirmVideoFilters = ::confirmVideoFilters,
                     onCloseVideoFilters = ::closeVideoFiltersOverlay,
                     onShowVideoFilters = {
                         overlayView = null

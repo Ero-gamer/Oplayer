@@ -43,8 +43,15 @@
     <string name="cloud_quick_settings">Cloud Quick Settings</string>
     <string name="autoplay_settings">Autoplay</string>
     <string name="autoplay_settings_description">Automatically play the next video in the current folder</string>
-    <string name="pip_settings">Picture in Picture Mode</string>
-    <string name="pip_settings_description">Automatically switch to miniature player when tapping Home Button</string>
+    <string name="pip_settings">Picture in picture</string>
+    <string name="pip_auto_enter">Enter picture in picture automatically</string>
+    <string name="pip_auto_enter_description">Open the selected miniature player when tapping the Home button</string>
+    <string name="pip_mode">Picture-in-picture style</string>
+    <string name="pip_mode_native">Native picture in picture</string>
+    <string name="pip_mode_custom">Custom floating player</string>
+    <string name="enable_custom_pip_from_settings">Allow display over other apps to use the custom floating player.</string>
+    <string name="custom_pip_open_player">Open player</string>
+    <string name="custom_pip_drag">Move floating player</string>
     <string name="player_panel_close">Close</string>
     <string name="player_panel_drag">Move panel</string>
     <string name="player_panel_resize">Resize panel</string>

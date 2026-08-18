@@ -13,6 +13,7 @@ import one.only.player.core.common.extensions.round
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ControlButtonsPosition
 import one.only.player.core.model.ControllerAutoHidePreset
+import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
@@ -47,6 +48,7 @@ class PlayerPreferencesViewModel @Inject constructor(
             PlayerPreferencesUiEvent.ToggleAutoplay -> toggleAutoplay()
             PlayerPreferencesUiEvent.TogglePauseAtEndOfQueue -> togglePauseAtEndOfQueue()
             PlayerPreferencesUiEvent.ToggleAutoPip -> toggleAutoPip()
+            is PlayerPreferencesUiEvent.UpdatePictureInPictureMode -> updatePictureInPictureMode(event.value)
             PlayerPreferencesUiEvent.ToggleAutoBackgroundPlay -> toggleAutoBackgroundPlay()
             PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel -> toggleRememberBrightnessLevel()
             PlayerPreferencesUiEvent.ToggleRememberPlayerScreenOrientation -> toggleRememberPlayerScreenOrientation()
@@ -102,6 +104,14 @@ class PlayerPreferencesViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
                 it.copy(shouldAutoEnterPip = !it.shouldAutoEnterPip)
+            }
+        }
+    }
+
+    private fun updatePictureInPictureMode(value: PictureInPictureMode) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(pictureInPictureMode = value)
             }
         }
     }
@@ -233,6 +243,7 @@ sealed interface PlayerPreferenceDialog {
     data object ControlButtonsDialog : PlayerPreferenceDialog
     data object PlayerIconStyleDialog : PlayerPreferenceDialog
     data object ControlsStyleDialog : PlayerPreferenceDialog
+    data object PictureInPictureModeDialog : PlayerPreferenceDialog
 }
 
 sealed interface PlayerPreferencesUiEvent {
@@ -241,6 +252,7 @@ sealed interface PlayerPreferencesUiEvent {
     data object ToggleAutoplay : PlayerPreferencesUiEvent
     data object TogglePauseAtEndOfQueue : PlayerPreferencesUiEvent
     data object ToggleAutoPip : PlayerPreferencesUiEvent
+    data class UpdatePictureInPictureMode(val value: PictureInPictureMode) : PlayerPreferencesUiEvent
     data object ToggleAutoBackgroundPlay : PlayerPreferencesUiEvent
     data object ToggleRememberBrightnessLevel : PlayerPreferencesUiEvent
     data object ToggleRememberPlayerScreenOrientation : PlayerPreferencesUiEvent

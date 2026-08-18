@@ -61,6 +61,7 @@ fun PlayerContentFrame(
     subtitleConfiguration: SubtitleConfiguration,
     decoderPriority: DecoderPriority,
     isGesturesEnabled: Boolean = true,
+    shouldAttachVideoOutput: Boolean = true,
     shouldUseTextureView: Boolean = false,
     isVideoMirrored: Boolean = false,
     isChapterSwipeEnabled: Boolean = false,
@@ -145,36 +146,38 @@ fun PlayerContentFrame(
                 )
             }
 
-            PlayerSurface(
-                player = player,
-                surfaceType = surfaceType,
-                modifier = Modifier
-                    .requiredSize(surfaceWidthDp, surfaceHeightDp)
-                    .graphicsLayer {
-                        scaleX = baseScaleX * videoZoomAndContentScaleState.zoom * mirrorScaleX
-                        scaleY = baseScaleY * videoZoomAndContentScaleState.zoom
-                        translationX = videoZoomAndContentScaleState.offset.x
-                        translationY = videoZoomAndContentScaleState.offset.y
-                    }
-                    .onGloballyPositioned {
-                        val bounds = it.boundsInWindow()
-                        val rect = Rect(
-                            bounds.left.toInt(),
-                            bounds.top.toInt(),
-                            bounds.right.toInt(),
-                            bounds.bottom.toInt(),
-                        )
-                        val key = "${rect.width()}x${rect.height()}@${rect.left},${rect.top}:${videoZoomAndContentScaleState.videoContentScale}:${videoSizePx?.width}x${videoSizePx?.height}:${contentVideoSizePx?.width}x${contentVideoSizePx?.height}:$surfaceType:$surfaceRefreshKey:$isVideoMirrored"
-                        if (key != lastLoggedSurfaceLayout) {
-                            lastLoggedSurfaceLayout = key
-                            Logger.info(
-                                TAG,
-                                "Player surface layout size=${rect.width()}x${rect.height()} left=${rect.left} top=${rect.top} contentScale=${videoZoomAndContentScaleState.videoContentScale} videoPx=${videoSizePx?.width}x${videoSizePx?.height} contentPx=${contentVideoSizePx?.width}x${contentVideoSizePx?.height} coverSurface=${presentationState.coverSurface} refresh=$surfaceRefreshKey",
-                            )
+            if (shouldAttachVideoOutput) {
+                PlayerSurface(
+                    player = player,
+                    surfaceType = surfaceType,
+                    modifier = Modifier
+                        .requiredSize(surfaceWidthDp, surfaceHeightDp)
+                        .graphicsLayer {
+                            scaleX = baseScaleX * videoZoomAndContentScaleState.zoom * mirrorScaleX
+                            scaleY = baseScaleY * videoZoomAndContentScaleState.zoom
+                            translationX = videoZoomAndContentScaleState.offset.x
+                            translationY = videoZoomAndContentScaleState.offset.y
                         }
-                        pictureInPictureState.updateVideoViewRect(rect)
-                    },
-            )
+                        .onGloballyPositioned {
+                            val bounds = it.boundsInWindow()
+                            val rect = Rect(
+                                bounds.left.toInt(),
+                                bounds.top.toInt(),
+                                bounds.right.toInt(),
+                                bounds.bottom.toInt(),
+                            )
+                            val key = "${rect.width()}x${rect.height()}@${rect.left},${rect.top}:${videoZoomAndContentScaleState.videoContentScale}:${videoSizePx?.width}x${videoSizePx?.height}:${contentVideoSizePx?.width}x${contentVideoSizePx?.height}:$surfaceType:$surfaceRefreshKey:$isVideoMirrored"
+                            if (key != lastLoggedSurfaceLayout) {
+                                lastLoggedSurfaceLayout = key
+                                Logger.info(
+                                    TAG,
+                                    "Player surface layout size=${rect.width()}x${rect.height()} left=${rect.left} top=${rect.top} contentScale=${videoZoomAndContentScaleState.videoContentScale} videoPx=${videoSizePx?.width}x${videoSizePx?.height} contentPx=${contentVideoSizePx?.width}x${contentVideoSizePx?.height} coverSurface=${presentationState.coverSurface} refresh=$surfaceRefreshKey",
+                                )
+                            }
+                            pictureInPictureState.updateVideoViewRect(rect)
+                        },
+                )
+            }
 
             if (!presentationState.coverSurface) {
                 val subtitleModifier = if (isAssSubtitleSelected) {

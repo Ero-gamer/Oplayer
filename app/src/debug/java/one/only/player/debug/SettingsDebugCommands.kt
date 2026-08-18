@@ -13,6 +13,7 @@ import one.only.player.core.model.ControllerAutoHidePreset
 import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.Font
+import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
@@ -193,6 +194,10 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         }
         "player.auto_pip" -> updatePlayerBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldAutoEnterPip = isEnabled)
+        }
+        "player.pip_mode" -> {
+            val mode = enumValue<PictureInPictureMode>(value.requiredString(EXTRA_VALUE))
+            preferencesRepository().updatePlayerPreferences { it.copy(pictureInPictureMode = mode) }
         }
         "player.background_play" -> updatePlayerBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldAutoPlayInBackground = isEnabled)
