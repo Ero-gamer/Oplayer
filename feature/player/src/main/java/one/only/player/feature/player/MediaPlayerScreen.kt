@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -44,11 +43,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -66,9 +63,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
@@ -105,10 +100,6 @@ import one.only.player.core.common.Logger
 import one.only.player.core.data.repository.ExternalSubtitleFontSource
 import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlaybackMark
-import one.only.player.core.model.PlayerControl
-import one.only.player.core.model.PlayerControlZone
-import one.only.player.core.model.PlayerControlsLayout
-import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.controllerAutoHideTimeoutSecondsOrNull
@@ -116,10 +107,7 @@ import one.only.player.core.ui.R as coreUiR
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.VideoFiltersPanel
 import one.only.player.core.ui.extensions.copy
-import one.only.player.feature.player.buttons.NextButton
-import one.only.player.feature.player.buttons.PlayPauseButton
 import one.only.player.feature.player.buttons.PlayerButton
-import one.only.player.feature.player.buttons.PreviousButton
 import one.only.player.feature.player.extensions.nameRes
 import one.only.player.feature.player.extensions.noRippleClickable
 import one.only.player.feature.player.extensions.seekByRequestedOffset
@@ -156,8 +144,6 @@ import one.only.player.feature.player.ui.LoopModeSelectorContent
 import one.only.player.feature.player.ui.MenuOverlayView
 import one.only.player.feature.player.ui.MenuRootContent
 import one.only.player.feature.player.ui.MenuRoute
-import one.only.player.feature.player.ui.OverlayShowView
-import one.only.player.feature.player.ui.OverlayView
 import one.only.player.feature.player.ui.PlaybackMarksContent
 import one.only.player.feature.player.ui.PlaybackSpeedSelectorContent
 import one.only.player.feature.player.ui.PlaylistContent
@@ -169,10 +155,7 @@ import one.only.player.feature.player.ui.ToggleOptionSelectorContent
 import one.only.player.feature.player.ui.VerticalProgressView
 import one.only.player.feature.player.ui.VideoContentScaleSelectorContent
 import one.only.player.feature.player.ui.controls.ControlsBottomModernView
-import one.only.player.feature.player.ui.controls.ControlsBottomView
 import one.only.player.feature.player.ui.controls.ControlsTopModernView
-import one.only.player.feature.player.ui.controls.ControlsTopView
-import one.only.player.feature.player.ui.controls.PlayerCustomizableControlButton
 import one.only.player.feature.player.ui.panel.rememberFloatingPlayerPanelState
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -196,12 +179,6 @@ val LocalPlayerIconStyle = compositionLocalOf { PlayerIconStyle.TONAL }
 
 internal data class LongPressOverlayUiState(
     val speedText: String,
-)
-
-internal data class DraggingPlayerControlUiState(
-    val control: PlayerControl,
-    val sourceBounds: Rect,
-    val dragOffset: Offset,
 )
 
 internal fun resolveLongPressOverlayUiState(
@@ -370,45 +347,13 @@ internal fun MediaPlayerScreen(
         viewModel.updatePlayerVolume(volumeState.volumePercentage)
     }
 
-    var overlayView by remember { mutableStateOf<OverlayView?>(null) }
     val floatingPanelState = rememberFloatingPlayerPanelState()
-    val isModern = playerPreferences.controlsStyle == PlayerControlsStyle.MODERN
     var menuRouteStack by remember { mutableStateOf<List<MenuRoute>>(emptyList()) }
-    var isCustomizingControls by remember { mutableStateOf(false) }
-    var customizingHiddenPlayerControls by remember { mutableStateOf(playerPreferences.hiddenPlayerControls) }
-    var customizingPlayerControlsLayout by remember { mutableStateOf(playerPreferences.playerControlsLayout) }
-    var draggingPlayerControlUiState by remember { mutableStateOf<DraggingPlayerControlUiState?>(null) }
-    var previewPlayerControlsLayout by remember { mutableStateOf<PlayerControlsLayout?>(null) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val shouldShowPlayerTitle = configuration.orientation != Configuration.ORIENTATION_PORTRAIT
     val sleepTimerState = rememberSleepTimerState(player = player)
-    val permanentlyVisibleControls = remember {
-        setOf(
-            PlayerControl.BACK,
-            PlayerControl.PREVIOUS,
-            PlayerControl.PLAY_PAUSE,
-            PlayerControl.NEXT,
-            PlayerControl.ROTATE,
-        )
-    }
-    val hiddenPlayerControls = when (isCustomizingControls) {
-        true -> customizingHiddenPlayerControls
-        false -> playerPreferences.hiddenPlayerControls
-    }
-    val playerControlsLayout = when {
-        isCustomizingControls -> previewPlayerControlsLayout ?: customizingPlayerControlsLayout
-        else -> playerPreferences.playerControlsLayout
-    }
-    val controlsByZone = remember(playerControlsLayout) {
-        PlayerControlZone.entries.associateWith(playerControlsLayout::controlsIn)
-    }
-    val topRightControls = controlsByZone.getValue(PlayerControlZone.TOP_RIGHT)
-    val bottomLeftControls = controlsByZone.getValue(PlayerControlZone.BOTTOM_LEFT)
-    val visiblePlayerControls = remember(hiddenPlayerControls) {
-        PlayerControl.entries.toSet() - hiddenPlayerControls
-    }
     var shouldShowOverlay by remember { mutableStateOf(false) }
     var shouldAttachActivityVideoOutput by remember { mutableStateOf(true) }
     var videoFiltersInitialPreferences by remember { mutableStateOf<PlayerPreferences?>(null) }
@@ -426,36 +371,14 @@ internal fun MediaPlayerScreen(
         subtitleStylePreviewPreferences = preferences
         viewModel.updateSubtitleStyle(preferences)
     }
-    fun overlayViewToMenuRoute(view: OverlayView): MenuRoute = when (view) {
-        OverlayView.AUDIO_SELECTOR -> MenuRoute.Audio
-        OverlayView.SUBTITLE_SELECTOR -> MenuRoute.Subtitle
-        OverlayView.PLAYBACK_SPEED -> MenuRoute.PlaybackSpeed
-        OverlayView.VIDEO_CONTENT_SCALE -> MenuRoute.VideoContentScale
-        OverlayView.VIDEO_FILTERS -> MenuRoute.VideoFilters
-        OverlayView.PLAYLIST -> MenuRoute.Playlist
-        OverlayView.SLEEP_TIMER -> MenuRoute.SleepTimer
-        OverlayView.DECODER_PRIORITY -> MenuRoute.Decoder
-        OverlayView.PLAYBACK_MARKS -> MenuRoute.PlaybackMarks
-        OverlayView.CHAPTERS -> MenuRoute.Chapters
-        OverlayView.LOOP_MODE -> MenuRoute.LoopMode
-        OverlayView.SHUFFLE_MODE -> MenuRoute.ShuffleMode
-        OverlayView.CONTROL_LOCK -> MenuRoute.ControlLock
-        OverlayView.MUTE -> MenuRoute.Mute
-        OverlayView.AMBIENCE_MODE -> MenuRoute.AmbienceMode
-        OverlayView.MIRROR_VIDEO -> MenuRoute.MirrorVideo
-    }
-    fun openOverlayPanel(target: OverlayView) {
+    fun openOverlayPanel(target: MenuRoute) {
         controlsVisibilityState.hideControls()
-        if (isModern) {
-            menuRouteStack = listOf(overlayViewToMenuRoute(target))
-        } else {
-            overlayView = target
-        }
+        menuRouteStack = listOf(target)
     }
     val showVideoFilters = {
         if (metadataState.isVideoEffectsAvailable) {
             videoFiltersInitialPreferences = playerPreferences
-            openOverlayPanel(OverlayView.VIDEO_FILTERS)
+            openOverlayPanel(MenuRoute.VideoFilters)
         } else {
             Toast.makeText(context, videoFiltersUnavailableMessage, Toast.LENGTH_SHORT).show()
         }
@@ -470,7 +393,6 @@ internal fun MediaPlayerScreen(
     }
     fun closeVideoFiltersOverlay() {
         restoreVideoFiltersPreview()
-        overlayView = null
         menuRouteStack = emptyList()
     }
     fun confirmVideoFilters(preferences: PlayerPreferences) {
@@ -511,10 +433,9 @@ internal fun MediaPlayerScreen(
         }
     }
     fun dismissOverlay() {
-        if (overlayView == OverlayView.VIDEO_FILTERS || menuRouteStack.contains(MenuRoute.VideoFilters)) {
+        if (menuRouteStack.contains(MenuRoute.VideoFilters)) {
             restoreVideoFiltersPreview()
         }
-        overlayView = null
         menuRouteStack = emptyList()
     }
     fun seekToPlaybackMark(mark: PlaybackMark) {
@@ -597,9 +518,7 @@ internal fun MediaPlayerScreen(
     }
     var longPressOverlayAnimationStep by remember { mutableIntStateOf(0) }
     val keyboardInteractionEnabledState = rememberUpdatedState(
-        overlayView == null &&
-            menuRouteStack.isEmpty() &&
-            !isCustomizingControls &&
+        menuRouteStack.isEmpty() &&
             !controlsVisibilityState.isControlsLocked,
     )
     val seekIncrementState = rememberUpdatedState(playerPreferences.seekIncrement.seconds.inWholeMilliseconds)
@@ -651,8 +570,6 @@ internal fun MediaPlayerScreen(
         if (!keyboardInteractionEnabledState.value) return@keyboardHandler false
         keyboardController.handleKeyEvent(event)
     }
-    val playerControlItemBounds = remember { mutableMapOf<PlayerControl, Rect>() }
-    val playerControlZoneBounds = remember { mutableMapOf<PlayerControlZone, Rect>() }
     val longPressOverlayUiState = resolveLongPressOverlayUiState(
         isLongPressGestureInAction = tapGestureState.isLongPressGestureInAction,
         isDebugLongPressOverlayVisible = playerPreferences.isDebugLongPressOverlayVisible,
@@ -660,22 +577,11 @@ internal fun MediaPlayerScreen(
         shouldShowOverlay = shouldShowOverlay,
     )
     val shouldShowControlsScrim = controlsVisibilityState.isControlsVisible &&
-        (isCustomizingControls || playerPreferences.shouldDimVideoWhenControlsVisible)
+        playerPreferences.shouldDimVideoWhenControlsVisible
 
     LaunchedEffect(playerPreferences) {
         if (subtitleStylePreviewPreferences?.hasSameSubtitleStyle(playerPreferences) == true) {
             subtitleStylePreviewPreferences = null
-        }
-    }
-
-    LaunchedEffect(
-        playerPreferences.hiddenPlayerControls,
-        playerPreferences.playerControlsLayout,
-        isCustomizingControls,
-    ) {
-        if (!isCustomizingControls) {
-            customizingHiddenPlayerControls = playerPreferences.hiddenPlayerControls - permanentlyVisibleControls
-            customizingPlayerControlsLayout = playerPreferences.playerControlsLayout
         }
     }
 
@@ -720,122 +626,6 @@ internal fun MediaPlayerScreen(
         }
     }
 
-    fun isControlVisible(control: PlayerControl): Boolean = control in permanentlyVisibleControls || isCustomizingControls || control !in hiddenPlayerControls
-
-    fun isControlSelected(control: PlayerControl): Boolean = isCustomizingControls && control !in permanentlyVisibleControls && control !in hiddenPlayerControls
-
-    fun toggleControlVisibility(control: PlayerControl) {
-        val updatedControls = hiddenPlayerControls.toMutableSet().apply {
-            if (!add(control)) remove(control)
-        }
-        if (isCustomizingControls) {
-            customizingHiddenPlayerControls = updatedControls
-            controlsVisibilityState.showControls(duration = kotlin.time.Duration.INFINITE)
-        } else {
-            controlsVisibilityState.showControls()
-            viewModel.updatePlayerControlsCustomization(
-                hiddenControls = updatedControls,
-                layout = playerPreferences.playerControlsLayout,
-            )
-        }
-    }
-
-    fun startDraggingControl(control: PlayerControl) {
-        if (!isCustomizingControls) return
-
-        val sourceBounds = playerControlItemBounds[control] ?: return
-        draggingPlayerControlUiState = DraggingPlayerControlUiState(
-            control = control,
-            sourceBounds = sourceBounds,
-            dragOffset = Offset.Zero,
-        )
-        previewPlayerControlsLayout = customizingPlayerControlsLayout
-        controlsVisibilityState.showControls(duration = kotlin.time.Duration.INFINITE)
-    }
-
-    fun moveDraggingControl(
-        control: PlayerControl,
-        dragOffset: Offset,
-    ) {
-        if (!isCustomizingControls) return
-        val draggingState = draggingPlayerControlUiState ?: return
-        if (draggingState.control != control) return
-
-        draggingPlayerControlUiState = draggingState.copy(dragOffset = dragOffset)
-        previewPlayerControlsLayout = customizingPlayerControlsLayout.previewReorder(
-            control = control,
-            dropPosition = draggingState.sourceBounds.center + dragOffset,
-            itemBounds = playerControlItemBounds,
-        )
-        controlsVisibilityState.showControls(duration = kotlin.time.Duration.INFINITE)
-    }
-
-    fun clearDraggingControl() {
-        draggingPlayerControlUiState = null
-        previewPlayerControlsLayout = null
-        controlsVisibilityState.showControls(duration = kotlin.time.Duration.INFINITE)
-    }
-
-    fun dropDraggedControl(
-        control: PlayerControl,
-        dragOffset: Offset,
-    ) {
-        if (!isCustomizingControls) return
-
-        val dropPosition = draggingPlayerControlUiState
-            ?.takeIf { it.control == control }
-            ?.sourceBounds
-            ?.center
-            ?.plus(dragOffset)
-        val updatedLayout = when (dropPosition) {
-            null -> customizingPlayerControlsLayout.dropDraggedControl(
-                control = control,
-                dragOffset = dragOffset,
-                itemBounds = playerControlItemBounds,
-                zoneBounds = playerControlZoneBounds,
-            )
-
-            else -> customizingPlayerControlsLayout.dropControl(
-                control = control,
-                dropPosition = dropPosition,
-                itemBounds = playerControlItemBounds,
-                zoneBounds = playerControlZoneBounds,
-            )
-        }
-        // 清除被拖控件的旧位置记录，避免 recomposition 时触发多余的 reflow 动画
-        playerControlItemBounds.remove(control)
-        customizingPlayerControlsLayout = updatedLayout
-        clearDraggingControl()
-        controlsVisibilityState.showControls(duration = kotlin.time.Duration.INFINITE)
-    }
-
-    fun enterControlCustomization() {
-        player.pause()
-        customizingHiddenPlayerControls = playerPreferences.hiddenPlayerControls - permanentlyVisibleControls
-        customizingPlayerControlsLayout = playerPreferences.playerControlsLayout
-        clearDraggingControl()
-        isCustomizingControls = true
-        controlsVisibilityState.showControls(duration = kotlin.time.Duration.INFINITE)
-    }
-
-    fun exitControlCustomization() {
-        clearDraggingControl()
-        isCustomizingControls = false
-        controlsVisibilityState.showControls()
-        viewModel.updatePlayerControlsCustomization(
-            hiddenControls = customizingHiddenPlayerControls,
-            layout = customizingPlayerControlsLayout,
-        )
-    }
-
-    fun cancelControlCustomization() {
-        clearDraggingControl()
-        customizingHiddenPlayerControls = playerPreferences.hiddenPlayerControls - permanentlyVisibleControls
-        customizingPlayerControlsLayout = playerPreferences.playerControlsLayout
-        isCustomizingControls = false
-        controlsVisibilityState.showControls()
-    }
-
     fun stressPanZoom(extras: android.os.Bundle?) {
         val iterations = extras?.getString("value")?.toIntOrNull()
             ?: extras?.getInt("value", 0)?.takeIf { it > 0 }
@@ -872,7 +662,6 @@ internal fun MediaPlayerScreen(
     fun markPositionFrom(extras: android.os.Bundle?): Long? = extras.longValue("position_ms") ?: extras.longValue("value")
 
     fun handleDebugPlayerAction(action: String, extras: android.os.Bundle?): Boolean {
-        if (isCustomizingControls && action != PlayerDebugCommandBridge.ACTION_TOGGLE_CUSTOMIZE_CONTROLS) return false
         when (action) {
             PlayerDebugCommandBridge.ACTION_BACK -> onBackClick()
 
@@ -886,13 +675,13 @@ internal fun MediaPlayerScreen(
 
             PlayerDebugCommandBridge.ACTION_HIDE_CONTROLS -> controlsVisibilityState.hideControls()
 
-            PlayerDebugCommandBridge.ACTION_SHOW_PLAYLIST -> openOverlayPanel(OverlayView.PLAYLIST)
+            PlayerDebugCommandBridge.ACTION_SHOW_PLAYLIST -> openOverlayPanel(MenuRoute.Playlist)
 
-            PlayerDebugCommandBridge.ACTION_SHOW_SPEED -> openOverlayPanel(OverlayView.PLAYBACK_SPEED)
+            PlayerDebugCommandBridge.ACTION_SHOW_SPEED -> openOverlayPanel(MenuRoute.PlaybackSpeed)
 
-            PlayerDebugCommandBridge.ACTION_SHOW_AUDIO -> openOverlayPanel(OverlayView.AUDIO_SELECTOR)
+            PlayerDebugCommandBridge.ACTION_SHOW_AUDIO -> openOverlayPanel(MenuRoute.Audio)
 
-            PlayerDebugCommandBridge.ACTION_SHOW_SUBTITLE -> openOverlayPanel(OverlayView.SUBTITLE_SELECTOR)
+            PlayerDebugCommandBridge.ACTION_SHOW_SUBTITLE -> openOverlayPanel(MenuRoute.Subtitle)
 
             PlayerDebugCommandBridge.ACTION_LOCK -> {
                 controlsVisibilityState.showControls()
@@ -914,9 +703,9 @@ internal fun MediaPlayerScreen(
                 controlsVisibilityState.showControls()
             }
 
-            PlayerDebugCommandBridge.ACTION_SHOW_SCALE -> openOverlayPanel(OverlayView.VIDEO_CONTENT_SCALE)
+            PlayerDebugCommandBridge.ACTION_SHOW_SCALE -> openOverlayPanel(MenuRoute.VideoContentScale)
 
-            PlayerDebugCommandBridge.ACTION_SHOW_DECODER -> openOverlayPanel(OverlayView.DECODER_PRIORITY)
+            PlayerDebugCommandBridge.ACTION_SHOW_DECODER -> openOverlayPanel(MenuRoute.Decoder)
 
             PlayerDebugCommandBridge.ACTION_SHOW_VIDEO_FILTERS -> showVideoFilters()
 
@@ -928,11 +717,11 @@ internal fun MediaPlayerScreen(
 
             PlayerDebugCommandBridge.ACTION_BACKGROUND -> onPlayInBackgroundClick()
 
-            PlayerDebugCommandBridge.ACTION_SHOW_SLEEP_TIMER -> openOverlayPanel(OverlayView.SLEEP_TIMER)
+            PlayerDebugCommandBridge.ACTION_SHOW_SLEEP_TIMER -> openOverlayPanel(MenuRoute.SleepTimer)
 
-            PlayerDebugCommandBridge.ACTION_SHOW_MARKS -> openOverlayPanel(OverlayView.PLAYBACK_MARKS)
+            PlayerDebugCommandBridge.ACTION_SHOW_MARKS -> openOverlayPanel(MenuRoute.PlaybackMarks)
 
-            PlayerDebugCommandBridge.ACTION_SHOW_CHAPTERS -> openOverlayPanel(OverlayView.CHAPTERS)
+            PlayerDebugCommandBridge.ACTION_SHOW_CHAPTERS -> openOverlayPanel(MenuRoute.Chapters)
 
             PlayerDebugCommandBridge.ACTION_CHAPTER_SWIPE_NEXT -> {
                 if (!switchChapter(ChapterSwipeDirection.NEXT)) return false
@@ -977,10 +766,8 @@ internal fun MediaPlayerScreen(
             }
 
             PlayerDebugCommandBridge.ACTION_SHOW_MENU -> {
-                if (isModern) {
-                    controlsVisibilityState.hideControls()
-                    menuRouteStack = listOf(MenuRoute.Root)
-                }
+                controlsVisibilityState.hideControls()
+                menuRouteStack = listOf(MenuRoute.Root)
             }
 
             PlayerDebugCommandBridge.ACTION_MENU_BACK -> {
@@ -991,10 +778,7 @@ internal fun MediaPlayerScreen(
                 }
             }
 
-            PlayerDebugCommandBridge.ACTION_TOGGLE_CUSTOMIZE_CONTROLS -> {
-                if (isModern) return false
-                if (isCustomizingControls) exitControlCustomization() else enterControlCustomization()
-            }
+            PlayerDebugCommandBridge.ACTION_TOGGLE_CUSTOMIZE_CONTROLS -> return false
 
             PlayerDebugCommandBridge.ACTION_STRESS_PAN_ZOOM -> {
                 stressPanZoom(extras)
@@ -1075,7 +859,6 @@ internal fun MediaPlayerScreen(
                     seekGestureState = seekGestureState,
                     videoZoomAndContentScaleState = videoZoomAndContentScaleState,
                     volumeAndBrightnessGestureState = volumeAndBrightnessGestureState,
-                    isGesturesEnabled = !isCustomizingControls,
                     subtitleConfiguration = SubtitleConfiguration(
                         shouldUseSystemCaptionStyle = activePlayerPreferences.shouldUseSystemCaptionStyle,
                         shouldShowBackground = activePlayerPreferences.shouldShowSubtitleBackground,
@@ -1108,12 +891,7 @@ internal fun MediaPlayerScreen(
                         modifier = modifier
                             .fillMaxSize()
                             .background(
-                                Color.Black.copy(
-                                    alpha = when (isCustomizingControls) {
-                                        true -> 0.75f
-                                        false -> 0.3f
-                                    },
-                                ),
+                                Color.Black.copy(alpha = 0.3f),
                             ),
                     )
                 }
@@ -1173,183 +951,14 @@ internal fun MediaPlayerScreen(
                                 enter = fadeIn(),
                                 exit = fadeOut(),
                             ) {
-                                if (isModern) {
-                                    ControlsTopModernView(
-                                        title = (metadataState.title ?: "").takeIf { shouldShowPlayerTitle }.orEmpty(),
-                                        onBackClick = { onBackClick() },
-                                        onMenuClick = {
-                                            controlsVisibilityState.hideControls()
-                                            menuRouteStack = listOf(MenuRoute.Root)
-                                        },
-                                    )
-                                } else {
-                                    ControlsTopView(
-                                        title = (metadataState.title ?: "").takeIf { shouldShowPlayerTitle }.orEmpty(),
-                                        player = player,
-                                        topRightControls = topRightControls,
-                                        controlButtonsPosition = playerPreferences.controlButtonsPosition,
-                                        visiblePlayerControls = visiblePlayerControls,
-                                        videoContentScale = videoZoomAndContentScaleState.videoContentScale,
-                                        isPipSupported = pictureInPictureState.isPipSupported,
-                                        hasChapters = chaptersState.chapters.isNotEmpty(),
-                                        isTakingScreenshot = isTakingScreenshot,
-                                        itemBounds = playerControlItemBounds,
-                                        zoneBounds = playerControlZoneBounds,
-                                        isCustomizingControls = isCustomizingControls,
-                                        shouldHideLabels = playerPreferences.shouldHidePlayerControlLabels,
-                                        draggingControl = draggingPlayerControlUiState?.control,
-                                        onControlDropDragged = ::dropDraggedControl,
-                                        onControlDragStarted = ::startDraggingControl,
-                                        onControlDragMoved = ::moveDraggingControl,
-                                        onControlDragCancelled = { clearDraggingControl() },
-                                        isBackVisible = isControlVisible(PlayerControl.BACK),
-                                        isBackSelected = isControlSelected(PlayerControl.BACK),
-                                        isBackInteractive = !isCustomizingControls,
-                                        onAudioClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.AUDIO)
-                                            } else {
-                                                openOverlayPanel(OverlayView.AUDIO_SELECTOR)
-                                            }
-                                        },
-                                        onSubtitleClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SUBTITLE)
-                                            } else {
-                                                openOverlayPanel(OverlayView.SUBTITLE_SELECTOR)
-                                            }
-                                        },
-                                        onPlaybackSpeedClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.PLAYBACK_SPEED)
-                                            } else {
-                                                openOverlayPanel(OverlayView.PLAYBACK_SPEED)
-                                            }
-                                        },
-                                        onPlaylistClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.PLAYLIST)
-                                            } else {
-                                                openOverlayPanel(OverlayView.PLAYLIST)
-                                            }
-                                        },
-                                        onBackClick = {
-                                            if (!isCustomizingControls) {
-                                                onBackClick()
-                                            }
-                                        },
-                                        onSleepTimerClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SLEEP_TIMER)
-                                            } else {
-                                                openOverlayPanel(OverlayView.SLEEP_TIMER)
-                                            }
-                                        },
-                                        onLockControlsClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.LOCK)
-                                            } else {
-                                                controlsVisibilityState.showControls()
-                                                controlsVisibilityState.lockControls()
-                                            }
-                                        },
-                                        isMuted = volumeState.isMuted,
-                                        onMuteClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.MUTE)
-                                            } else {
-                                                volumeState.toggleMute()
-                                            }
-                                        },
-                                        onPlaybackMarksClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.MARK)
-                                            } else {
-                                                openOverlayPanel(OverlayView.PLAYBACK_MARKS)
-                                            }
-                                        },
-                                        onChaptersClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.CHAPTERS)
-                                            } else {
-                                                openOverlayPanel(OverlayView.CHAPTERS)
-                                            }
-                                        },
-                                        onVideoContentScaleClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SCALE)
-                                            } else {
-                                                videoZoomAndContentScaleState.switchToNextVideoContentScale()
-                                            }
-                                        },
-                                        onVideoContentScaleLongClick = {
-                                            if (!isCustomizingControls) {
-                                                openOverlayPanel(OverlayView.VIDEO_CONTENT_SCALE)
-                                            }
-                                        },
-                                        onDecoderClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.DECODER)
-                                            } else {
-                                                openOverlayPanel(OverlayView.DECODER_PRIORITY)
-                                            }
-                                        },
-                                        onAmbienceModeClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.AMBIENCE_MODE)
-                                            } else {
-                                                toggleAmbienceMode()
-                                            }
-                                        },
-                                        isAmbienceModeEnabled = isAmbienceModeEnabled,
-                                        onVideoFiltersClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.VIDEO_FILTERS)
-                                            } else {
-                                                showVideoFilters()
-                                            }
-                                        },
-                                        onPictureInPictureClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.PIP)
-                                            } else {
-                                                enterPictureInPicture()
-                                            }
-                                        },
-                                        onRotateClick = {
-                                            rotationState.rotate()
-                                        },
-                                        onScreenshotClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SCREENSHOT)
-                                            } else {
-                                                onScreenshotClick()
-                                            }
-                                        },
-                                        onPlayInBackgroundClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.BACKGROUND_PLAY)
-                                            } else {
-                                                onPlayInBackgroundClick()
-                                            }
-                                        },
-                                        onLoopClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.LOOP)
-                                            } else {
-                                                openOverlayPanel(OverlayView.LOOP_MODE)
-                                            }
-                                        },
-                                        onShuffleClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SHUFFLE)
-                                            } else {
-                                                openOverlayPanel(OverlayView.SHUFFLE_MODE)
-                                            }
-                                        },
-                                        sleepTimerState = sleepTimerState,
-                                    )
-                                }
+                                ControlsTopModernView(
+                                    title = (metadataState.title ?: "").takeIf { shouldShowPlayerTitle }.orEmpty(),
+                                    onBackClick = { onBackClick() },
+                                    onMenuClick = {
+                                        controlsVisibilityState.hideControls()
+                                        menuRouteStack = listOf(MenuRoute.Root)
+                                    },
+                                )
                             }
                         },
                         middleView = {
@@ -1360,20 +969,6 @@ internal fun MediaPlayerScreen(
 
                                 videoZoomAndContentScaleState.shouldShowContentScaleIndicator -> InfoView(info = stringResource(videoZoomAndContentScaleState.videoContentScale.nameRes()))
 
-                                !isModern && controlsVisibilityState.isControlsVisible -> ControlsMiddleView(
-                                    player = player,
-                                    isCustomizingControls = isCustomizingControls,
-                                    isPreviousVisible = isControlVisible(PlayerControl.PREVIOUS),
-                                    isPreviousSelected = isControlSelected(PlayerControl.PREVIOUS),
-                                    isPlayPauseVisible = isControlVisible(PlayerControl.PLAY_PAUSE),
-                                    isPlayPauseSelected = isControlSelected(PlayerControl.PLAY_PAUSE),
-                                    isNextVisible = isControlVisible(PlayerControl.NEXT),
-                                    isNextSelected = isControlSelected(PlayerControl.NEXT),
-                                    onPreviousClick = { },
-                                    onPlayPauseClick = { },
-                                    onNextClick = { },
-                                )
-
                                 else -> Unit
                             }
                         },
@@ -1383,243 +978,26 @@ internal fun MediaPlayerScreen(
                                 enter = fadeIn(),
                                 exit = fadeOut(),
                             ) {
-                                if (isModern) {
-                                    ControlsBottomModernView(
-                                        mediaPresentationState = mediaPresentationState,
-                                        pendingSeekPosition = seekGestureState.pendingSeekPosition,
-                                        isPlaying = mediaPresentationState.isPlaying,
-                                        hasPrevious = player.hasPreviousMediaItem(),
-                                        hasNext = player.hasNextMediaItem(),
-                                        onPlayPauseClick = {
-                                            if (player.isPlaying) player.pause() else player.play()
-                                        },
-                                        onPreviousClick = { player.seekToPrevious() },
-                                        onNextClick = { player.seekToNext() },
-                                        onRotateClick = { rotationState.rotate() },
-                                        onPlaylistClick = { openOverlayPanel(OverlayView.PLAYLIST) },
-                                        onPlaybackSpeedClick = { openOverlayPanel(OverlayView.PLAYBACK_SPEED) },
-                                        onSeek = seekGestureState::onSeek,
-                                        onSeekEnd = seekGestureState::onSeekEnd,
-                                    )
-                                } else {
-                                    ControlsBottomView(
-                                        player = player,
-                                        mediaPresentationState = mediaPresentationState,
-                                        bottomLeftControls = bottomLeftControls,
-                                        controlButtonsPosition = playerPreferences.controlButtonsPosition,
-                                        videoContentScale = videoZoomAndContentScaleState.videoContentScale,
-                                        isPipSupported = pictureInPictureState.isPipSupported,
-                                        hasChapters = chaptersState.chapters.isNotEmpty(),
-                                        pendingSeekPosition = seekGestureState.pendingSeekPosition,
-                                        itemBounds = playerControlItemBounds,
-                                        zoneBounds = playerControlZoneBounds,
-                                        isCustomizingControls = isCustomizingControls,
-                                        shouldHideLabels = playerPreferences.shouldHidePlayerControlLabels,
-                                        draggingControl = draggingPlayerControlUiState?.control,
-                                        onControlDropDragged = ::dropDraggedControl,
-                                        onControlDragStarted = ::startDraggingControl,
-                                        onControlDragMoved = ::moveDraggingControl,
-                                        onControlDragCancelled = { clearDraggingControl() },
-                                        visiblePlayerControls = visiblePlayerControls,
-                                        onSeek = seekGestureState::onSeek,
-                                        onSeekEnd = seekGestureState::onSeekEnd,
-                                        onPlaylistClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.PLAYLIST)
-                                            } else {
-                                                openOverlayPanel(OverlayView.PLAYLIST)
-                                            }
-                                        },
-                                        onPlaybackSpeedClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.PLAYBACK_SPEED)
-                                            } else {
-                                                openOverlayPanel(OverlayView.PLAYBACK_SPEED)
-                                            }
-                                        },
-                                        onAudioClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.AUDIO)
-                                            } else {
-                                                openOverlayPanel(OverlayView.AUDIO_SELECTOR)
-                                            }
-                                        },
-                                        onSubtitleClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SUBTITLE)
-                                            } else {
-                                                openOverlayPanel(OverlayView.SUBTITLE_SELECTOR)
-                                            }
-                                        },
-                                        onRotateClick = {
-                                            rotationState.rotate()
-                                        },
-                                        onPlayInBackgroundClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.BACKGROUND_PLAY)
-                                            } else {
-                                                onPlayInBackgroundClick()
-                                            }
-                                        },
-                                        isTakingScreenshot = isTakingScreenshot,
-                                        onScreenshotClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SCREENSHOT)
-                                            } else {
-                                                onScreenshotClick()
-                                            }
-                                        },
-                                        onCustomizeControlsClick = {
-                                            if (isCustomizingControls) {
-                                                exitControlCustomization()
-                                            } else {
-                                                enterControlCustomization()
-                                            }
-                                        },
-                                        onLoopClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.LOOP)
-                                            } else {
-                                                openOverlayPanel(OverlayView.LOOP_MODE)
-                                            }
-                                        },
-                                        onShuffleClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SHUFFLE)
-                                            } else {
-                                                openOverlayPanel(OverlayView.SHUFFLE_MODE)
-                                            }
-                                        },
-                                        onSleepTimerClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SLEEP_TIMER)
-                                            } else {
-                                                openOverlayPanel(OverlayView.SLEEP_TIMER)
-                                            }
-                                        },
-                                        sleepTimerState = sleepTimerState,
-                                        onLockControlsClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.LOCK)
-                                            } else {
-                                                controlsVisibilityState.showControls()
-                                                controlsVisibilityState.lockControls()
-                                            }
-                                        },
-                                        isMuted = volumeState.isMuted,
-                                        onMuteClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.MUTE)
-                                            } else {
-                                                volumeState.toggleMute()
-                                            }
-                                        },
-                                        onPlaybackMarksClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.MARK)
-                                            } else {
-                                                openOverlayPanel(OverlayView.PLAYBACK_MARKS)
-                                            }
-                                        },
-                                        onChaptersClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.CHAPTERS)
-                                            } else {
-                                                openOverlayPanel(OverlayView.CHAPTERS)
-                                            }
-                                        },
-                                        onVideoContentScaleClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.SCALE)
-                                            } else {
-                                                videoZoomAndContentScaleState.switchToNextVideoContentScale()
-                                            }
-                                        },
-                                        onVideoContentScaleLongClick = {
-                                            if (!isCustomizingControls) {
-                                                openOverlayPanel(OverlayView.VIDEO_CONTENT_SCALE)
-                                            }
-                                        },
-                                        onDecoderClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.DECODER)
-                                            } else {
-                                                openOverlayPanel(OverlayView.DECODER_PRIORITY)
-                                            }
-                                        },
-                                        onAmbienceModeClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.AMBIENCE_MODE)
-                                            } else {
-                                                toggleAmbienceMode()
-                                            }
-                                        },
-                                        isAmbienceModeEnabled = isAmbienceModeEnabled,
-                                        onVideoFiltersClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.VIDEO_FILTERS)
-                                            } else {
-                                                showVideoFilters()
-                                            }
-                                        },
-                                        onPictureInPictureClick = {
-                                            if (isCustomizingControls) {
-                                                toggleControlVisibility(PlayerControl.PIP)
-                                            } else {
-                                                enterPictureInPicture()
-                                            }
-                                        },
-                                    )
-                                }
+                                ControlsBottomModernView(
+                                    mediaPresentationState = mediaPresentationState,
+                                    pendingSeekPosition = seekGestureState.pendingSeekPosition,
+                                    isPlaying = mediaPresentationState.isPlaying,
+                                    hasPrevious = player.hasPreviousMediaItem(),
+                                    hasNext = player.hasNextMediaItem(),
+                                    onPlayPauseClick = {
+                                        if (player.isPlaying) player.pause() else player.play()
+                                    },
+                                    onPreviousClick = { player.seekToPrevious() },
+                                    onNextClick = { player.seekToNext() },
+                                    onRotateClick = { rotationState.rotate() },
+                                    onPlaylistClick = { openOverlayPanel(MenuRoute.Playlist) },
+                                    onPlaybackSpeedClick = { openOverlayPanel(MenuRoute.PlaybackSpeed) },
+                                    onSeek = seekGestureState::onSeek,
+                                    onSeekEnd = seekGestureState::onSeekEnd,
+                                )
                             }
                         },
                     )
-
-                    draggingPlayerControlUiState?.let { draggingState ->
-                        Box(
-                            modifier = Modifier
-                                .offset {
-                                    androidx.compose.ui.unit.IntOffset(
-                                        x = (draggingState.sourceBounds.left + draggingState.dragOffset.x).toInt(),
-                                        y = (draggingState.sourceBounds.top + draggingState.dragOffset.y).toInt(),
-                                    )
-                                }
-                                .shadow(16.dp, RoundedCornerShape(16.dp)),
-                        ) {
-                            PlayerCustomizableControlButton(
-                                control = draggingState.control,
-                                player = player,
-                                videoContentScale = videoZoomAndContentScaleState.videoContentScale,
-                                isPipSupported = pictureInPictureState.isPipSupported,
-                                hasChapters = chaptersState.chapters.isNotEmpty(),
-                                isCustomizingControls = true,
-                                visiblePlayerControls = visiblePlayerControls,
-                                onPlaylistClick = { },
-                                onPlaybackSpeedClick = { },
-                                onAudioClick = { },
-                                onSubtitleClick = { },
-                                onLockControlsClick = { },
-                                isMuted = volumeState.isMuted,
-                                onMuteClick = { },
-                                onPlaybackMarksClick = { },
-                                onChaptersClick = { },
-                                onVideoContentScaleClick = { },
-                                onVideoContentScaleLongClick = { },
-                                onDecoderClick = { },
-                                onAmbienceModeClick = { },
-                                isAmbienceModeEnabled = isAmbienceModeEnabled,
-                                onVideoFiltersClick = { },
-                                onPictureInPictureClick = { },
-                                onRotateClick = { },
-                                isTakingScreenshot = isTakingScreenshot,
-                                onScreenshotClick = { },
-                                onPlayInBackgroundClick = { },
-                                onLoopClick = { },
-                                onShuffleClick = { },
-                                onSleepTimerClick = { },
-                            )
-                        }
-                    }
                 }
 
                 val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
@@ -1654,246 +1032,172 @@ internal fun MediaPlayerScreen(
                             icon = painterResource(coreUiR.drawable.ic_brightness),
                         )
                     }
-
-                    AnimatedVisibility(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(bottom = 132.dp),
-                        visible = isCustomizingControls,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            horizontalAlignment = Alignment.End,
-                        ) {
-                            FilledTonalButton(
-                                modifier = Modifier.testTag("btn_customize_controls_confirm"),
-                                onClick = ::exitControlCustomization,
-                            ) {
-                                Text(text = stringResource(coreUiR.string.done))
-                            }
-                            TextButton(
-                                modifier = Modifier.testTag("btn_customize_controls_cancel"),
-                                onClick = ::cancelControlCustomization,
-                            ) {
-                                Text(text = stringResource(coreUiR.string.cancel))
-                            }
-                        }
-                    }
                 }
             }
 
-            if (isModern) {
-                val currentRoute = menuRouteStack.lastOrNull()
-                val canGoBack = menuRouteStack.size > 1
-                if (currentRoute != null) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .noRippleClickable { dismissOverlay() },
+            val currentRoute = menuRouteStack.lastOrNull()
+            val canGoBack = menuRouteStack.size > 1
+            if (currentRoute != null) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .noRippleClickable { dismissOverlay() },
+                )
+            }
+            MenuOverlayView(
+                externalRoute = currentRoute,
+                title = titleForMenuRoute(currentRoute),
+                canGoBack = canGoBack,
+                panelState = floatingPanelState,
+                onBack = {
+                    if (canGoBack) popMenuRoute() else dismissOverlay()
+                },
+                onDismiss = ::dismissOverlay,
+            ) { route ->
+                when (route) {
+                    MenuRoute.Root -> MenuRootContent(
+                        isPipSupported = pictureInPictureState.isPipSupported,
+                        isTakingScreenshot = isTakingScreenshot,
+                        hasChapters = chaptersState.chapters.isNotEmpty(),
+                        onNavigate = ::navigateToMenuRoute,
+                        onPictureInPictureClick = {
+                            enterPictureInPicture()
+                            dismissOverlay()
+                        },
+                        onScreenshotClick = {
+                            onScreenshotClick()
+                            dismissOverlay()
+                        },
+                        onPlayInBackgroundClick = {
+                            onPlayInBackgroundClick()
+                            dismissOverlay()
+                        },
+                    )
+
+                    MenuRoute.ControlLock -> ToggleOptionSelectorContent(
+                        panelTestTag = "panel_control_lock",
+                        isEnabled = controlsVisibilityState.isControlsLocked,
+                        offTestTag = "btn_control_lock_off",
+                        onTestTag = "btn_control_lock_on",
+                        onEnabledChanged = ::setControlsLocked,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.Mute -> ToggleOptionSelectorContent(
+                        panelTestTag = "panel_mute_switch",
+                        isEnabled = volumeState.isMuted,
+                        offTestTag = "btn_mute_off",
+                        onTestTag = "btn_mute_on",
+                        onEnabledChanged = ::setMuted,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.AmbienceMode -> ToggleOptionSelectorContent(
+                        panelTestTag = "panel_ambience_mode",
+                        isEnabled = isAmbienceModeEnabled,
+                        offTestTag = "btn_ambience_mode_off",
+                        onTestTag = "btn_ambience_mode_on",
+                        onEnabledChanged = { isEnabled ->
+                            setAmbienceModeEnabled(
+                                isEnabled = isEnabled,
+                                shouldShowControls = false,
+                            )
+                        },
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.MirrorVideo -> ToggleOptionSelectorContent(
+                        panelTestTag = "panel_mirror_video",
+                        isEnabled = isVideoMirrored,
+                        offTestTag = "btn_mirror_video_off",
+                        onTestTag = "btn_mirror_video_on",
+                        onEnabledChanged = ::setVideoMirrored,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.Audio -> AudioTrackSelectorContent(
+                        player = player,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.Subtitle -> SubtitleSelectorContent(
+                        player = player,
+                        onSelectSubtitleClick = onSelectSubtitleClick,
+                        onAddOnlineSubtitleClick = onAddOnlineSubtitleClick,
+                        preferences = activePlayerPreferences,
+                        onPreferencesChange = ::updateSubtitleStyle,
+                        onEvent = viewModel::onSubtitleOptionEvent,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.PlaybackSpeed -> PlaybackSpeedSelectorContent(player = player)
+
+                    MenuRoute.VideoContentScale -> VideoContentScaleSelectorContent(
+                        videoContentScale = videoZoomAndContentScaleState.videoContentScale,
+                        isCustomZoomActive = !videoZoomAndContentScaleState.zoom.isDefaultVideoZoom(),
+                        onVideoContentScaleChanged = {
+                            videoZoomAndContentScaleState.onVideoContentScaleChanged(it)
+                        },
+                        onShowVideoFilters = null,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.VideoFilters -> VideoFiltersPanel(
+                        modifier = Modifier.fillMaxSize(),
+                        preferences = playerPreferences,
+                        onDismissRequest = ::closeVideoFiltersOverlay,
+                        onPreviewPreferences = { previewPreferences ->
+                            (player as? androidx.media3.session.MediaController)?.previewVideoFilters(previewPreferences)
+                        },
+                        onConfirmPreferences = ::confirmVideoFilters,
+                    )
+
+                    MenuRoute.Playlist -> PlaylistContent(
+                        isVisible = true,
+                        player = player,
+                    )
+
+                    MenuRoute.SleepTimer -> SleepTimerSelectorContent(
+                        sleepTimerState = sleepTimerState,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.Decoder -> DecoderPrioritySelectorContent(
+                        currentDecoderPriority = playerPreferences.decoderPriority,
+                        onDecoderPriorityClick = {
+                            viewModel.updateDecoderPriority(it)
+                            dismissOverlay()
+                        },
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.PlaybackMarks -> PlaybackMarksContent(
+                        modifier = Modifier.testTag("panel_playback_marks"),
+                        marks = playbackMarks,
+                        onAddMarkClick = ::addPlaybackMark,
+                        onMarkClick = ::seekToPlaybackMark,
+                        onDeleteMarkClick = { mark -> viewModel.deletePlaybackMark(mark.id) },
+                    )
+
+                    MenuRoute.Chapters -> ChaptersContent(
+                        modifier = Modifier.testTag("panel_chapters"),
+                        isVisible = true,
+                        chapters = chaptersState.chapters,
+                        positionMs = mediaPresentationState.position,
+                        mediaUri = chaptersState.mediaUri,
+                        onChapterClick = ::seekToChapter,
+                    )
+
+                    MenuRoute.LoopMode -> LoopModeSelectorContent(
+                        player = player,
+                        onDismiss = ::dismissOverlay,
+                    )
+
+                    MenuRoute.ShuffleMode -> ShuffleModeSelectorContent(
+                        player = player,
+                        onDismiss = ::dismissOverlay,
                     )
                 }
-                MenuOverlayView(
-                    externalRoute = currentRoute,
-                    title = titleForMenuRoute(currentRoute),
-                    canGoBack = canGoBack,
-                    panelState = floatingPanelState,
-                    onBack = {
-                        if (canGoBack) popMenuRoute() else dismissOverlay()
-                    },
-                    onDismiss = ::dismissOverlay,
-                ) { route ->
-                    when (route) {
-                        MenuRoute.Root -> MenuRootContent(
-                            isPipSupported = pictureInPictureState.isPipSupported,
-                            isTakingScreenshot = isTakingScreenshot,
-                            hasChapters = chaptersState.chapters.isNotEmpty(),
-                            onNavigate = ::navigateToMenuRoute,
-                            onPictureInPictureClick = {
-                                enterPictureInPicture()
-                                dismissOverlay()
-                            },
-                            onScreenshotClick = {
-                                onScreenshotClick()
-                                dismissOverlay()
-                            },
-                            onPlayInBackgroundClick = {
-                                onPlayInBackgroundClick()
-                                dismissOverlay()
-                            },
-                        )
-
-                        MenuRoute.ControlLock -> ToggleOptionSelectorContent(
-                            panelTestTag = "panel_control_lock",
-                            isEnabled = controlsVisibilityState.isControlsLocked,
-                            offTestTag = "btn_control_lock_off",
-                            onTestTag = "btn_control_lock_on",
-                            onEnabledChanged = ::setControlsLocked,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.Mute -> ToggleOptionSelectorContent(
-                            panelTestTag = "panel_mute_switch",
-                            isEnabled = volumeState.isMuted,
-                            offTestTag = "btn_mute_off",
-                            onTestTag = "btn_mute_on",
-                            onEnabledChanged = ::setMuted,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.AmbienceMode -> ToggleOptionSelectorContent(
-                            panelTestTag = "panel_ambience_mode",
-                            isEnabled = isAmbienceModeEnabled,
-                            offTestTag = "btn_ambience_mode_off",
-                            onTestTag = "btn_ambience_mode_on",
-                            onEnabledChanged = { isEnabled ->
-                                setAmbienceModeEnabled(
-                                    isEnabled = isEnabled,
-                                    shouldShowControls = false,
-                                )
-                            },
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.MirrorVideo -> ToggleOptionSelectorContent(
-                            panelTestTag = "panel_mirror_video",
-                            isEnabled = isVideoMirrored,
-                            offTestTag = "btn_mirror_video_off",
-                            onTestTag = "btn_mirror_video_on",
-                            onEnabledChanged = ::setVideoMirrored,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.Audio -> AudioTrackSelectorContent(
-                            player = player,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.Subtitle -> SubtitleSelectorContent(
-                            player = player,
-                            onSelectSubtitleClick = onSelectSubtitleClick,
-                            onAddOnlineSubtitleClick = onAddOnlineSubtitleClick,
-                            preferences = activePlayerPreferences,
-                            onPreferencesChange = ::updateSubtitleStyle,
-                            onEvent = viewModel::onSubtitleOptionEvent,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.PlaybackSpeed -> PlaybackSpeedSelectorContent(player = player)
-
-                        MenuRoute.VideoContentScale -> VideoContentScaleSelectorContent(
-                            videoContentScale = videoZoomAndContentScaleState.videoContentScale,
-                            isCustomZoomActive = !videoZoomAndContentScaleState.zoom.isDefaultVideoZoom(),
-                            onVideoContentScaleChanged = {
-                                videoZoomAndContentScaleState.onVideoContentScaleChanged(it)
-                            },
-                            onShowVideoFilters = null,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.VideoFilters -> VideoFiltersPanel(
-                            modifier = Modifier.fillMaxSize(),
-                            preferences = playerPreferences,
-                            onDismissRequest = ::closeVideoFiltersOverlay,
-                            onPreviewPreferences = { previewPreferences ->
-                                (player as? androidx.media3.session.MediaController)?.previewVideoFilters(previewPreferences)
-                            },
-                            onConfirmPreferences = ::confirmVideoFilters,
-                        )
-
-                        MenuRoute.Playlist -> PlaylistContent(
-                            isVisible = true,
-                            player = player,
-                        )
-
-                        MenuRoute.SleepTimer -> SleepTimerSelectorContent(
-                            sleepTimerState = sleepTimerState,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.Decoder -> DecoderPrioritySelectorContent(
-                            currentDecoderPriority = playerPreferences.decoderPriority,
-                            onDecoderPriorityClick = {
-                                viewModel.updateDecoderPriority(it)
-                                dismissOverlay()
-                            },
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.PlaybackMarks -> PlaybackMarksContent(
-                            modifier = Modifier.testTag("panel_playback_marks"),
-                            marks = playbackMarks,
-                            onAddMarkClick = ::addPlaybackMark,
-                            onMarkClick = ::seekToPlaybackMark,
-                            onDeleteMarkClick = { mark -> viewModel.deletePlaybackMark(mark.id) },
-                        )
-
-                        MenuRoute.Chapters -> ChaptersContent(
-                            modifier = Modifier.testTag("panel_chapters"),
-                            isVisible = true,
-                            chapters = chaptersState.chapters,
-                            positionMs = mediaPresentationState.position,
-                            mediaUri = chaptersState.mediaUri,
-                            onChapterClick = ::seekToChapter,
-                        )
-
-                        MenuRoute.LoopMode -> LoopModeSelectorContent(
-                            player = player,
-                            onDismiss = ::dismissOverlay,
-                        )
-
-                        MenuRoute.ShuffleMode -> ShuffleModeSelectorContent(
-                            player = player,
-                            onDismiss = ::dismissOverlay,
-                        )
-                    }
-                }
-            } else {
-                OverlayShowView(
-                    player = player,
-                    overlayView = overlayView,
-                    panelState = floatingPanelState,
-                    videoContentScale = videoZoomAndContentScaleState.videoContentScale,
-                    isCustomVideoZoomActive = !videoZoomAndContentScaleState.zoom.isDefaultVideoZoom(),
-                    playerPreferences = activePlayerPreferences,
-                    sleepTimerState = sleepTimerState,
-                    isControlLockEnabled = controlsVisibilityState.isControlsLocked,
-                    isMuted = volumeState.isMuted,
-                    isAmbienceModeEnabled = isAmbienceModeEnabled,
-                    isVideoMirrored = isVideoMirrored,
-                    onDismiss = ::dismissOverlay,
-                    onSelectSubtitleClick = onSelectSubtitleClick,
-                    onAddOnlineSubtitleClick = onAddOnlineSubtitleClick,
-                    onSubtitleOptionEvent = viewModel::onSubtitleOptionEvent,
-                    onSubtitleStyleChanged = ::updateSubtitleStyle,
-                    onVideoContentScaleChanged = { videoZoomAndContentScaleState.onVideoContentScaleChanged(it) },
-                    onPreviewVideoFilters = { previewPreferences ->
-                        (player as? androidx.media3.session.MediaController)?.previewVideoFilters(previewPreferences)
-                    },
-                    onConfirmVideoFilters = ::confirmVideoFilters,
-                    onCloseVideoFilters = ::closeVideoFiltersOverlay,
-                    onShowVideoFilters = {
-                        overlayView = null
-                        showVideoFilters()
-                    },
-                    onDecoderPriorityChanged = {
-                        viewModel.updateDecoderPriority(it)
-                        dismissOverlay()
-                    },
-                    playbackMarks = playbackMarks,
-                    onAddPlaybackMarkClick = ::addPlaybackMark,
-                    onPlaybackMarkClick = ::seekToPlaybackMark,
-                    onDeletePlaybackMarkClick = { mark -> viewModel.deletePlaybackMark(mark.id) },
-                    chapters = chaptersState.chapters,
-                    chapterPositionMs = mediaPresentationState.position,
-                    chapterMediaUri = chaptersState.mediaUri,
-                    onChapterClick = ::seekToChapter,
-                    onControlLockChanged = ::setControlsLocked,
-                    onMuteChanged = ::setMuted,
-                    onAmbienceModeChanged = { isEnabled -> setAmbienceModeEnabled(isEnabled) },
-                    onVideoMirroredChanged = ::setVideoMirrored,
-                )
             }
         }
     }
@@ -1936,8 +1240,6 @@ internal fun MediaPlayerScreen(
         when {
             menuRouteStack.size > 1 -> popMenuRoute()
             menuRouteStack.isNotEmpty() -> dismissOverlay()
-            overlayView != null -> dismissOverlay()
-            isCustomizingControls -> cancelControlCustomization()
             else -> onBackClick()
         }
     }
@@ -2622,62 +1924,6 @@ private fun LongPressSpeedArrow(alpha: Float) {
         modifier = Modifier.size(11.dp),
         tint = Color.White.copy(alpha = alpha),
     )
-}
-
-@Composable
-fun ControlsMiddleView(
-    modifier: Modifier = Modifier,
-    player: Player,
-    isCustomizingControls: Boolean = false,
-    isPreviousVisible: Boolean = true,
-    isPreviousSelected: Boolean = false,
-    isPlayPauseVisible: Boolean = true,
-    isPlayPauseSelected: Boolean = false,
-    isNextVisible: Boolean = true,
-    isNextSelected: Boolean = false,
-    onPreviousClick: () -> Unit = {},
-    onPlayPauseClick: () -> Unit = {},
-    onNextClick: () -> Unit = {},
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(40.dp, alignment = Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (isPreviousVisible) {
-            if (isCustomizingControls) {
-                PreviousButton(
-                    player = player,
-                    onClick = onPreviousClick,
-                    isInteractive = false,
-                )
-            } else {
-                PreviousButton(player = player)
-            }
-        }
-        if (isPlayPauseVisible) {
-            if (isCustomizingControls) {
-                PlayPauseButton(
-                    player = player,
-                    onClick = onPlayPauseClick,
-                    isInteractive = false,
-                )
-            } else {
-                PlayPauseButton(player = player)
-            }
-        }
-        if (isNextVisible) {
-            if (isCustomizingControls) {
-                NextButton(
-                    player = player,
-                    onClick = onNextClick,
-                    isInteractive = false,
-                )
-            } else {
-                NextButton(player = player)
-            }
-        }
-    }
 }
 
 @Composable

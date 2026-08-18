@@ -283,7 +283,6 @@ internal enum class SettingRow(
             R.string.screen_rotation,
             R.string.player_screen_orientation,
             R.string.controller_timeout,
-            R.string.player_control_labels,
             R.string.player_icon_style,
             R.string.player_icon_style_tonal,
             R.string.player_icon_style_classic,

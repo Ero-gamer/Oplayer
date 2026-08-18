@@ -11,11 +11,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import one.only.player.core.common.extensions.round
 import one.only.player.core.data.repository.PreferencesRepository
-import one.only.player.core.model.ControlButtonsPosition
 import one.only.player.core.model.ControllerAutoHidePreset
 import one.only.player.core.model.PictureInPictureMode
-import one.only.player.core.model.PlayerControl
-import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Resume
@@ -53,15 +50,11 @@ class PlayerPreferencesViewModel @Inject constructor(
             PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel -> toggleRememberBrightnessLevel()
             PlayerPreferencesUiEvent.ToggleRememberPlayerScreenOrientation -> toggleRememberPlayerScreenOrientation()
             is PlayerPreferencesUiEvent.UpdatePreferredPlayerOrientation -> updatePreferredPlayerOrientation(event.value)
-            is PlayerPreferencesUiEvent.UpdatePreferredControlButtonsPosition -> updatePreferredControlButtonsPosition(event.value)
             is PlayerPreferencesUiEvent.UpdateDefaultPlaybackSpeed -> updateDefaultPlaybackSpeed(event.value)
             is PlayerPreferencesUiEvent.UpdateControlAutoHidePreset -> updateControlAutoHidePreset(event.value)
             is PlayerPreferencesUiEvent.UpdateControlAutoHideTimeout -> updateControlAutoHideTimeout(event.value)
             is PlayerPreferencesUiEvent.UpdatePlayerIconStyle -> updatePlayerIconStyle(event.value)
-            is PlayerPreferencesUiEvent.UpdateControlsStyle -> updateControlsStyle(event.value)
             PlayerPreferencesUiEvent.ToggleDimVideoWhenControlsVisible -> toggleDimVideoWhenControlsVisible()
-            PlayerPreferencesUiEvent.TogglePlayerControlLabels -> togglePlayerControlLabels()
-            is PlayerPreferencesUiEvent.UpdateHiddenPlayerControls -> updateHiddenPlayerControls(event.value)
         }
     }
 
@@ -155,14 +148,6 @@ class PlayerPreferencesViewModel @Inject constructor(
         }
     }
 
-    private fun updatePreferredControlButtonsPosition(value: ControlButtonsPosition) {
-        viewModelScope.launch {
-            preferencesRepository.updatePlayerPreferences {
-                it.copy(controlButtonsPosition = value)
-            }
-        }
-    }
-
     private fun updateDefaultPlaybackSpeed(value: Float) {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
@@ -198,34 +183,10 @@ class PlayerPreferencesViewModel @Inject constructor(
         }
     }
 
-    private fun updateControlsStyle(value: PlayerControlsStyle) {
-        viewModelScope.launch {
-            preferencesRepository.updatePlayerPreferences {
-                it.copy(controlsStyle = value)
-            }
-        }
-    }
-
-    private fun togglePlayerControlLabels() {
-        viewModelScope.launch {
-            preferencesRepository.updatePlayerPreferences {
-                it.copy(shouldHidePlayerControlLabels = !it.shouldHidePlayerControlLabels)
-            }
-        }
-    }
-
     private fun toggleDimVideoWhenControlsVisible() {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
                 it.copy(shouldDimVideoWhenControlsVisible = !it.shouldDimVideoWhenControlsVisible)
-            }
-        }
-    }
-
-    private fun updateHiddenPlayerControls(value: Set<PlayerControl>) {
-        viewModelScope.launch {
-            preferencesRepository.updatePlayerPreferences {
-                it.copy(hiddenPlayerControls = value)
             }
         }
     }
@@ -240,9 +201,7 @@ data class PlayerPreferencesUiState(
 sealed interface PlayerPreferenceDialog {
     data object ControllerAutoHideDialog : PlayerPreferenceDialog
     data object PlayerScreenOrientationDialog : PlayerPreferenceDialog
-    data object ControlButtonsDialog : PlayerPreferenceDialog
     data object PlayerIconStyleDialog : PlayerPreferenceDialog
-    data object ControlsStyleDialog : PlayerPreferenceDialog
     data object PictureInPictureModeDialog : PlayerPreferenceDialog
 }
 
@@ -256,14 +215,10 @@ sealed interface PlayerPreferencesUiEvent {
     data object ToggleAutoBackgroundPlay : PlayerPreferencesUiEvent
     data object ToggleRememberBrightnessLevel : PlayerPreferencesUiEvent
     data object ToggleRememberPlayerScreenOrientation : PlayerPreferencesUiEvent
-    data object TogglePlayerControlLabels : PlayerPreferencesUiEvent
     data class UpdatePreferredPlayerOrientation(val value: ScreenOrientation) : PlayerPreferencesUiEvent
-    data class UpdatePreferredControlButtonsPosition(val value: ControlButtonsPosition) : PlayerPreferencesUiEvent
     data class UpdateDefaultPlaybackSpeed(val value: Float) : PlayerPreferencesUiEvent
     data class UpdateControlAutoHidePreset(val value: ControllerAutoHidePreset) : PlayerPreferencesUiEvent
     data class UpdateControlAutoHideTimeout(val value: Int) : PlayerPreferencesUiEvent
     data class UpdatePlayerIconStyle(val value: PlayerIconStyle) : PlayerPreferencesUiEvent
-    data class UpdateControlsStyle(val value: PlayerControlsStyle) : PlayerPreferencesUiEvent
-    data class UpdateHiddenPlayerControls(val value: Set<PlayerControl>) : PlayerPreferencesUiEvent
     data object ToggleDimVideoWhenControlsVisible : PlayerPreferencesUiEvent
 }

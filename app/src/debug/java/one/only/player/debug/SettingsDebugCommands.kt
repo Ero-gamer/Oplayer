@@ -8,13 +8,11 @@ import one.only.player.core.common.AppLanguageManager
 import one.only.player.core.common.AppThemeMode
 import one.only.player.core.common.AppThemeModeManager
 import one.only.player.core.model.ApplicationPreferences
-import one.only.player.core.model.ControlButtonsPosition
 import one.only.player.core.model.ControllerAutoHidePreset
 import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.Font
 import one.only.player.core.model.PictureInPictureMode
-import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Resume
@@ -175,10 +173,6 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
             val style = enumValue<PlayerIconStyle>(value.requiredString(EXTRA_VALUE))
             preferencesRepository().updatePlayerPreferences { it.copy(playerIconStyle = style) }
         }
-        "player.controls_style" -> {
-            val style = enumValue<PlayerControlsStyle>(value.requiredString(EXTRA_VALUE))
-            preferencesRepository().updatePlayerPreferences { it.copy(controlsStyle = style) }
-        }
         "player.resume" -> {
             val resume = enumValue<Resume>(value.requiredString(EXTRA_VALUE))
             preferencesRepository().updatePlayerPreferences { it.copy(resume = resume) }
@@ -204,13 +198,6 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         }
         "player.remember_brightness" -> updatePlayerBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldRememberPlayerBrightness = isEnabled)
-        }
-        "player.control_buttons_position" -> {
-            val position = enumValue<ControlButtonsPosition>(value.requiredString(EXTRA_VALUE))
-            preferencesRepository().updatePlayerPreferences { it.copy(controlButtonsPosition = position) }
-        }
-        "player.control_labels" -> updatePlayerBoolean(value) { preferences, isEnabled ->
-            preferences.copy(shouldHidePlayerControlLabels = !isEnabled)
         }
         "gesture.seek" -> updatePlayerBoolean(value) { preferences, isEnabled -> preferences.copy(shouldUseSeekControls = isEnabled) }
         "gesture.seek_sensitivity" -> updatePlayerFloat(value) { preferences, floatValue ->
@@ -387,7 +374,6 @@ internal suspend fun DebugCommandEntryPoint.toggleSetting(target: String?) {
         "player.auto_pip" -> togglePlayer { it.copy(shouldAutoEnterPip = !it.shouldAutoEnterPip) }
         "player.background_play" -> togglePlayer { it.copy(shouldAutoPlayInBackground = !it.shouldAutoPlayInBackground) }
         "player.remember_brightness" -> togglePlayer { it.copy(shouldRememberPlayerBrightness = !it.shouldRememberPlayerBrightness) }
-        "player.control_labels" -> togglePlayer { it.copy(shouldHidePlayerControlLabels = !it.shouldHidePlayerControlLabels) }
         "player.dim_video_controls" -> togglePlayer { it.copy(shouldDimVideoWhenControlsVisible = !it.shouldDimVideoWhenControlsVisible) }
         "gesture.seek" -> togglePlayer { it.copy(shouldUseSeekControls = !it.shouldUseSeekControls) }
         "gesture.brightness" -> togglePlayer { it.copy(isBrightnessSwipeGestureEnabled = !it.isBrightnessSwipeGestureEnabled) }

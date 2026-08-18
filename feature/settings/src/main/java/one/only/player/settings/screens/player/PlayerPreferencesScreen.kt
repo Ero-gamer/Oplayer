@@ -27,10 +27,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.extensions.isPipFeatureSupported
 import one.only.player.core.common.extensions.round
-import one.only.player.core.model.ControlButtonsPosition
 import one.only.player.core.model.ControllerAutoHidePreset
 import one.only.player.core.model.PictureInPictureMode
-import one.only.player.core.model.PlayerControlsStyle
 import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.ScreenOrientation
@@ -165,35 +163,11 @@ private fun PlayerPreferencesContent(
 
             PreferenceGroup {
                 ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_player_controls_style"),
-                    title = stringResource(id = R.string.player_controls_style),
-                    description = uiState.preferences.controlsStyle.name(),
-                    icon = NextIcons.Player,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControlsStyleDialog)) },
-                )
-                if (uiState.preferences.controlsStyle == PlayerControlsStyle.LEGACY) {
-                    ClickablePreferenceItem(
-                        modifier = Modifier.testTag("item_settings_player_icon_style"),
-                        title = stringResource(id = R.string.player_icon_style),
-                        description = uiState.preferences.playerIconStyle.name(),
-                        icon = NextIcons.Style,
-                        onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PlayerIconStyleDialog)) },
-                    )
-                }
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_player_control_buttons_position"),
-                    title = stringResource(id = R.string.control_buttons_alignment),
-                    description = uiState.preferences.controlButtonsPosition.name(),
-                    icon = NextIcons.ButtonsPosition,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControlButtonsDialog)) },
-                )
-                PreferenceSwitch(
-                    modifier = Modifier.testTag("switch_settings_player_control_labels"),
-                    title = stringResource(id = R.string.player_control_labels),
-                    description = stringResource(id = R.string.player_control_labels_description),
-                    icon = NextIcons.Title,
-                    isChecked = uiState.preferences.shouldHidePlayerControlLabels,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.TogglePlayerControlLabels) },
+                    modifier = Modifier.testTag("item_settings_player_icon_style"),
+                    title = stringResource(id = R.string.player_icon_style),
+                    description = uiState.preferences.playerIconStyle.name(),
+                    icon = NextIcons.Style,
+                    onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PlayerIconStyleDialog)) },
                 )
             }
 
@@ -314,25 +288,6 @@ private fun PlayerPreferencesContent(
                     }
                 }
 
-                PlayerPreferenceDialog.ControlButtonsDialog -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.control_buttons_alignment),
-                        onDismissClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(null)) },
-                    ) {
-                        items(ControlButtonsPosition.entries.toTypedArray()) {
-                            RadioTextButton(
-                                modifier = Modifier.testTag("option_settings_player_control_buttons_position_${it.name.lowercase()}"),
-                                text = it.name(),
-                                isSelected = it == uiState.preferences.controlButtonsPosition,
-                                onClick = {
-                                    onEvent(PlayerPreferencesUiEvent.UpdatePreferredControlButtonsPosition(it))
-                                    onEvent(PlayerPreferencesUiEvent.ShowDialog(null))
-                                },
-                            )
-                        }
-                    }
-                }
-
                 PlayerPreferenceDialog.PlayerIconStyleDialog -> {
                     OptionsDialog(
                         text = stringResource(id = R.string.player_icon_style),
@@ -345,25 +300,6 @@ private fun PlayerPreferencesContent(
                                 isSelected = it == uiState.preferences.playerIconStyle,
                                 onClick = {
                                     onEvent(PlayerPreferencesUiEvent.UpdatePlayerIconStyle(it))
-                                    onEvent(PlayerPreferencesUiEvent.ShowDialog(null))
-                                },
-                            )
-                        }
-                    }
-                }
-
-                PlayerPreferenceDialog.ControlsStyleDialog -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.player_controls_style),
-                        onDismissClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(null)) },
-                    ) {
-                        items(PlayerControlsStyle.entries.toTypedArray()) {
-                            RadioTextButton(
-                                modifier = Modifier.testTag("option_settings_player_controls_style_${it.name.lowercase()}"),
-                                text = it.name(),
-                                isSelected = it == uiState.preferences.controlsStyle,
-                                onClick = {
-                                    onEvent(PlayerPreferencesUiEvent.UpdateControlsStyle(it))
                                     onEvent(PlayerPreferencesUiEvent.ShowDialog(null))
                                 },
                             )
