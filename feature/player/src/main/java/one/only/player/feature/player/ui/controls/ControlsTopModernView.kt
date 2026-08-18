@@ -18,20 +18,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
+import one.only.player.feature.player.ui.MenuRoute
+import one.only.player.feature.player.ui.PlayerControlBinding
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
-fun ControlsTopModernView(
+internal fun ControlsTopModernView(
     modifier: Modifier = Modifier,
     title: String,
     onBackClick: () -> Unit,
     onMenuClick: () -> Unit,
+    topRightControls: List<PlayerControl>,
+    bindings: Map<PlayerControl, PlayerControlBinding>,
+    onOpenPanel: (MenuRoute) -> Unit,
 ) {
     val systemBarsPadding = WindowInsets.systemBars.union(WindowInsets.displayCutout).asPaddingValues()
     Row(
@@ -62,6 +68,11 @@ fun ControlsTopModernView(
             color = Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+        )
+        PlayerCornerControls(
+            controls = topRightControls,
+            bindings = bindings,
+            onOpenPanel = onOpenPanel,
         )
         MiuixIconButton(
             modifier = Modifier.testTag("btn_menu"),

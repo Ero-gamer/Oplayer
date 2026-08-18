@@ -6,7 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,13 +23,11 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -45,12 +43,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -59,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -81,10 +83,9 @@ internal object FloatingPlayerPanelDefaults {
     val MaxPortraitWidth = 560.dp
     val MaxLandscapeWidth = 400.dp
     val Elevation = 16.dp
-    val HandleWidth = 36.dp
-    val HandleHeight = 4.dp
-    val HandleHitSize = 22.dp
-    val ResizeHitSize = 28.dp
+    val HeaderTopPadding = 10.dp
+    val BackdropBlurRadius = 24.dp
+    val BackdropOverscan = 32.dp
     const val DefaultPortraitHeightFraction = 0.45f
     const val DefaultLandscapeWidthFraction = 0.45f
 }
@@ -183,17 +184,6 @@ class FloatingPlayerPanelState {
         val maxY = (layout.contentHeight - layout.height).coerceAtLeast(0).toFloat()
         intendedOffsetXPx = (intendedOffsetXPx + dragX).coerceIn(0f, maxX)
         intendedOffsetYPx = (intendedOffsetYPx + dragY).coerceIn(0f, maxY)
-    }
-
-    internal fun resizeBy(
-        dragWidth: Float,
-        dragHeight: Float,
-        layout: FloatingPanelLayout,
-    ) {
-        val baseWidth = specifiedOr(intendedWidthPx, layout.width.toFloat())
-        val baseHeight = specifiedOr(intendedHeightPx, layout.height.toFloat())
-        intendedWidthPx = (baseWidth + dragWidth).coerceIn(layout.minWidth.toFloat(), layout.maxWidth.toFloat())
-        intendedHeightPx = (baseHeight + dragHeight).coerceIn(layout.minHeight.toFloat(), layout.maxHeight.toFloat())
     }
 
     fun applyDebugCommand(command: String): Boolean {
@@ -355,6 +345,7 @@ fun BoxScope.FloatingPlayerPanel(
     modifier: Modifier = Modifier,
     testTag: String? = null,
     contentPadding: PaddingValues = PaddingValues(),
+    backdrop: ImageBitmap? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = LocalFloatingPlayerPanelOnDismiss.current,
     content: @Composable ColumnScope.() -> Unit,
@@ -395,13 +386,6 @@ fun BoxScope.FloatingPlayerPanel(
     val panelWidth = with(density) { layout.width.toDp() }
     val panelHeight = with(density) { layout.height.toDp() }
     val panelShape = RoundedCornerShape(tokens.containerCornerRadius)
-    val hasCustomOffset = panelState.intendedOffsetXPx.isSpecified() || panelState.intendedOffsetYPx.isSpecified()
-    val shouldShowResizeHandle = hasCustomOffset || !isPortrait
-    val resizeAlignment = when {
-        hasCustomOffset -> if (isRtl) Alignment.BottomStart else Alignment.BottomEnd
-        isRtl -> Alignment.CenterEnd
-        else -> Alignment.CenterStart
-    }
 
     AnimatedVisibility(
         modifier = Modifier
@@ -429,7 +413,6 @@ fun BoxScope.FloatingPlayerPanel(
                     clip = false,
                 )
                 .clip(panelShape)
-                .background(tokens.containerColor)
                 .border(1.dp, tokens.containerBorderColor, panelShape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -437,19 +420,21 @@ fun BoxScope.FloatingPlayerPanel(
                     onClick = {},
                 ),
         ) {
+            if (backdrop != null) {
+                PanelBackdropImage(
+                    image = backdrop,
+                    panelWidth = panelWidth,
+                    panelHeight = panelHeight,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(tokens.containerColor),
+            )
             MiuixTheme(colors = tokens.rememberPanelMiuixColors()) {
                 MaterialTheme(colorScheme = tokens.rememberPanelMaterialColorScheme()) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        PanelDragHandle(
-                            color = tokens.contentColor.copy(alpha = 0.28f),
-                            onDrag = { dragAmount ->
-                                if (hasCustomOffset) {
-                                    panelState.moveBy(dragAmount.x, dragAmount.y, layout)
-                                    return@PanelDragHandle
-                                }
-                                panelState.resizeBy(0f, -dragAmount.y, layout)
-                            },
-                        )
                         PanelHeader(
                             title = title,
                             titleColor = tokens.contentColor,
@@ -469,55 +454,28 @@ fun BoxScope.FloatingPlayerPanel(
                     }
                 }
             }
-            if (shouldShowResizeHandle) {
-                PanelResizeHandle(
-                    modifier = Modifier.align(resizeAlignment),
-                    color = tokens.contentColor.copy(alpha = 0.38f),
-                    onDrag = { dragAmount ->
-                        val widthDelta = when {
-                            hasCustomOffset && isRtl -> -dragAmount.x
-                            hasCustomOffset -> dragAmount.x
-                            isRtl -> dragAmount.x
-                            else -> -dragAmount.x
-                        }
-                        val heightDelta = if (hasCustomOffset) dragAmount.y else 0f
-                        panelState.resizeBy(widthDelta, heightDelta, layout)
-                    },
-                )
-            }
         }
     }
 }
 
+// 缩略视频帧铺满面板做磨砂底：外扩一圈让模糊的渐隐边缘落在面板之外
 @Composable
-private fun PanelDragHandle(
-    color: Color,
-    onDrag: (Offset) -> Unit,
+private fun PanelBackdropImage(
+    image: ImageBitmap,
+    panelWidth: Dp,
+    panelHeight: Dp,
 ) {
-    val handleDescription = stringResource(R.string.player_panel_drag)
-    val latestOnDrag = rememberUpdatedState(onDrag)
-    Box(
+    val overscan = FloatingPlayerPanelDefaults.BackdropOverscan
+    Image(
+        bitmap = image,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        filterQuality = FilterQuality.Low,
         modifier = Modifier
-            .fillMaxWidth()
-            .height(FloatingPlayerPanelDefaults.HandleHitSize)
-            .testTag("player_panel_drag_handle")
-            .semantics { contentDescription = handleDescription }
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    latestOnDrag.value(dragAmount)
-                }
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .width(FloatingPlayerPanelDefaults.HandleWidth)
-                .height(FloatingPlayerPanelDefaults.HandleHeight)
-                .clip(RoundedCornerShape(50))
-                .background(color),
-        )
-    }
+            .requiredSize(panelWidth + overscan * 2, panelHeight + overscan * 2)
+            .offset(x = -overscan, y = -overscan)
+            .blur(FloatingPlayerPanelDefaults.BackdropBlurRadius),
+    )
 }
 
 @Composable
@@ -531,7 +489,7 @@ private fun PanelHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp),
+            .padding(top = FloatingPlayerPanelDefaults.HeaderTopPadding, start = 4.dp, end = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (navigationIcon != null) {
@@ -574,59 +532,7 @@ private fun PanelHeader(
     }
 }
 
-@Composable
-private fun PanelResizeHandle(
-    modifier: Modifier,
-    color: Color,
-    onDrag: (Offset) -> Unit,
-) {
-    val resizeDescription = stringResource(R.string.player_panel_resize)
-    val latestOnDrag = rememberUpdatedState(onDrag)
-    Canvas(
-        modifier = modifier
-            .size(FloatingPlayerPanelDefaults.ResizeHitSize)
-            .testTag("player_panel_resize_handle")
-            .semantics { contentDescription = resizeDescription }
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    latestOnDrag.value(dragAmount)
-                }
-            }
-            .padding(6.dp),
-    ) {
-        val start = Offset(size.width * 0.2f, size.height)
-        val end = Offset(size.width, size.height * 0.2f)
-        drawLine(
-            color = color,
-            start = start,
-            end = Offset(size.width * 0.55f, size.height),
-            strokeWidth = 3.dp.toPx(),
-            cap = StrokeCap.Round,
-        )
-        drawLine(
-            color = color,
-            start = Offset(size.width, size.height * 0.55f),
-            end = end,
-            strokeWidth = 3.dp.toPx(),
-            cap = StrokeCap.Round,
-        )
-        drawLine(
-            color = color,
-            start = Offset(size.width * 0.45f, size.height),
-            end = Offset(size.width, size.height * 0.45f),
-            strokeWidth = 3.dp.toPx(),
-            cap = StrokeCap.Round,
-        )
-    }
-}
-
 private fun Float.isSpecified(): Boolean = !isNaN()
-
-private fun specifiedOr(
-    intended: Float,
-    fallback: Float,
-): Float = if (intended.isSpecified() && intended.isFinite()) intended else fallback
 
 private fun coercePanelDimension(
     intended: Float,

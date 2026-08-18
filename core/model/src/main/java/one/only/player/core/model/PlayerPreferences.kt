@@ -57,13 +57,9 @@ data class PlayerPreferences(
     val controllerAutoHidePreset: ControllerAutoHidePreset = ControllerAutoHidePreset.CUSTOM,
     val controllerAutoHideTimeout: Int = DEFAULT_CONTROLLER_AUTO_HIDE_TIMEOUT,
     val shouldDimVideoWhenControlsVisible: Boolean = true,
-    val controlsStyle: PlayerControlsStyle = PlayerControlsStyle.MODERN,
-    val controlButtonsPosition: ControlButtonsPosition = ControlButtonsPosition.LEFT,
-    val playerControlsLayout: PlayerControlsLayout = PlayerControlsLayout(),
-    val hiddenPlayerControls: Set<PlayerControl> = emptySet(),
+    val controlsArrangement: PlayerControlsArrangement = PlayerControlsArrangement(),
     val shouldHidePlayerButtonsBackground: Boolean = false,
     val shouldHidePlayerControlLabels: Boolean = false,
-    val playerIconStyle: PlayerIconStyle = PlayerIconStyle.TONAL,
 
     // 音频偏好
     val preferredAudioLanguage: String = "",
@@ -208,6 +204,18 @@ fun PlayerPreferences.withVideoSharpening(value: Float): PlayerPreferences {
     return copy(videoSharpening = normalizedValue)
 }
 
+fun PlayerPreferences.playerControls(slot: PlayerControlSlot): List<PlayerControl> = controlsArrangement.controlsIn(slot)
+
+fun PlayerPreferences.withControlMoved(
+    control: PlayerControl,
+    slot: PlayerControlSlot,
+): PlayerPreferences = copy(controlsArrangement = controlsArrangement.withControlMoved(control, slot))
+
+fun PlayerPreferences.withControlShifted(
+    control: PlayerControl,
+    offset: Int,
+): PlayerPreferences = copy(controlsArrangement = controlsArrangement.withControlShifted(control, offset))
+
 fun PlayerPreferences.controllerAutoHideTimeoutSecondsOrNull(): Int? = when (controllerAutoHidePreset) {
     ControllerAutoHidePreset.DISABLED -> null
     ControllerAutoHidePreset.FIFTEEN_SECONDS -> 15
@@ -216,7 +224,6 @@ fun PlayerPreferences.controllerAutoHideTimeoutSecondsOrNull(): Int? = when (con
 }
 
 @Serializable
-@Suppress("MagicNumber")
 enum class PlayerControl {
     BACK,
     PLAYLIST,
@@ -241,6 +248,7 @@ enum class PlayerControl {
     SHUFFLE,
     SLEEP_TIMER,
     ROTATE,
+    MIRROR_VIDEO,
 }
 
 @Serializable

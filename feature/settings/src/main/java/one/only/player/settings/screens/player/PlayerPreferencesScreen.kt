@@ -29,7 +29,6 @@ import one.only.player.core.common.extensions.isPipFeatureSupported
 import one.only.player.core.common.extensions.round
 import one.only.player.core.model.ControllerAutoHidePreset
 import one.only.player.core.model.PictureInPictureMode
-import one.only.player.core.model.PlayerIconStyle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.ui.R
@@ -62,6 +61,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 @Composable
 fun PlayerPreferencesScreen(
     onNavigateUp: () -> Unit,
+    onCustomizeControlsClick: () -> Unit,
     viewModel: PlayerPreferencesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,6 +70,7 @@ fun PlayerPreferencesScreen(
         uiState = uiState,
         onEvent = viewModel::onEvent,
         onNavigateUp = onNavigateUp,
+        onCustomizeControlsClick = onCustomizeControlsClick,
     )
 }
 
@@ -78,6 +79,7 @@ private fun PlayerPreferencesContent(
     uiState: PlayerPreferencesUiState,
     onEvent: (PlayerPreferencesUiEvent) -> Unit,
     onNavigateUp: () -> Unit = {},
+    onCustomizeControlsClick: () -> Unit = {},
 ) {
     val isPipFeatureSupported = LocalContext.current.isPipFeatureSupported
 
@@ -163,11 +165,11 @@ private fun PlayerPreferencesContent(
 
             PreferenceGroup {
                 ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_player_icon_style"),
-                    title = stringResource(id = R.string.player_icon_style),
-                    description = uiState.preferences.playerIconStyle.name(),
-                    icon = NextIcons.Style,
-                    onClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PlayerIconStyleDialog)) },
+                    modifier = Modifier.testTag("item_settings_player_customize_controls"),
+                    title = stringResource(id = R.string.customize_player_controls),
+                    description = stringResource(id = R.string.customize_player_controls_description),
+                    icon = NextIcons.Edit,
+                    onClick = onCustomizeControlsClick,
                 )
             }
 
@@ -281,25 +283,6 @@ private fun PlayerPreferencesContent(
                                 isSelected = it == uiState.preferences.playerScreenOrientation,
                                 onClick = {
                                     onEvent(PlayerPreferencesUiEvent.UpdatePreferredPlayerOrientation(it))
-                                    onEvent(PlayerPreferencesUiEvent.ShowDialog(null))
-                                },
-                            )
-                        }
-                    }
-                }
-
-                PlayerPreferenceDialog.PlayerIconStyleDialog -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.player_icon_style),
-                        onDismissClick = { onEvent(PlayerPreferencesUiEvent.ShowDialog(null)) },
-                    ) {
-                        items(PlayerIconStyle.entries.toTypedArray()) {
-                            RadioTextButton(
-                                modifier = Modifier.testTag("option_settings_player_icon_style_${it.name.lowercase()}"),
-                                text = it.name(),
-                                isSelected = it == uiState.preferences.playerIconStyle,
-                                onClick = {
-                                    onEvent(PlayerPreferencesUiEvent.UpdatePlayerIconStyle(it))
                                     onEvent(PlayerPreferencesUiEvent.ShowDialog(null))
                                 },
                             )

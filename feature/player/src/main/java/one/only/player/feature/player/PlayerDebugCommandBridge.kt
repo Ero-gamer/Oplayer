@@ -40,7 +40,6 @@ object PlayerDebugCommandBridge {
     const val ACTION_MARK_DELETE = "mark.delete"
     const val ACTION_SHOW_MENU = "show_menu"
     const val ACTION_MENU_BACK = "menu_back"
-    const val ACTION_TOGGLE_CUSTOMIZE_CONTROLS = "toggle_customize_controls"
     const val ACTION_STRESS_PAN_ZOOM = "stress_pan_zoom"
     const val ACTION_PANEL_RESIZE = "panel_resize"
     const val ACTION_PANEL_MOVE = "panel_move"

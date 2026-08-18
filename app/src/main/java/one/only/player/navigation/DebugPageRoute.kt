@@ -19,6 +19,7 @@ internal enum class DebugPageRoute(val id: String) {
     SETTINGS_FOLDERS("settings.folders"),
     SETTINGS_THUMBNAILS("settings.thumbnails"),
     SETTINGS_PLAYER("settings.player"),
+    SETTINGS_PLAYER_CONTROLS("settings.player_controls"),
     SETTINGS_GESTURES("settings.gestures"),
     SETTINGS_DECODER("settings.decoder"),
     SETTINGS_AUDIO("settings.audio"),

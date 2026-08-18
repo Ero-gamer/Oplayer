@@ -46,9 +46,9 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
     return remember(isDarkTheme, primary, onPrimary) {
         if (isDarkTheme) {
             PlayerPanelTokens(
-                containerColor = Color(0xE61E1E22),
+                containerColor = Color(0xB31E1E22),
                 containerCornerRadius = 28.dp,
-                containerBorderColor = Color.White.copy(alpha = 0.1f),
+                containerBorderColor = Color.White.copy(alpha = 0.16f),
                 contentColor = Color(0xFFF2F2F7),
                 secondaryContentColor = Color(0x99F2F2F7),
                 accentColor = primary,
@@ -56,7 +56,7 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
                 itemCornerRadius = 20.dp,
                 itemSpacing = 8.dp,
                 itemVerticalPadding = 14.dp,
-                itemColor = Color.White.copy(alpha = 0.1f),
+                itemColor = Color.White.copy(alpha = 0.14f),
                 itemSelectedColor = primary,
                 itemContentColor = Color(0xFFF2F2F7),
                 itemSelectedContentColor = onPrimary,
@@ -64,9 +64,9 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
             )
         } else {
             PlayerPanelTokens(
-                containerColor = Color(0xE6F2F2F7),
+                containerColor = Color(0xBFF2F2F7),
                 containerCornerRadius = 28.dp,
-                containerBorderColor = Color.White.copy(alpha = 0.5f),
+                containerBorderColor = Color.White.copy(alpha = 0.6f),
                 contentColor = Color(0xFF1C1C1E),
                 secondaryContentColor = Color(0x991C1C1E),
                 accentColor = primary,
@@ -74,7 +74,7 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
                 itemCornerRadius = 20.dp,
                 itemSpacing = 8.dp,
                 itemVerticalPadding = 14.dp,
-                itemColor = Color.White.copy(alpha = 0.72f),
+                itemColor = Color.White.copy(alpha = 0.62f),
                 itemSelectedColor = primary,
                 itemContentColor = Color(0xFF1C1C1E),
                 itemSelectedContentColor = onPrimary,

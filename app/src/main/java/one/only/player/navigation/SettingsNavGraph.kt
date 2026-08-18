@@ -25,11 +25,13 @@ import one.only.player.settings.navigation.navigateToGesturePreferences
 import one.only.player.settings.navigation.navigateToLibraries
 import one.only.player.settings.navigation.navigateToLogs
 import one.only.player.settings.navigation.navigateToMediaLibraryPreferencesScreen
+import one.only.player.settings.navigation.navigateToPlayerControlsCustomize
 import one.only.player.settings.navigation.navigateToPlayerPreferences
 import one.only.player.settings.navigation.navigateToPrivacyPreferences
 import one.only.player.settings.navigation.navigateToScanFolderPreferencesScreen
 import one.only.player.settings.navigation.navigateToSubtitlePreferences
 import one.only.player.settings.navigation.navigateToThumbnailPreferencesScreen
+import one.only.player.settings.navigation.playerControlsCustomizeScreen
 import one.only.player.settings.navigation.playerPreferencesScreen
 import one.only.player.settings.navigation.privacyPreferencesScreen
 import one.only.player.settings.navigation.scanFolderPreferencesScreen
@@ -68,6 +70,10 @@ fun NavGraphBuilder.settingsDetailNavGraph(
         onNavigateUp = navController::navigateUp,
     )
     playerPreferencesScreen(
+        onNavigateUp = navController::navigateUp,
+        onCustomizeControlsClick = navController::navigateToPlayerControlsCustomize,
+    )
+    playerControlsCustomizeScreen(
         onNavigateUp = navController::navigateUp,
     )
     gesturePreferencesScreen(

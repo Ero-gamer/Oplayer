@@ -13,10 +13,14 @@ import one.only.player.core.common.extensions.round
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ControllerAutoHidePreset
 import one.only.player.core.model.PictureInPictureMode
-import one.only.player.core.model.PlayerIconStyle
+import one.only.player.core.model.PlayerControl
+import one.only.player.core.model.PlayerControlSlot
+import one.only.player.core.model.PlayerControlsArrangement
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Resume
 import one.only.player.core.model.ScreenOrientation
+import one.only.player.core.model.withControlMoved
+import one.only.player.core.model.withControlShifted
 
 @HiltViewModel
 class PlayerPreferencesViewModel @Inject constructor(
@@ -53,8 +57,10 @@ class PlayerPreferencesViewModel @Inject constructor(
             is PlayerPreferencesUiEvent.UpdateDefaultPlaybackSpeed -> updateDefaultPlaybackSpeed(event.value)
             is PlayerPreferencesUiEvent.UpdateControlAutoHidePreset -> updateControlAutoHidePreset(event.value)
             is PlayerPreferencesUiEvent.UpdateControlAutoHideTimeout -> updateControlAutoHideTimeout(event.value)
-            is PlayerPreferencesUiEvent.UpdatePlayerIconStyle -> updatePlayerIconStyle(event.value)
             PlayerPreferencesUiEvent.ToggleDimVideoWhenControlsVisible -> toggleDimVideoWhenControlsVisible()
+            is PlayerPreferencesUiEvent.MoveControl -> moveControl(event.control, event.slot)
+            is PlayerPreferencesUiEvent.ShiftControl -> shiftControl(event.control, event.offset)
+            PlayerPreferencesUiEvent.ResetControlsArrangement -> resetControlsArrangement()
         }
     }
 
@@ -175,10 +181,32 @@ class PlayerPreferencesViewModel @Inject constructor(
         }
     }
 
-    private fun updatePlayerIconStyle(value: PlayerIconStyle) {
+    private fun moveControl(
+        control: PlayerControl,
+        slot: PlayerControlSlot,
+    ) {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
-                it.copy(playerIconStyle = value)
+                it.withControlMoved(control, slot)
+            }
+        }
+    }
+
+    private fun shiftControl(
+        control: PlayerControl,
+        offset: Int,
+    ) {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.withControlShifted(control, offset)
+            }
+        }
+    }
+
+    private fun resetControlsArrangement() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(controlsArrangement = PlayerControlsArrangement())
             }
         }
     }
@@ -201,7 +229,6 @@ data class PlayerPreferencesUiState(
 sealed interface PlayerPreferenceDialog {
     data object ControllerAutoHideDialog : PlayerPreferenceDialog
     data object PlayerScreenOrientationDialog : PlayerPreferenceDialog
-    data object PlayerIconStyleDialog : PlayerPreferenceDialog
     data object PictureInPictureModeDialog : PlayerPreferenceDialog
 }
 
@@ -219,6 +246,10 @@ sealed interface PlayerPreferencesUiEvent {
     data class UpdateDefaultPlaybackSpeed(val value: Float) : PlayerPreferencesUiEvent
     data class UpdateControlAutoHidePreset(val value: ControllerAutoHidePreset) : PlayerPreferencesUiEvent
     data class UpdateControlAutoHideTimeout(val value: Int) : PlayerPreferencesUiEvent
-    data class UpdatePlayerIconStyle(val value: PlayerIconStyle) : PlayerPreferencesUiEvent
     data object ToggleDimVideoWhenControlsVisible : PlayerPreferencesUiEvent
+    data class MoveControl(val control: PlayerControl, val slot: PlayerControlSlot) : PlayerPreferencesUiEvent
+
+    // offset 为 -1 上移、1 下移
+    data class ShiftControl(val control: PlayerControl, val offset: Int) : PlayerPreferencesUiEvent
+    data object ResetControlsArrangement : PlayerPreferencesUiEvent
 }

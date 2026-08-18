@@ -32,8 +32,6 @@ import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.LastPlayerScreenOrientation
 import one.only.player.core.model.LoopMode
 import one.only.player.core.model.PlaybackMark
-import one.only.player.core.model.PlayerControl
-import one.only.player.core.model.PlayerControlsLayout
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Video
 import one.only.player.core.model.VideoContentScale
@@ -276,20 +274,6 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences {
                 it.withSubtitleStyleFrom(preferences)
-            }
-        }
-    }
-
-    fun updatePlayerControlsCustomization(
-        hiddenControls: Set<PlayerControl>,
-        layout: PlayerControlsLayout,
-    ) {
-        viewModelScope.launch {
-            preferencesRepository.updatePlayerPreferences {
-                it.copy(
-                    hiddenPlayerControls = hiddenControls,
-                    playerControlsLayout = layout,
-                )
             }
         }
     }

@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Rect as AndroidRect
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
@@ -65,6 +66,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -100,9 +102,10 @@ import one.only.player.core.common.Logger
 import one.only.player.core.data.repository.ExternalSubtitleFontSource
 import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlaybackMark
-import one.only.player.core.model.PlayerIconStyle
+import one.only.player.core.model.PlayerControlSlot
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.controllerAutoHideTimeoutSecondsOrNull
+import one.only.player.core.model.playerControls
 import one.only.player.core.ui.R as coreUiR
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.VideoFiltersPanel
@@ -157,6 +160,7 @@ import one.only.player.feature.player.ui.VideoContentScaleSelectorContent
 import one.only.player.feature.player.ui.controls.ControlsBottomModernView
 import one.only.player.feature.player.ui.controls.ControlsTopModernView
 import one.only.player.feature.player.ui.panel.rememberFloatingPlayerPanelState
+import one.only.player.feature.player.ui.playerControlBindings
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
@@ -173,9 +177,9 @@ private const val AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA = 6f
 private const val AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA = 18f
 private const val AMBIENCE_VISIBLE_ALPHA_THRESHOLD = 16
 private const val CHAPTER_SWITCH_FEEDBACK_DURATION_MS = 1_400L
+private const val PANEL_BACKDROP_CAPTURE_INTERVAL_MS = 500L
 
 val LocalControlsVisibilityState = compositionLocalOf<ControlsVisibilityState?> { null }
-val LocalPlayerIconStyle = compositionLocalOf { PlayerIconStyle.TONAL }
 
 internal data class LongPressOverlayUiState(
     val speedText: String,
@@ -516,6 +520,16 @@ internal fun MediaPlayerScreen(
         }
         menuRouteStack = menuRouteStack + target
     }
+
+    val controlBindings = playerControlBindings(
+        isPipSupported = pictureInPictureState.isPipSupported,
+        isTakingScreenshot = isTakingScreenshot,
+        hasChapters = chaptersState.chapters.isNotEmpty(),
+        onRotate = { rotationState.rotate() },
+        onPictureInPicture = ::enterPictureInPicture,
+        onScreenshot = onScreenshotClick,
+        onPlayInBackground = onPlayInBackgroundClick,
+    )
     var longPressOverlayAnimationStep by remember { mutableIntStateOf(0) }
     val keyboardInteractionEnabledState = rememberUpdatedState(
         menuRouteStack.isEmpty() &&
@@ -778,8 +792,6 @@ internal fun MediaPlayerScreen(
                 }
             }
 
-            PlayerDebugCommandBridge.ACTION_TOGGLE_CUSTOMIZE_CONTROLS -> return false
-
             PlayerDebugCommandBridge.ACTION_STRESS_PAN_ZOOM -> {
                 stressPanZoom(extras)
             }
@@ -813,7 +825,6 @@ internal fun MediaPlayerScreen(
 
     CompositionLocalProvider(
         LocalControlsVisibilityState provides controlsVisibilityState,
-        LocalPlayerIconStyle provides playerPreferences.playerIconStyle,
     ) {
         Box {
             Box(
@@ -958,6 +969,9 @@ internal fun MediaPlayerScreen(
                                         controlsVisibilityState.hideControls()
                                         menuRouteStack = listOf(MenuRoute.Root)
                                     },
+                                    topRightControls = playerPreferences.playerControls(PlayerControlSlot.TOP_RIGHT),
+                                    bindings = controlBindings,
+                                    onOpenPanel = ::openOverlayPanel,
                                 )
                             }
                         },
@@ -989,9 +1003,9 @@ internal fun MediaPlayerScreen(
                                     },
                                     onPreviousClick = { player.seekToPrevious() },
                                     onNextClick = { player.seekToNext() },
-                                    onRotateClick = { rotationState.rotate() },
-                                    onPlaylistClick = { openOverlayPanel(MenuRoute.Playlist) },
-                                    onPlaybackSpeedClick = { openOverlayPanel(MenuRoute.PlaybackSpeed) },
+                                    bottomRightControls = playerPreferences.playerControls(PlayerControlSlot.BOTTOM_RIGHT),
+                                    bindings = controlBindings,
+                                    onOpenPanel = ::openOverlayPanel,
                                     onSeek = seekGestureState::onSeek,
                                     onSeekEnd = seekGestureState::onSeekEnd,
                                 )
@@ -1037,6 +1051,10 @@ internal fun MediaPlayerScreen(
 
             val currentRoute = menuRouteStack.lastOrNull()
             val canGoBack = menuRouteStack.size > 1
+            val panelBackdrop = rememberPanelBackdrop(
+                isEnabled = currentRoute != null,
+                videoViewRect = pictureInPictureState.videoViewRect,
+            )
             if (currentRoute != null) {
                 Box(
                     modifier = Modifier
@@ -1049,6 +1067,7 @@ internal fun MediaPlayerScreen(
                 title = titleForMenuRoute(currentRoute),
                 canGoBack = canGoBack,
                 panelState = floatingPanelState,
+                backdrop = panelBackdrop,
                 onBack = {
                     if (canGoBack) popMenuRoute() else dismissOverlay()
                 },
@@ -1056,22 +1075,10 @@ internal fun MediaPlayerScreen(
             ) { route ->
                 when (route) {
                     MenuRoute.Root -> MenuRootContent(
-                        isPipSupported = pictureInPictureState.isPipSupported,
-                        isTakingScreenshot = isTakingScreenshot,
-                        hasChapters = chaptersState.chapters.isNotEmpty(),
+                        menuControls = playerPreferences.playerControls(PlayerControlSlot.MENU),
+                        bindings = controlBindings,
                         onNavigate = ::navigateToMenuRoute,
-                        onPictureInPictureClick = {
-                            enterPictureInPicture()
-                            dismissOverlay()
-                        },
-                        onScreenshotClick = {
-                            onScreenshotClick()
-                            dismissOverlay()
-                        },
-                        onPlayInBackgroundClick = {
-                            onPlayInBackgroundClick()
-                            dismissOverlay()
-                        },
+                        onDismiss = ::dismissOverlay,
                     )
 
                     MenuRoute.ControlLock -> ToggleOptionSelectorContent(
@@ -1740,6 +1747,44 @@ private fun View.findPlayerVideoRenderView(): View? {
         viewGroup.getChildAt(index).findPlayerVideoRenderView()?.let { return it }
     }
     return null
+}
+
+// 浮动面板半透明，靠面板内对位绘制的模糊视频帧做出磨砂玻璃；SurfaceView 无法被 Compose 直接采样，只能抓帧
+// Modifier.blur 需要 Android 12，低版本直接不供图，避免面板里出现清晰的视频副本
+@Composable
+private fun rememberPanelBackdrop(
+    isEnabled: Boolean,
+    videoViewRect: AndroidRect?,
+): ImageBitmap? {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
+
+    val context = LocalContext.current
+    val rootView = LocalView.current.rootView
+    val window = remember(context) { context.findActivity()?.window }
+    val captureRect = remember(videoViewRect, rootView.width, rootView.height) {
+        videoViewRect?.coerceToWindowBounds(rootView)
+    }
+    var frameBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    LaunchedEffect(isEnabled, captureRect, window) {
+        if (!isEnabled || captureRect == null) {
+            frameBitmap = null
+            return@LaunchedEffect
+        }
+        while (true) {
+            when (val result = capturePlayerFrame(rootView, window, captureRect)) {
+                is AmbienceFrameCaptureResult.Success -> frameBitmap = result.bitmap
+                is AmbienceFrameCaptureResult.Failure -> Logger.info(
+                    TAG,
+                    "Panel backdrop capture skipped reason=${result.reason} source=${result.sourceDebug}",
+                )
+            }
+            delay(PANEL_BACKDROP_CAPTURE_INTERVAL_MS)
+        }
+    }
+
+    val bitmap = frameBitmap ?: return null
+    return remember(bitmap) { bitmap.asImageBitmap() }
 }
 
 private fun View.canCaptureAmbienceFrame(): Boolean = isAttachedToWindow && isShown && width > 0 && height > 0

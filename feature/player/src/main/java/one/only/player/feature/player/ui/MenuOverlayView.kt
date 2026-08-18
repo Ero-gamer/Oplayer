@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import one.only.player.core.ui.R
@@ -47,6 +48,7 @@ fun BoxScope.MenuOverlayView(
     onBack: () -> Unit,
     onDismiss: () -> Unit = {},
     panelState: FloatingPlayerPanelState = rememberFloatingPlayerPanelState(),
+    backdrop: ImageBitmap? = null,
     content: @Composable (MenuRoute) -> Unit,
 ) {
     val tokens = rememberPlayerPanelTokens()
@@ -55,6 +57,7 @@ fun BoxScope.MenuOverlayView(
         title = title,
         panelState = panelState,
         testTag = "panel_player_menu",
+        backdrop = backdrop,
         onDismiss = onDismiss,
         navigationIcon = if (canGoBack) {
             {

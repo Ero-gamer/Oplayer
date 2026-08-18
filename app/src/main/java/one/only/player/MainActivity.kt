@@ -96,6 +96,7 @@ import one.only.player.settings.navigation.navigateToGesturePreferences
 import one.only.player.settings.navigation.navigateToLibraries
 import one.only.player.settings.navigation.navigateToLogs
 import one.only.player.settings.navigation.navigateToMediaLibraryPreferencesScreen
+import one.only.player.settings.navigation.navigateToPlayerControlsCustomize
 import one.only.player.settings.navigation.navigateToPlayerPreferences
 import one.only.player.settings.navigation.navigateToPrivacyPreferences
 import one.only.player.settings.navigation.navigateToSubtitlePreferences
@@ -278,6 +279,10 @@ class MainActivity : AppCompatActivity() {
             DebugPageRoute.SETTINGS_PLAYER -> {
                 rootNavigationState.jumpTo(RootDestination.SETTINGS)
                 navController.navigateToPlayerPreferences()
+            }
+            DebugPageRoute.SETTINGS_PLAYER_CONTROLS -> {
+                rootNavigationState.jumpTo(RootDestination.SETTINGS)
+                navController.navigateToPlayerControlsCustomize()
             }
             DebugPageRoute.SETTINGS_GESTURES -> {
                 rootNavigationState.jumpTo(RootDestination.SETTINGS)

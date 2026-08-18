@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.milliseconds
+import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.feature.player.LocalControlsVisibilityState
@@ -44,13 +45,15 @@ import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.extensions.noRippleClickable
 import one.only.player.feature.player.state.MediaPresentationState
 import one.only.player.feature.player.state.durationFormatted
+import one.only.player.feature.player.ui.MenuRoute
+import one.only.player.feature.player.ui.PlayerControlBinding
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
-fun ControlsBottomModernView(
+internal fun ControlsBottomModernView(
     modifier: Modifier = Modifier,
     mediaPresentationState: MediaPresentationState,
     pendingSeekPosition: Long?,
@@ -60,9 +63,9 @@ fun ControlsBottomModernView(
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
-    onRotateClick: () -> Unit,
-    onPlaylistClick: () -> Unit,
-    onPlaybackSpeedClick: () -> Unit,
+    bottomRightControls: List<PlayerControl>,
+    bindings: Map<PlayerControl, PlayerControlBinding>,
+    onOpenPanel: (MenuRoute) -> Unit,
     onSeek: (Long) -> Unit,
     onSeekEnd: () -> Unit,
 ) {
@@ -157,39 +160,11 @@ fun ControlsBottomModernView(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            MiuixIconButton(
-                modifier = Modifier.testTag("btn_rotate_modern"),
-                onClick = onRotateClick,
-            ) {
-                MiuixIcon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = NextIcons.Rotation,
-                    contentDescription = stringResource(R.string.screen_rotation),
-                    tint = Color.White,
-                )
-            }
-            MiuixIconButton(
-                modifier = Modifier.testTag("btn_playlist_modern"),
-                onClick = onPlaylistClick,
-            ) {
-                MiuixIcon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = NextIcons.PlaylistPlay,
-                    contentDescription = stringResource(R.string.now_playing),
-                    tint = Color.White,
-                )
-            }
-            MiuixIconButton(
-                modifier = Modifier.testTag("btn_speed_modern"),
-                onClick = onPlaybackSpeedClick,
-            ) {
-                MiuixIcon(
-                    modifier = Modifier.size(24.dp),
-                    imageVector = NextIcons.Speed,
-                    contentDescription = stringResource(R.string.select_playback_speed),
-                    tint = Color.White,
-                )
-            }
+            PlayerCornerControls(
+                controls = bottomRightControls,
+                bindings = bindings,
+                onOpenPanel = onOpenPanel,
+            )
         }
     }
 }

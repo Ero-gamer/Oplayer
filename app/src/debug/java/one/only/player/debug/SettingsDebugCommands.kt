@@ -13,7 +13,9 @@ import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.Font
 import one.only.player.core.model.PictureInPictureMode
-import one.only.player.core.model.PlayerIconStyle
+import one.only.player.core.model.PlayerControl
+import one.only.player.core.model.PlayerControlSlot
+import one.only.player.core.model.PlayerControlsArrangement
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Resume
 import one.only.player.core.model.ScreenOrientation
@@ -23,6 +25,7 @@ import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
 import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.model.ThumbnailGenerationStrategy
+import one.only.player.core.model.withControlMoved
 import one.only.player.core.model.withVideoFilterAdjustment
 import one.only.player.core.model.withVideoSharpening
 import one.only.player.core.model.withVideoSharpeningFilterEnabled
@@ -169,10 +172,6 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         "player.remember_orientation" -> updatePlayerBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldRememberPlayerScreenOrientation = isEnabled, lastPlayerScreenOrientation = null)
         }
-        "player.icon_style" -> {
-            val style = enumValue<PlayerIconStyle>(value.requiredString(EXTRA_VALUE))
-            preferencesRepository().updatePlayerPreferences { it.copy(playerIconStyle = style) }
-        }
         "player.resume" -> {
             val resume = enumValue<Resume>(value.requiredString(EXTRA_VALUE))
             preferencesRepository().updatePlayerPreferences { it.copy(resume = resume) }
@@ -192,6 +191,11 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         "player.pip_mode" -> {
             val mode = enumValue<PictureInPictureMode>(value.requiredString(EXTRA_VALUE))
             preferencesRepository().updatePlayerPreferences { it.copy(pictureInPictureMode = mode) }
+        }
+        "player.control_slot" -> {
+            val control = enumValue<PlayerControl>(value.requiredString(EXTRA_NAME))
+            val slot = enumValue<PlayerControlSlot>(value.requiredString(EXTRA_VALUE))
+            preferencesRepository().updatePlayerPreferences { it.withControlMoved(control, slot) }
         }
         "player.background_play" -> updatePlayerBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldAutoPlayInBackground = isEnabled)
@@ -444,6 +448,9 @@ internal suspend fun DebugCommandEntryPoint.runSettingAction(
         "subtitle.clear_external_font" -> subtitleFontRepository().clearFont()
         "media.layout_scale_reset" -> preferencesRepository().updateApplicationPreferences {
             it.withMediaLayoutScale(ApplicationPreferences.DEFAULT_MEDIA_LAYOUT_SCALE)
+        }
+        "player.reset_controls" -> preferencesRepository().updatePlayerPreferences {
+            it.copy(controlsArrangement = PlayerControlsArrangement())
         }
         else -> error("Unknown action target: $target")
     }
