@@ -23,10 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import one.only.player.core.model.MAX_CORNER_CONTROLS
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.model.PlayerControlSlot
-import one.only.player.core.model.canAccept
 import one.only.player.core.model.controlsIn
 import one.only.player.core.model.slotOf
 import one.only.player.core.ui.R
@@ -150,15 +148,11 @@ fun PlayerControlsCustomizeScreen(
         is CustomizeDialog.SlotPicker -> {
             val control = dialog.control
             val selectedSlot = arrangement.slotOf(control)
-            // 已满的角落不列出，避免选了不生效
-            val availableSlots = PlayerControlSlot.entries.filter { slot ->
-                slot == selectedSlot || arrangement.canAccept(slot)
-            }
             OptionsDialog(
                 text = control.label(),
                 onDismissClick = { activeDialog = null },
             ) {
-                items(availableSlots) { slot ->
+                items(PlayerControlSlot.entries) { slot ->
                     RadioTextButton(
                         modifier = Modifier.testTag(
                             "option_settings_customize_slot_${control.id}_${slot.name.lowercase()}",
@@ -303,8 +297,8 @@ private fun ShiftButton(
 
 @Composable
 private fun PlayerControlSlot.sectionTitle(count: Int): String = when (this) {
-    PlayerControlSlot.TOP_RIGHT -> "${stringResource(R.string.customize_controls_top_right)}  $count/$MAX_CORNER_CONTROLS"
-    PlayerControlSlot.BOTTOM_RIGHT -> "${stringResource(R.string.customize_controls_bottom_right)}  $count/$MAX_CORNER_CONTROLS"
+    PlayerControlSlot.TOP_RIGHT -> "${stringResource(R.string.customize_controls_top_right)}  $count"
+    PlayerControlSlot.BOTTOM_RIGHT -> "${stringResource(R.string.customize_controls_bottom_right)}  $count"
     PlayerControlSlot.MENU -> "${stringResource(R.string.customize_controls_menu)}  $count"
     PlayerControlSlot.HIDDEN -> "${stringResource(R.string.customize_controls_hidden)}  $count"
 }

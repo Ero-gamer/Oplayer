@@ -37,6 +37,7 @@ internal fun ControlsTopModernView(
     onMenuClick: () -> Unit,
     topRightControls: List<PlayerControl>,
     bindings: Map<PlayerControl, PlayerControlBinding>,
+    maxVisibleControls: Int,
     onOpenPanel: (MenuRoute) -> Unit,
 ) {
     val systemBarsPadding = WindowInsets.systemBars.union(WindowInsets.displayCutout).asPaddingValues()
@@ -72,6 +73,7 @@ internal fun ControlsTopModernView(
         PlayerCornerControls(
             controls = topRightControls,
             bindings = bindings,
+            maxVisibleControls = maxVisibleControls,
             onOpenPanel = onOpenPanel,
         )
         MiuixIconButton(

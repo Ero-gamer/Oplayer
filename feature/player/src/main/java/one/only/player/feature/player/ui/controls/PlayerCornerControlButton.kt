@@ -1,12 +1,19 @@
 package one.only.player.feature.player.ui.controls
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import kotlin.time.Duration
 import one.only.player.core.model.PlayerControl
+import one.only.player.feature.player.LocalControlsVisibilityState
 import one.only.player.feature.player.ui.MenuRoute
 import one.only.player.feature.player.ui.PlayerControlAction
 import one.only.player.feature.player.ui.PlayerControlBinding
@@ -19,18 +26,38 @@ import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 internal fun PlayerCornerControls(
     controls: List<PlayerControl>,
     bindings: Map<PlayerControl, PlayerControlBinding>,
+    maxVisibleControls: Int,
     onOpenPanel: (MenuRoute) -> Unit,
 ) {
-    bindings.resolve(controls).forEach { binding ->
-        PlayerCornerControlButton(
-            binding = binding,
-            onClick = {
-                when (val action = binding.action) {
-                    is PlayerControlAction.OpenPanel -> onOpenPanel(action.route)
-                    is PlayerControlAction.Execute -> action.onExecute()
-                }
-            },
-        )
+    val resolvedBindings = bindings.resolve(controls)
+    if (resolvedBindings.isEmpty()) return
+
+    val scrollState = rememberScrollState()
+    val controlsVisibilityState = LocalControlsVisibilityState.current
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            controlsVisibilityState?.showControls(duration = Duration.INFINITE)
+        } else {
+            controlsVisibilityState?.showControls()
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .widthIn(max = PlayerCornerControlSize * maxVisibleControls)
+            .horizontalScroll(scrollState),
+    ) {
+        resolvedBindings.forEach { binding ->
+            PlayerCornerControlButton(
+                binding = binding,
+                onClick = {
+                    when (val action = binding.action) {
+                        is PlayerControlAction.OpenPanel -> onOpenPanel(action.route)
+                        is PlayerControlAction.Execute -> action.onExecute()
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -40,7 +67,9 @@ internal fun PlayerCornerControlButton(
     onClick: () -> Unit,
 ) {
     MiuixIconButton(
-        modifier = Modifier.testTag(binding.cornerTestTag),
+        modifier = Modifier
+            .size(PlayerCornerControlSize)
+            .testTag(binding.cornerTestTag),
         onClick = onClick,
         enabled = binding.isEnabled,
     ) {
@@ -52,3 +81,5 @@ internal fun PlayerCornerControlButton(
         )
     }
 }
+
+private val PlayerCornerControlSize = 40.dp

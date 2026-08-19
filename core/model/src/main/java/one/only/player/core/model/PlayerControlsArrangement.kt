@@ -11,9 +11,6 @@ enum class PlayerControlSlot {
     HIDDEN,
 }
 
-// 角落每边的容量上限：竖屏顶栏还要放标题，底栏还要放时间，再多就挤掉了
-const val MAX_CORNER_CONTROLS = 3
-
 private val DefaultBottomRightControls = listOf(
     PlayerControl.ROTATE,
     PlayerControl.PLAYLIST,
@@ -73,19 +70,12 @@ fun PlayerControlsArrangement.slotOf(control: PlayerControl): PlayerControlSlot 
     else -> PlayerControlSlot.MENU
 }
 
-fun PlayerControlsArrangement.canAccept(slot: PlayerControlSlot): Boolean = when (slot) {
-    PlayerControlSlot.TOP_RIGHT -> topRight.size < MAX_CORNER_CONTROLS
-    PlayerControlSlot.BOTTOM_RIGHT -> bottomRight.size < MAX_CORNER_CONTROLS
-    PlayerControlSlot.MENU, PlayerControlSlot.HIDDEN -> true
-}
-
 fun PlayerControlsArrangement.withControlMoved(
     control: PlayerControl,
     slot: PlayerControlSlot,
 ): PlayerControlsArrangement {
     if (control !in ArrangeablePlayerControls) return this
     if (slotOf(control) == slot) return this
-    if (!canAccept(slot)) return this
 
     val detached = copy(
         topRight = topRight - control,

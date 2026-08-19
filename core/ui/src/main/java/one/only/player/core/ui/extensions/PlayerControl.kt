@@ -72,3 +72,21 @@ fun PlayerControl.icon(): ImageVector = when (this) {
     PlayerControl.MIRROR_VIDEO -> NextIcons.Size
     PlayerControl.VIDEO_INFO -> NextIcons.Info
 }
+
+data class PlayerCornerControlsCapacity(
+    val topRight: Int,
+    val bottomRight: Int,
+)
+
+// 角落控件可无限编排，容量只决定各方向一次最多显示多少个。
+fun playerCornerControlsCapacity(isPortrait: Boolean): PlayerCornerControlsCapacity = if (isPortrait) {
+    PlayerCornerControlsCapacity(
+        topRight = 5,
+        bottomRight = 3,
+    )
+} else {
+    PlayerCornerControlsCapacity(
+        topRight = 9,
+        bottomRight = 6,
+    )
+}

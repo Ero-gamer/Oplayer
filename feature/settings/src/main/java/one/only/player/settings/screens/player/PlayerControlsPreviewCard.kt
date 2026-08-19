@@ -1,6 +1,7 @@
 package one.only.player.settings.screens.player
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -33,6 +35,7 @@ import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.icon
 import one.only.player.core.ui.extensions.id
 import one.only.player.core.ui.extensions.label
+import one.only.player.core.ui.extensions.playerCornerControlsCapacity
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -75,7 +78,13 @@ internal fun PlayerControlsPreviewCard(
                 ControlsPreviewLayout.PORTRAIT,
                 ControlsPreviewLayout.LANDSCAPE,
                 -> {
-                    CustomizePreviewTopBar(topRightControls = topRightControls)
+                    val capacity = playerCornerControlsCapacity(
+                        isPortrait = layout == ControlsPreviewLayout.PORTRAIT,
+                    )
+                    CustomizePreviewTopBar(
+                        topRightControls = topRightControls,
+                        maxVisibleControls = capacity.topRight,
+                    )
                     Spacer(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -88,7 +97,10 @@ internal fun PlayerControlsPreviewCard(
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.18f)),
                     )
-                    CustomizePreviewBottomBar(bottomRightControls = bottomRightControls)
+                    CustomizePreviewBottomBar(
+                        bottomRightControls = bottomRightControls,
+                        maxVisibleControls = capacity.bottomRight,
+                    )
                 }
 
                 ControlsPreviewLayout.MENU -> CustomizePreviewMenu(menuControls = menuControls)
@@ -111,7 +123,10 @@ internal fun ControlsPreviewLayout.label(): String = when (this) {
 }
 
 @Composable
-private fun CustomizePreviewTopBar(topRightControls: List<PlayerControl>) {
+private fun CustomizePreviewTopBar(
+    topRightControls: List<PlayerControl>,
+    maxVisibleControls: Int,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -126,15 +141,19 @@ private fun CustomizePreviewTopBar(topRightControls: List<PlayerControl>) {
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
         )
-        topRightControls.forEach { control ->
-            PreviewControlButton(control = control)
-        }
+        PreviewCornerControls(
+            controls = topRightControls,
+            maxVisibleControls = maxVisibleControls,
+        )
         PreviewGlyph(imageVector = NextIcons.Menu)
     }
 }
 
 @Composable
-private fun CustomizePreviewBottomBar(bottomRightControls: List<PlayerControl>) {
+private fun CustomizePreviewBottomBar(
+    bottomRightControls: List<PlayerControl>,
+    maxVisibleControls: Int,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -144,7 +163,24 @@ private fun CustomizePreviewBottomBar(bottomRightControls: List<PlayerControl>) 
         PreviewGlyph(imageVector = NextIcons.SkipPrevious)
         PreviewGlyph(imageVector = NextIcons.SkipNext)
         Spacer(modifier = Modifier.weight(1f))
-        bottomRightControls.forEach { control ->
+        PreviewCornerControls(
+            controls = bottomRightControls,
+            maxVisibleControls = maxVisibleControls,
+        )
+    }
+}
+
+@Composable
+private fun PreviewCornerControls(
+    controls: List<PlayerControl>,
+    maxVisibleControls: Int,
+) {
+    Row(
+        modifier = Modifier
+            .widthIn(max = PreviewControlSize * maxVisibleControls)
+            .horizontalScroll(rememberScrollState()),
+    ) {
+        controls.forEach { control ->
             PreviewControlButton(control = control)
         }
     }
@@ -211,7 +247,7 @@ private fun PreviewMenuTile(
 private fun PreviewControlButton(control: PlayerControl) {
     Box(
         modifier = Modifier
-            .size(32.dp)
+            .size(PreviewControlSize)
             .testTag("preview_control_${control.id}")
             .semantics { contentDescription = "preview_control_${control.id}" },
         contentAlignment = Alignment.Center,
@@ -224,6 +260,8 @@ private fun PreviewControlButton(control: PlayerControl) {
         )
     }
 }
+
+private val PreviewControlSize = 32.dp
 
 @Composable
 private fun PreviewGlyph(imageVector: ImageVector) {

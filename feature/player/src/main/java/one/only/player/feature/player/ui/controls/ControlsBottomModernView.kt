@@ -65,6 +65,7 @@ internal fun ControlsBottomModernView(
     onNextClick: () -> Unit,
     bottomRightControls: List<PlayerControl>,
     bindings: Map<PlayerControl, PlayerControlBinding>,
+    maxVisibleControls: Int,
     onOpenPanel: (MenuRoute) -> Unit,
     onSeek: (Long) -> Unit,
     onSeekEnd: () -> Unit,
@@ -163,6 +164,7 @@ internal fun ControlsBottomModernView(
             PlayerCornerControls(
                 controls = bottomRightControls,
                 bindings = bindings,
+                maxVisibleControls = maxVisibleControls,
                 onOpenPanel = onOpenPanel,
             )
         }

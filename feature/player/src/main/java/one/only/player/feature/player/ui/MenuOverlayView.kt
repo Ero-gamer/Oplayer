@@ -7,6 +7,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -51,13 +56,23 @@ fun BoxScope.MenuOverlayView(
     content: @Composable (MenuRoute) -> Unit,
 ) {
     val tokens = rememberPlayerPanelTokens()
+    var lastVisibleTitle by remember { mutableStateOf(title) }
+    var lastVisibleCanGoBack by remember { mutableStateOf(canGoBack) }
+    SideEffect {
+        if (externalRoute != null) {
+            lastVisibleTitle = title
+            lastVisibleCanGoBack = canGoBack
+        }
+    }
+    val displayedTitle = if (externalRoute != null) title else lastVisibleTitle
+    val displayedCanGoBack = if (externalRoute != null) canGoBack else lastVisibleCanGoBack
     FloatingPlayerPanel(
         shouldShow = externalRoute != null,
-        title = title,
+        title = displayedTitle,
         panelState = panelState,
         testTag = "panel_player_menu",
         onDismiss = onDismiss,
-        navigationIcon = if (canGoBack) {
+        navigationIcon = if (displayedCanGoBack) {
             {
                 MiuixIconButton(
                     modifier = Modifier.testTag("btn_menu_back"),
@@ -75,12 +90,14 @@ fun BoxScope.MenuOverlayView(
         },
     ) {
         AnimatedContent(
-            targetState = externalRoute ?: MenuRoute.Root,
+            targetState = externalRoute,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "menu_route",
             modifier = Modifier.fillMaxSize(),
         ) { route ->
-            content(route)
+            if (route != null) {
+                content(route)
+            }
         }
     }
 }

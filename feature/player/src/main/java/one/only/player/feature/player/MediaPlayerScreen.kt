@@ -109,6 +109,7 @@ import one.only.player.core.ui.R as coreUiR
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.VideoFiltersPanel
 import one.only.player.core.ui.extensions.copy
+import one.only.player.core.ui.extensions.playerCornerControlsCapacity
 import one.only.player.feature.player.buttons.PlayerButton
 import one.only.player.feature.player.extensions.nameRes
 import one.only.player.feature.player.extensions.noRippleClickable
@@ -363,7 +364,9 @@ internal fun MediaPlayerScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    val shouldShowPlayerTitle = configuration.orientation != Configuration.ORIENTATION_PORTRAIT
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+    val shouldShowPlayerTitle = !isPortrait
+    val cornerControlsCapacity = playerCornerControlsCapacity(isPortrait = isPortrait)
     val sleepTimerState = rememberSleepTimerState(player = player)
     var shouldShowOverlay by remember { mutableStateOf(false) }
     var shouldAttachActivityVideoOutput by remember { mutableStateOf(true) }
@@ -978,6 +981,7 @@ internal fun MediaPlayerScreen(
                                     },
                                     topRightControls = playerPreferences.playerControls(PlayerControlSlot.TOP_RIGHT),
                                     bindings = controlBindings,
+                                    maxVisibleControls = cornerControlsCapacity.topRight,
                                     onOpenPanel = ::openOverlayPanel,
                                 )
                             }
@@ -1012,6 +1016,7 @@ internal fun MediaPlayerScreen(
                                     onNextClick = { player.seekToNext() },
                                     bottomRightControls = playerPreferences.playerControls(PlayerControlSlot.BOTTOM_RIGHT),
                                     bindings = controlBindings,
+                                    maxVisibleControls = cornerControlsCapacity.bottomRight,
                                     onOpenPanel = ::openOverlayPanel,
                                     onSeek = seekGestureState::onSeek,
                                     onSeekEnd = seekGestureState::onSeekEnd,
