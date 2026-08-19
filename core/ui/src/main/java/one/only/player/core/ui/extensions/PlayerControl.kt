@@ -39,6 +39,7 @@ fun PlayerControl.labelRes(): Int = when (this) {
     PlayerControl.SLEEP_TIMER -> R.string.sleep_timer
     PlayerControl.ROTATE -> R.string.screen_rotation
     PlayerControl.MIRROR_VIDEO -> R.string.mirror_video
+    PlayerControl.VIDEO_INFO -> R.string.video_info
 }
 
 @Composable
@@ -69,4 +70,5 @@ fun PlayerControl.icon(): ImageVector = when (this) {
     PlayerControl.SLEEP_TIMER -> NextIcons.Timer
     PlayerControl.ROTATE -> NextIcons.Rotation
     PlayerControl.MIRROR_VIDEO -> NextIcons.Size
+    PlayerControl.VIDEO_INFO -> NextIcons.Info
 }

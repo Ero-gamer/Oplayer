@@ -79,6 +79,13 @@ enum class CustomCommands(val customAction: String) {
     }
 }
 
+data class VideoFormatInfo(
+    val decoderName: String?,
+    val width: Int,
+    val height: Int,
+    val isHdr: Boolean,
+)
+
 fun MediaController.addSubtitleTrack(uri: Uri) {
     val args = Bundle().apply {
         putString(CustomCommands.SUBTITLE_TRACK_URI_KEY, uri.toString())
@@ -204,6 +211,17 @@ suspend fun MediaController.getVideoFormatDebugInfo(): SessionResult = sendCusto
     CustomCommands.GET_VIDEO_FORMAT.sessionCommand,
     Bundle.EMPTY,
 ).await()
+
+suspend fun MediaController.getVideoFormatInfo(): VideoFormatInfo? {
+    val result = getVideoFormatDebugInfo()
+    if (result.resultCode != SessionResult.RESULT_SUCCESS) return null
+    return VideoFormatInfo(
+        decoderName = result.extras.getString(CustomCommands.VIDEO_DECODER_NAME_KEY),
+        width = result.extras.getInt(CustomCommands.VIDEO_WIDTH_KEY),
+        height = result.extras.getInt(CustomCommands.VIDEO_HEIGHT_KEY),
+        isHdr = result.extras.getBoolean(CustomCommands.IS_VIDEO_HDR_KEY),
+    )
+}
 
 @Suppress("DEPRECATION")
 suspend fun MediaController.getVideoChapters(): List<VideoChapter> {

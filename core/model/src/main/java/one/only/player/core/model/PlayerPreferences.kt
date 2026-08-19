@@ -249,6 +249,7 @@ enum class PlayerControl {
     SLEEP_TIMER,
     ROTATE,
     MIRROR_VIDEO,
+    VIDEO_INFO,
 }
 
 @Serializable

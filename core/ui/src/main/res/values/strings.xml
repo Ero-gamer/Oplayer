@@ -287,6 +287,8 @@
     <string name="require_audio_focus_desc">Pause other players while this player is playing videos, and vice versa.</string>
     <string name="file">File</string>
     <string name="format">Format</string>
+    <string name="video_info">Video info</string>
+    <string name="dynamic_range">Dynamic range</string>
     <string name="video_track">Video Track</string>
     <string name="audio_track">Audio Track</string>
     <string name="subtitle_track">Subtitle Track</string>

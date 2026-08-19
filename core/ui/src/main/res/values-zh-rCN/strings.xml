@@ -282,6 +282,8 @@
     <string name="sample_rate">采样率</string>
     <string name="file">文件</string>
     <string name="format">格式</string>
+    <string name="video_info">视频信息</string>
+    <string name="dynamic_range">动态范围</string>
     <string name="volume_boost_desc">将音量增强到最大 200%</string>
     <string name="volume_boost">音量增强</string>
     <string name="pip_settings">画中画</string>

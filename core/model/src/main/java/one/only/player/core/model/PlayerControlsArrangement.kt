@@ -26,6 +26,7 @@ private val DefaultMenuControls = listOf(
     PlayerControl.CHAPTERS,
     PlayerControl.SCALE,
     PlayerControl.DECODER,
+    PlayerControl.VIDEO_INFO,
     PlayerControl.VIDEO_FILTERS,
     PlayerControl.SLEEP_TIMER,
     PlayerControl.MARK,

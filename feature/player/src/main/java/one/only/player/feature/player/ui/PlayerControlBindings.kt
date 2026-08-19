@@ -72,6 +72,10 @@ internal fun playerControlBindings(
             action = PlayerControlAction.OpenPanel(MenuRoute.Decoder),
         ),
         binding(
+            control = PlayerControl.VIDEO_INFO,
+            action = PlayerControlAction.OpenPanel(MenuRoute.VideoInfo),
+        ),
+        binding(
             control = PlayerControl.VIDEO_FILTERS,
             action = PlayerControlAction.OpenPanel(MenuRoute.VideoFilters),
         ),

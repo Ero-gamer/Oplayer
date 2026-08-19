@@ -102,6 +102,7 @@ import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlaybackMark
 import one.only.player.core.model.PlayerControlSlot
 import one.only.player.core.model.PlayerPreferences
+import one.only.player.core.model.Video
 import one.only.player.core.model.controllerAutoHideTimeoutSecondsOrNull
 import one.only.player.core.model.playerControls
 import one.only.player.core.ui.R as coreUiR
@@ -155,6 +156,7 @@ import one.only.player.feature.player.ui.SubtitleSelectorContent
 import one.only.player.feature.player.ui.ToggleOptionSelectorContent
 import one.only.player.feature.player.ui.VerticalProgressView
 import one.only.player.feature.player.ui.VideoContentScaleSelectorContent
+import one.only.player.feature.player.ui.VideoInfoContent
 import one.only.player.feature.player.ui.controls.ControlsBottomModernView
 import one.only.player.feature.player.ui.controls.ControlsTopModernView
 import one.only.player.feature.player.ui.panel.rememberFloatingPlayerPanelState
@@ -350,6 +352,14 @@ internal fun MediaPlayerScreen(
 
     val floatingPanelState = rememberFloatingPlayerPanelState()
     var menuRouteStack by remember { mutableStateOf<List<MenuRoute>>(emptyList()) }
+    var currentVideoInfo by remember { mutableStateOf<Video?>(null) }
+    val currentMediaUri = player.currentMediaItem?.localConfiguration?.uri?.toString()
+        ?: player.currentMediaItem?.requestMetadata?.mediaUri?.toString()
+    LaunchedEffect(menuRouteStack.lastOrNull(), currentMediaUri) {
+        if (menuRouteStack.lastOrNull() != MenuRoute.VideoInfo) return@LaunchedEffect
+        currentVideoInfo = null
+        currentVideoInfo = currentMediaUri?.let { viewModel.getVideoByUri(it) }
+    }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
@@ -1151,6 +1161,12 @@ internal fun MediaPlayerScreen(
                         onConfirmPreferences = ::confirmVideoFilters,
                     )
 
+                    MenuRoute.VideoInfo -> VideoInfoContent(
+                        player = player,
+                        video = currentVideoInfo,
+                        durationMs = mediaPresentationState.duration,
+                    )
+
                     MenuRoute.Playlist -> PlaylistContent(
                         isVisible = true,
                         player = player,
@@ -1267,6 +1283,7 @@ private fun titleForMenuRoute(route: MenuRoute?): String = when (route) {
     MenuRoute.Subtitle -> stringResource(coreUiR.string.select_subtitle_track)
     MenuRoute.PlaybackSpeed -> stringResource(coreUiR.string.select_playback_speed)
     MenuRoute.VideoContentScale -> stringResource(coreUiR.string.video_zoom)
+    MenuRoute.VideoInfo -> stringResource(coreUiR.string.video_info)
     MenuRoute.VideoFilters -> stringResource(coreUiR.string.video_filters)
     MenuRoute.Playlist -> stringResource(coreUiR.string.now_playing)
     MenuRoute.SleepTimer -> stringResource(coreUiR.string.sleep_timer)
