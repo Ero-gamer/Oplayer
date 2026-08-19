@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.NextSearchTopAppBar
-import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import top.yukonga.miuix.kmp.basic.Card
@@ -143,7 +143,7 @@ fun SettingsScreen(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
+                .padding(top = PageContentTopPadding)
                 .padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {

@@ -43,6 +43,7 @@ import one.only.player.core.model.ServerProtocol
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
@@ -140,7 +141,7 @@ internal fun CloudHomeScreen(
                 .padding(top = innerPadding.calculateTopPadding())
                 .padding(start = innerPadding.calculateStartPadding(LocalLayoutDirection.current)),
         ) {
-            val contentPadding = innerPadding.copy(top = 8.dp, start = 0.dp).withBottomFallback()
+            val contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback()
             if (uiState.servers.isEmpty()) {
                 EmptyCloudHomeContent(contentPadding = contentPadding)
             } else {
@@ -148,6 +149,7 @@ internal fun CloudHomeScreen(
                     modifier = Modifier
                         .fillMaxSize(),
                     contentPadding = contentPadding,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     items(uiState.servers, key = { it.id }) { server ->
                         ServerListItem(
@@ -228,7 +230,6 @@ private fun ServerListItem(
     Card(
         modifier = Modifier
             .padding(horizontal = 12.dp)
-            .padding(bottom = 12.dp)
             .testTag("cloud_server_item_${server.id}"),
         onClick = onClick,
         showIndication = true,

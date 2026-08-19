@@ -31,11 +31,11 @@ import java.nio.charset.Charset
 import one.only.player.core.model.Font
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.ClickablePreferenceItem
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SubtitleStylePanel
 import one.only.player.core.ui.designsystem.NextIcons
@@ -134,7 +134,7 @@ private fun SubtitlePreferencesContent(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
+                .padding(top = PageContentTopPadding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {

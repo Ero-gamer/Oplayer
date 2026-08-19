@@ -45,6 +45,7 @@ import one.only.player.core.common.extensions.appIcon
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
@@ -110,6 +111,7 @@ fun AboutPreferencesScreen(
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .verticalScroll(rememberScrollState())
                     .padding(innerPadding.withBottomFallback())
+                    .padding(top = PageContentTopPadding)
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -252,7 +254,7 @@ private fun AboutHero(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 40.dp, bottom = 24.dp),
+            .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(

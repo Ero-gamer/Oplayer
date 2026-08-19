@@ -368,7 +368,7 @@ private fun SuggestionsContent(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp) + contentPadding,
+        contentPadding = PaddingValues(top = 8.dp) + contentPadding,
     ) {
         if (searchHistory.isNotEmpty()) {
             item {

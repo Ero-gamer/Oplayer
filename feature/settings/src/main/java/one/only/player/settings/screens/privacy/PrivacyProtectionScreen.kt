@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -79,7 +79,7 @@ private fun PrivacyProtectionContent(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
+                .padding(top = PageContentTopPadding)
                 .padding(horizontal = 16.dp),
         ) {
             val isHideInRecentsAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU

@@ -33,10 +33,10 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.icon
@@ -104,7 +104,7 @@ fun PlayerControlsCustomizeScreen(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
+                .padding(top = PageContentTopPadding)
                 .padding(horizontal = 16.dp)
                 .testTag("panel_customize_controls"),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),

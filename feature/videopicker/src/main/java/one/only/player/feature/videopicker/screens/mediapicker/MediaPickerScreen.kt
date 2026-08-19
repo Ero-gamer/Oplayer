@@ -65,6 +65,7 @@ import one.only.player.core.ui.base.DataState
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
 import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.composables.PermissionMissingView
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
 import one.only.player.core.ui.designsystem.NextIcons
@@ -474,7 +475,10 @@ internal fun MediaPickerScreen(
                 ) {
                     val activeDataState = if (isMoveMode) uiState.moveTargetDataState else uiState.mediaDataState
                     val shouldShowRefreshIndicator = uiState.isRefreshing
-                    val updatedScaffoldPadding = scaffoldPadding.copy(top = 0.dp, start = 0.dp).withBottomFallback()
+                    val updatedScaffoldPadding = scaffoldPadding.copy(
+                        top = if (shouldUseLargeTopBar) PageContentTopPadding else 0.dp,
+                        start = 0.dp,
+                    ).withBottomFallback()
                     val refreshTexts = rememberPullToRefreshTexts()
                     PullToRefresh(
                         modifier = Modifier.fillMaxSize(),
@@ -547,7 +551,7 @@ internal fun MediaPickerScreen(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(scaffoldPadding.withBottomFallback())
-                            .padding(end = 21.dp, bottom = 16.dp),
+                            .padding(end = 21.dp),
                     )
                 }
             }

@@ -30,9 +30,9 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextResetIconButton
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SingleSelectablePreference
 import one.only.player.core.ui.designsystem.NextIcons
@@ -108,7 +108,7 @@ private fun ThumbnailPreferencesContent(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
+                .padding(top = PageContentTopPadding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {

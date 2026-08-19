@@ -70,6 +70,7 @@ import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ListSectionTitle
 import one.only.player.core.ui.components.NextCardListItem
 import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
@@ -365,7 +366,7 @@ internal fun CloudBrowseScreen(
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
-                val contentPadding = innerPadding.copy(top = 0.dp, start = 0.dp).withBottomFallback()
+                val contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback()
                 val refreshTexts = rememberPullToRefreshTexts()
                 PullToRefresh(
                     modifier = Modifier.fillMaxSize(),
@@ -508,7 +509,7 @@ private fun CloudRemoteMediaView(
             modifier = Modifier.fillMaxSize(),
             state = lazyGridState,
             columns = GridCells.Fixed(spans),
-            contentPadding = contentPadding + PaddingValues(horizontal = contentHorizontalPadding, vertical = 8.dp),
+            contentPadding = contentPadding + PaddingValues(horizontal = contentHorizontalPadding),
             verticalArrangement = Arrangement.spacedBy(itemSpacing),
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
         ) {

@@ -29,8 +29,8 @@ import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
 import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -140,7 +140,7 @@ private fun AppearancePreferencesContent(
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
-                .padding(top = SettingsContentTopPadding)
+                .padding(top = PageContentTopPadding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {

@@ -29,7 +29,7 @@ import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.Library
 import one.only.player.core.common.Logger
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.SettingsContentTopPadding
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -99,7 +99,7 @@ fun LibrariesScreen(
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = innerPadding.withBottomFallback() +
-                PaddingValues(top = SettingsContentTopPadding) +
+                PaddingValues(top = PageContentTopPadding) +
                 PaddingValues(horizontal = 16.dp),
         ) {
             item(key = "libraries_card") {

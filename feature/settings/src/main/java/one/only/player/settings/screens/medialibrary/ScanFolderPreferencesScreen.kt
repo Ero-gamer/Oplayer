@@ -22,8 +22,8 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceItem
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.plus
@@ -92,7 +92,7 @@ private fun ScanFolderPreferencesContent(
                 .fillMaxSize()
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = innerPadding.withBottomFallback() +
-                PaddingValues(top = SettingsContentTopPadding) +
+                PaddingValues(top = PageContentTopPadding) +
                 PaddingValues(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(CardItemGap),
         ) {

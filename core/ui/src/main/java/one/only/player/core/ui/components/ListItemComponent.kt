@@ -21,7 +21,7 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 val CardItemGap = 8.dp
 val SettingsGroupGap = 12.dp
-val SettingsContentTopPadding = 12.dp
+val PageContentTopPadding = 10.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

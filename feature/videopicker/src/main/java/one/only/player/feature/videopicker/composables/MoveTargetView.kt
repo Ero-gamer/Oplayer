@@ -331,7 +331,7 @@ private fun MoveTargetActionBar(
             enabled = isEnabled && !isMoving,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = bottomPadding + 12.dp)
+                .padding(start = 16.dp, top = 12.dp, end = 16.dp, bottom = bottomPadding)
                 .height(50.dp)
                 .testTag("btn_move_here"),
         ) {

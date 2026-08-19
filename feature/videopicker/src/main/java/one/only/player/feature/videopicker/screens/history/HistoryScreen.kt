@@ -37,6 +37,7 @@ import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextSearchTopAppBar
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -169,14 +170,14 @@ internal fun HistoryScreen(
                 MediaMessageState(
                     icon = NextIcons.History,
                     title = stringResource(R.string.no_watch_history),
-                    contentPadding = innerPadding.copy(top = 8.dp, start = 0.dp).withBottomFallback(),
+                    contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
-                    contentPadding = innerPadding.copy(top = 8.dp, start = 0.dp).withBottomFallback(),
+                    contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
                     verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
                     items(

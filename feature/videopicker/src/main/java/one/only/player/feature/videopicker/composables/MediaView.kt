@@ -92,9 +92,9 @@ fun MediaView(
             columns = GridCells.Fixed(spans),
             contentPadding = PaddingValues(
                 start = contentPadding.calculateStartPadding(layoutDirection) + contentHorizontalPadding,
-                top = 0.dp,
+                top = contentPadding.calculateTopPadding(),
                 end = contentPadding.calculateEndPadding(layoutDirection) + contentHorizontalPadding,
-                bottom = contentPadding.calculateBottomPadding() + 8.dp,
+                bottom = contentPadding.calculateBottomPadding(),
             ),
             verticalArrangement = Arrangement.spacedBy(itemSpacing),
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),

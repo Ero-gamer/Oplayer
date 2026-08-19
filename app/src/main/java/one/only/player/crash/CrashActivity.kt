@@ -11,9 +11,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -51,7 +49,9 @@ import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.LogsSelectionContainer
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.DEFAULT_SEED_COLOR
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.navigation.NavigationBarColorEffect
@@ -294,8 +294,9 @@ private fun CrashScreen(
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
-                .padding(paddingValues)
-                .padding(16.dp),
+                .padding(paddingValues.withBottomFallback())
+                .padding(top = PageContentTopPadding)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
@@ -312,7 +313,6 @@ private fun CrashScreen(
                 style = MiuixTheme.textStyles.title3,
             )
             LogsSelectionContainer(logs = logcat)
-            Spacer(Modifier.height(8.dp))
         }
     }
 }

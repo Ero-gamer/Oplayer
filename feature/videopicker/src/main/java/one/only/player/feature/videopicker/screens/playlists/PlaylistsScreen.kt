@@ -40,6 +40,7 @@ import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.NextSearchTopAppBar
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -210,14 +211,14 @@ internal fun PlaylistsScreen(
                 MediaMessageState(
                     icon = NextIcons.PlaylistPlay,
                     title = stringResource(if (isDetail) R.string.empty_playlist else R.string.no_playlists),
-                    contentPadding = innerPadding.copy(top = 8.dp, start = 0.dp).withBottomFallback(),
+                    contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
                 )
             } else {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
-                    contentPadding = innerPadding.copy(top = 8.dp, start = 0.dp).withBottomFallback(),
+                    contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
                     verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
                     if (isDetail) {

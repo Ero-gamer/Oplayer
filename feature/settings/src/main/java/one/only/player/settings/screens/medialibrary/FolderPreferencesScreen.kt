@@ -22,8 +22,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.ui.R
 import one.only.player.core.ui.base.DataState
 import one.only.player.core.ui.components.CardItemGap
+import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.SelectablePreference
-import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -97,7 +97,7 @@ private fun FolderPreferencesContent(
                         .fillMaxSize()
                         .nestedScroll(scrollBehavior.nestedScrollConnection),
                     contentPadding = innerPadding.withBottomFallback() +
-                        PaddingValues(top = SettingsContentTopPadding) +
+                        PaddingValues(top = PageContentTopPadding) +
                         PaddingValues(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
