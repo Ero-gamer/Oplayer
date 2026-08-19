@@ -9,17 +9,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -27,16 +22,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -67,11 +57,11 @@ import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.navigation.NavigationBarColorEffect
 import one.only.player.shouldUseDarkTheme
 import one.only.player.shouldUseDynamicTheming
-import top.yukonga.miuix.kmp.basic.Button
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon
+import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @AndroidEntryPoint
@@ -263,11 +253,41 @@ private fun CrashScreen(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            CrashBottomBar(
-                onShareLogsClick = onShareLogsClick,
-                onCopyLogsClick = onCopyLogsClick,
-                onRestartClick = onRestartClick,
+        topBar = {
+            TopAppBar(
+                title = stringResource(R.string.crash_screen_title),
+                actions = {
+                    IconButton(
+                        onClick = onShareLogsClick,
+                        modifier = Modifier.testTag("button_crash_share"),
+                    ) {
+                        Icon(
+                            imageVector = NextIcons.Share,
+                            contentDescription = stringResource(R.string.crash_screen_share),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                    IconButton(
+                        onClick = onCopyLogsClick,
+                        modifier = Modifier.testTag("button_crash_copy"),
+                    ) {
+                        Icon(
+                            imageVector = NextIcons.Copy,
+                            contentDescription = stringResource(R.string.crash_screen_copy),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                    IconButton(
+                        onClick = onRestartClick,
+                        modifier = Modifier.testTag("button_crash_restart"),
+                    ) {
+                        Icon(
+                            imageVector = NextIcons.Update,
+                            contentDescription = stringResource(R.string.crash_screen_restart),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                },
             )
         },
     ) { paddingValues ->
@@ -278,16 +298,6 @@ private fun CrashScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(
-                imageVector = NextIcons.BugReport,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MiuixTheme.colorScheme.primary,
-            )
-            Text(
-                text = stringResource(R.string.crash_screen_title),
-                style = MiuixTheme.textStyles.title1,
-            )
             Text(
                 text = stringResource(R.string.crash_screen_subtitle, stringResource(R.string.app_name)),
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -308,82 +318,7 @@ private fun CrashScreen(
 }
 
 @Composable
-private fun CrashBottomBar(
-    onShareLogsClick: () -> Unit,
-    onCopyLogsClick: () -> Unit,
-    onRestartClick: () -> Unit,
-) {
-    val borderColor = MiuixTheme.colorScheme.dividerLine
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(MiuixTheme.colorScheme.surface)
-            .drawBehind {
-                drawLine(
-                    color = borderColor,
-                    start = Offset.Zero,
-                    end = Offset(size.width, 0f),
-                    strokeWidth = Dp.Hairline.value,
-                )
-            }
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        CrashActionButton(
-            text = stringResource(R.string.crash_screen_share),
-            icon = NextIcons.Share,
-            onClick = onShareLogsClick,
-            modifier = Modifier.weight(1f),
-        )
-        CrashActionButton(
-            text = stringResource(R.string.crash_screen_copy),
-            icon = NextIcons.Copy,
-            onClick = onCopyLogsClick,
-            modifier = Modifier.weight(1f),
-        )
-        CrashActionButton(
-            text = stringResource(R.string.crash_screen_restart),
-            icon = NextIcons.Update,
-            onClick = onRestartClick,
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-@Composable
-private fun CrashActionButton(
-    text: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.buttonColors(),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
-            Text(
-                text = text,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MiuixTheme.textStyles.button,
-            )
-        }
-    }
-}
-
 @PreviewLightDark
-@Composable
 private fun CrashLogsScreenPreview() {
     OnlyPlayerTheme {
         CrashScreen(

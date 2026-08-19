@@ -6,17 +6,13 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -26,18 +22,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
@@ -48,12 +37,9 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.withBottomFallback
-import top.yukonga.miuix.kmp.basic.Button
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -93,13 +79,10 @@ fun LogsScreen(
         isLoading = false
     }
 
-    val scrollBehavior = MiuixScrollBehavior()
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = stringResource(id = R.string.app_logs),
-                scrollBehavior = scrollBehavior,
+                title = stringResource(R.string.app_logs),
                 navigationIcon = {
                     IconButton(
                         onClick = onNavigateUp,
@@ -109,32 +92,56 @@ fun LogsScreen(
                     ) {
                         Icon(
                             imageVector = NextIcons.ArrowBack,
-                            contentDescription = stringResource(id = R.string.navigate_up),
-                            tint = MiuixTheme.colorScheme.onBackground,
+                            contentDescription = stringResource(R.string.navigate_up),
                         )
                     }
                 },
-            )
-        },
-        bottomBar = {
-            LogsBottomBar(
-                hasLogs = hasLogs,
-                onShareLogsClick = {
-                    scope.launch { context.shareLogs() }
-                },
-                onSaveLogsClick = { saveLogsLauncher.launch(LOG_EXPORT_FILE_NAME) },
-                onClearLogsClick = {
-                    scope.launch {
-                        val isCleared = withContext(Dispatchers.IO) { Logger.clearLogs() }
-                        if (isCleared) {
-                            logPreview = ""
-                            hasLogs = false
-                        }
-                        Toast.makeText(
-                            context,
-                            if (isCleared) logsClearedMessage else logsClearFailedMessage,
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                actions = {
+                    IconButton(
+                        onClick = { scope.launch { context.shareLogs() } },
+                        enabled = hasLogs,
+                        modifier = Modifier.testTag("button_logs_share"),
+                    ) {
+                        Icon(
+                            imageVector = NextIcons.Share,
+                            contentDescription = stringResource(R.string.share_logs),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                    IconButton(
+                        onClick = { saveLogsLauncher.launch(LOG_EXPORT_FILE_NAME) },
+                        enabled = hasLogs,
+                        modifier = Modifier.testTag("button_logs_save"),
+                    ) {
+                        Icon(
+                            imageVector = NextIcons.Save,
+                            contentDescription = stringResource(R.string.save_logs),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                val isCleared = withContext(Dispatchers.IO) { Logger.clearLogs() }
+                                if (isCleared) {
+                                    logPreview = ""
+                                    hasLogs = false
+                                }
+                                Toast.makeText(
+                                    context,
+                                    if (isCleared) logsClearedMessage else logsClearFailedMessage,
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                            }
+                        },
+                        enabled = hasLogs,
+                        modifier = Modifier.testTag("button_logs_clear"),
+                    ) {
+                        Icon(
+                            imageVector = NextIcons.DeleteSweep,
+                            contentDescription = stringResource(R.string.clear_logs),
+                            tint = MiuixTheme.colorScheme.onBackground,
+                        )
                     }
                 },
             )
@@ -143,140 +150,42 @@ fun LogsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)
                 .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Icon(
-                imageVector = NextIcons.BugReport,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MiuixTheme.colorScheme.primary,
-            )
-            Text(
-                text = stringResource(R.string.app_logs),
-                style = MiuixTheme.textStyles.headline1,
-            )
-            Text(
-                text = stringResource(R.string.app_logs_description),
-                color = MiuixTheme.colorScheme.onSurfaceSecondary,
-                style = MiuixTheme.textStyles.body2,
-            )
-            Text(
-                text = stringResource(R.string.crash_screen_logcat),
-                style = MiuixTheme.textStyles.title3,
-            )
-            LogsTextContainer(
-                text = when {
-                    isLoading -> stringResource(R.string.logs_loading)
-                    !hasLogs -> stringResource(R.string.no_logs)
-                    else -> logPreview
-                },
-            )
+            when {
+                isLoading -> Text(text = stringResource(R.string.logs_loading))
+                !hasLogs -> Text(text = stringResource(R.string.no_logs))
+                else -> logPreview.toLogEntries().forEach { entry ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = entry,
+                            fontFamily = FontFamily.Monospace,
+                            style = MiuixTheme.textStyles.footnote1,
+                            modifier = Modifier.padding(12.dp),
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(8.dp))
         }
     }
 }
 
-@Composable
-private fun LogsTextContainer(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = text,
-            fontFamily = FontFamily.Monospace,
-            style = MiuixTheme.textStyles.footnote1,
-            maxLines = LOG_PREVIEW_MAX_LINES,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(12.dp),
-        )
-    }
-}
-
-@Composable
-private fun LogsBottomBar(
-    hasLogs: Boolean,
-    onShareLogsClick: () -> Unit,
-    onSaveLogsClick: () -> Unit,
-    onClearLogsClick: () -> Unit,
-) {
-    val borderColor = MiuixTheme.colorScheme.dividerLine
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(MiuixTheme.colorScheme.surface)
-            .drawBehind {
-                drawLine(
-                    color = borderColor,
-                    start = Offset.Zero,
-                    end = Offset(size.width, 0f),
-                    strokeWidth = Dp.Hairline.value,
-                )
-            }
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        LogActionButton(
-            text = stringResource(R.string.share_logs),
-            icon = NextIcons.Share,
-            isEnabled = hasLogs,
-            onClick = onShareLogsClick,
-            modifier = Modifier.weight(1f),
-        )
-        LogActionButton(
-            text = stringResource(R.string.save_logs),
-            icon = NextIcons.Save,
-            isEnabled = hasLogs,
-            onClick = onSaveLogsClick,
-            modifier = Modifier.weight(1f),
-        )
-        LogActionButton(
-            text = stringResource(R.string.clear_logs),
-            icon = NextIcons.DeleteSweep,
-            isEnabled = hasLogs,
-            onClick = onClearLogsClick,
-            modifier = Modifier.weight(1f),
-        )
-    }
-}
-
-@Composable
-private fun LogActionButton(
-    text: String,
-    icon: ImageVector,
-    isEnabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Button(
-        onClick = onClick,
-        enabled = isEnabled,
-        modifier = modifier.height(48.dp),
-        colors = ButtonDefaults.buttonColors(),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
-            Text(
-                text = text,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MiuixTheme.textStyles.button,
-            )
+private fun String.toLogEntries(): List<String> {
+    val entries = mutableListOf<String>()
+    val entryHeader = Regex("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3} [VDIWEF]/")
+    for (line in lines()) {
+        if (entryHeader.containsMatchIn(line)) {
+            entries += line
+            continue
         }
+        if (entries.isEmpty()) entries += line else entries[entries.lastIndex] += "\\n$line"
     }
+    return entries
 }
 
 private suspend fun Context.shareLogs() {
@@ -315,4 +224,3 @@ private suspend fun Context.saveLogsToUri(uri: android.net.Uri): Boolean = withC
 
 private const val LOG_EXPORT_FILE_NAME = "only_player_logs.txt"
 private const val LOG_PREVIEW_LOAD_DELAY_MILLIS = 350L
-private const val LOG_PREVIEW_MAX_LINES = 50
