@@ -126,7 +126,7 @@ fun AboutPreferencesScreen(
                 PreferenceGroup {
                     PreferenceItem(
                         title = stringResource(R.string.architecture),
-                        description = rememberDeviceArchitecture(),
+                        description = rememberPrimaryArchitecture(),
                         icon = NextIcons.Decoder,
                         isEnabled = true,
                     )
@@ -359,8 +359,8 @@ private fun Context.appVersion(): String {
 private fun Context.versionName(): String = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
 
 @Composable
-private fun rememberDeviceArchitecture(): String = remember {
-    Build.SUPPORTED_ABIS.takeIf { it.isNotEmpty() }?.joinToString() ?: Build.UNKNOWN
+private fun rememberPrimaryArchitecture(): String = remember {
+    Build.SUPPORTED_ABIS.firstOrNull() ?: Build.UNKNOWN
 }
 
 @Composable
