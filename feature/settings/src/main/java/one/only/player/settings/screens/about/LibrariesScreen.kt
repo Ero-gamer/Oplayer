@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
@@ -37,6 +38,7 @@ import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -51,10 +53,13 @@ fun LibrariesScreen(
     val uriHandler = LocalUriHandler.current
     val libs = remember(context) { loadLibraries(context) }
 
+    val scrollBehavior = MiuixScrollBehavior()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = stringResource(id = R.string.libraries),
+                scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     MiuixIconButton(
                         onClick = onNavigateUp,
@@ -90,7 +95,9 @@ fun LibrariesScreen(
         }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = innerPadding.withBottomFallback() +
                 PaddingValues(top = SettingsContentTopPadding) +
                 PaddingValues(horizontal = 16.dp),

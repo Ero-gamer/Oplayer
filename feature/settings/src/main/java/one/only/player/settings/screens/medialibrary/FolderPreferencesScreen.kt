@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -30,6 +31,7 @@ import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -54,10 +56,13 @@ private fun FolderPreferencesContent(
     onNavigateUp: () -> Unit,
     onEvent: (FolderPreferencesUiEvent) -> Unit,
 ) {
+    val scrollBehavior = MiuixScrollBehavior()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = stringResource(id = R.string.manage_folders),
+                scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     MiuixIconButton(
                         onClick = onNavigateUp,
@@ -88,7 +93,9 @@ private fun FolderPreferencesContent(
 
             is DataState.Success -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection),
                     contentPadding = innerPadding.withBottomFallback() +
                         PaddingValues(top = SettingsContentTopPadding) +
                         PaddingValues(horizontal = 16.dp),

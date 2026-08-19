@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -34,6 +35,7 @@ import one.only.player.settings.composables.OptionsDialog
 import one.only.player.settings.utils.LocalesHelper
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -63,10 +65,13 @@ private fun AudioPreferencesContent(
         PlayerPreferences.MAX_INITIAL_PLAYER_VOLUME_PERCENTAGE.toFloat(),
     )
 
+    val scrollBehavior = MiuixScrollBehavior()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = stringResource(id = R.string.audio),
+                scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     MiuixIconButton(
                         onClick = onNavigateUp,
@@ -87,6 +92,7 @@ private fun AudioPreferencesContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)

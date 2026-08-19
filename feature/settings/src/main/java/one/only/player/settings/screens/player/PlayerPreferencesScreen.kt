@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -52,6 +53,7 @@ import one.only.player.settings.extensions.name
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
@@ -83,10 +85,13 @@ private fun PlayerPreferencesContent(
 ) {
     val isPipFeatureSupported = LocalContext.current.isPipFeatureSupported
 
+    val scrollBehavior = MiuixScrollBehavior()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = stringResource(id = R.string.player_name),
+                scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     MiuixIconButton(
                         onClick = onNavigateUp,
@@ -107,6 +112,7 @@ private fun PlayerPreferencesContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .verticalScroll(state = rememberScrollState())
                 .padding(innerPadding.withBottomFallback())
                 .padding(top = SettingsContentTopPadding)

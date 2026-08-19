@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,15 +42,11 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -60,7 +55,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -84,8 +78,6 @@ internal object FloatingPlayerPanelDefaults {
     val MaxLandscapeWidth = 400.dp
     val Elevation = 16.dp
     val HeaderTopPadding = 10.dp
-    val BackdropBlurRadius = 24.dp
-    val BackdropOverscan = 32.dp
     const val DefaultPortraitHeightFraction = 0.45f
     const val DefaultLandscapeWidthFraction = 0.45f
 }
@@ -345,7 +337,6 @@ fun BoxScope.FloatingPlayerPanel(
     modifier: Modifier = Modifier,
     testTag: String? = null,
     contentPadding: PaddingValues = PaddingValues(),
-    backdrop: ImageBitmap? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = LocalFloatingPlayerPanelOnDismiss.current,
     content: @Composable ColumnScope.() -> Unit,
@@ -413,6 +404,7 @@ fun BoxScope.FloatingPlayerPanel(
                     clip = false,
                 )
                 .clip(panelShape)
+                .background(tokens.containerColor)
                 .border(1.dp, tokens.containerBorderColor, panelShape)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
@@ -420,18 +412,6 @@ fun BoxScope.FloatingPlayerPanel(
                     onClick = {},
                 ),
         ) {
-            if (backdrop != null) {
-                PanelBackdropImage(
-                    image = backdrop,
-                    panelWidth = panelWidth,
-                    panelHeight = panelHeight,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(tokens.containerColor),
-            )
             MiuixTheme(colors = tokens.rememberPanelMiuixColors()) {
                 MaterialTheme(colorScheme = tokens.rememberPanelMaterialColorScheme()) {
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -456,26 +436,6 @@ fun BoxScope.FloatingPlayerPanel(
             }
         }
     }
-}
-
-// 缩略视频帧铺满面板做磨砂底：外扩一圈让模糊的渐隐边缘落在面板之外
-@Composable
-private fun PanelBackdropImage(
-    image: ImageBitmap,
-    panelWidth: Dp,
-    panelHeight: Dp,
-) {
-    val overscan = FloatingPlayerPanelDefaults.BackdropOverscan
-    Image(
-        bitmap = image,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        filterQuality = FilterQuality.Low,
-        modifier = Modifier
-            .requiredSize(panelWidth + overscan * 2, panelHeight + overscan * 2)
-            .offset(x = -overscan, y = -overscan)
-            .blur(FloatingPlayerPanelDefaults.BackdropBlurRadius),
-    )
 }
 
 @Composable

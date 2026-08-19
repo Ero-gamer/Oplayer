@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.theme.Colors as MiuixColors
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-// 播放器面板统一使用磨砂风格：亮色主题浅色磨砂，暗色主题深色磨砂。
+// 播放器面板统一使用半透明深浅底：亮色主题浅底，暗色主题深底。
 @Stable
 data class PlayerPanelTokens(
     val containerColor: Color,
@@ -46,9 +46,9 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
     return remember(isDarkTheme, primary, onPrimary) {
         if (isDarkTheme) {
             PlayerPanelTokens(
-                containerColor = Color(0xB31E1E22),
+                containerColor = Color(0xE61E1E22),
                 containerCornerRadius = 28.dp,
-                containerBorderColor = Color.White.copy(alpha = 0.16f),
+                containerBorderColor = Color.White.copy(alpha = 0.1f),
                 contentColor = Color(0xFFF2F2F7),
                 secondaryContentColor = Color(0x99F2F2F7),
                 accentColor = primary,
@@ -56,7 +56,7 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
                 itemCornerRadius = 20.dp,
                 itemSpacing = 8.dp,
                 itemVerticalPadding = 14.dp,
-                itemColor = Color.White.copy(alpha = 0.14f),
+                itemColor = Color.White.copy(alpha = 0.1f),
                 itemSelectedColor = primary,
                 itemContentColor = Color(0xFFF2F2F7),
                 itemSelectedContentColor = onPrimary,
@@ -64,9 +64,9 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
             )
         } else {
             PlayerPanelTokens(
-                containerColor = Color(0xBFF2F2F7),
+                containerColor = Color(0xE6F2F2F7),
                 containerCornerRadius = 28.dp,
-                containerBorderColor = Color.White.copy(alpha = 0.6f),
+                containerBorderColor = Color.White.copy(alpha = 0.5f),
                 contentColor = Color(0xFF1C1C1E),
                 secondaryContentColor = Color(0x991C1C1E),
                 accentColor = primary,
@@ -74,7 +74,7 @@ fun rememberPlayerPanelTokens(): PlayerPanelTokens {
                 itemCornerRadius = 20.dp,
                 itemSpacing = 8.dp,
                 itemVerticalPadding = 14.dp,
-                itemColor = Color.White.copy(alpha = 0.62f),
+                itemColor = Color.White.copy(alpha = 0.72f),
                 itemSelectedColor = primary,
                 itemContentColor = Color(0xFF1C1C1E),
                 itemSelectedContentColor = onPrimary,

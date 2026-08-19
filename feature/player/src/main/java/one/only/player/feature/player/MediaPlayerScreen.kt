@@ -6,7 +6,6 @@ import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Rect as AndroidRect
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
@@ -66,7 +65,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -177,8 +175,6 @@ private const val AMBIENCE_FRAME_NEAR_BLACK_AVERAGE_LUMA = 6f
 private const val AMBIENCE_FRAME_NEAR_BLACK_MAX_LUMA = 18f
 private const val AMBIENCE_VISIBLE_ALPHA_THRESHOLD = 16
 private const val CHAPTER_SWITCH_FEEDBACK_DURATION_MS = 1_400L
-private const val PANEL_BACKDROP_CAPTURE_PLAYING_INTERVAL_MS = 500L
-private const val PANEL_BACKDROP_CAPTURE_PAUSED_INTERVAL_MS = 1_500L
 
 val LocalControlsVisibilityState = compositionLocalOf<ControlsVisibilityState?> { null }
 
@@ -1052,11 +1048,6 @@ internal fun MediaPlayerScreen(
 
             val currentRoute = menuRouteStack.lastOrNull()
             val canGoBack = menuRouteStack.size > 1
-            val panelBackdrop = rememberPanelBackdrop(
-                isEnabled = currentRoute != null,
-                isPlaying = mediaPresentationState.isPlaying,
-                videoViewRect = pictureInPictureState.videoViewRect,
-            )
             if (currentRoute != null) {
                 Box(
                     modifier = Modifier
@@ -1069,7 +1060,6 @@ internal fun MediaPlayerScreen(
                 title = titleForMenuRoute(currentRoute),
                 canGoBack = canGoBack,
                 panelState = floatingPanelState,
-                backdrop = panelBackdrop,
                 onBack = {
                     if (canGoBack) popMenuRoute() else dismissOverlay()
                 },
@@ -1749,54 +1739,6 @@ private fun View.findPlayerVideoRenderView(): View? {
         viewGroup.getChildAt(index).findPlayerVideoRenderView()?.let { return it }
     }
     return null
-}
-
-// 浮动面板半透明，靠面板内绘制的模糊视频帧做出磨砂玻璃；SurfaceView 无法被 Compose 直接采样，只能抓帧
-// Modifier.blur 需要 Android 12，低版本直接不供图，避免面板里出现清晰的视频副本
-@Composable
-private fun rememberPanelBackdrop(
-    isEnabled: Boolean,
-    isPlaying: Boolean,
-    videoViewRect: AndroidRect?,
-): ImageBitmap? {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
-
-    val context = LocalContext.current
-    val rootView = LocalView.current.rootView
-    val window = remember(context) { context.findActivity()?.window }
-    val captureRect = remember(videoViewRect, rootView.width, rootView.height) {
-        videoViewRect?.coerceToWindowBounds(rootView)
-    }
-    var frameBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    // 播放状态变化不该打断轮询，所以走 rememberUpdatedState 而不是进 effect 的 key
-    val currentIsPlaying = rememberUpdatedState(isPlaying)
-
-    LaunchedEffect(isEnabled, captureRect, window) {
-        if (!isEnabled || captureRect == null) {
-            frameBitmap = null
-            return@LaunchedEffect
-        }
-        while (true) {
-            when (val result = capturePlayerFrame(rootView, window, captureRect)) {
-                is AmbienceFrameCaptureResult.Success -> frameBitmap = result.bitmap
-                is AmbienceFrameCaptureResult.Failure -> Logger.info(
-                    TAG,
-                    "Panel backdrop capture skipped reason=${result.reason} source=${result.sourceDebug}",
-                )
-            }
-            // 暂停时画面只会被面板内的滤镜调节改变，放慢抓帧省一次 GPU 读回
-            delay(
-                if (currentIsPlaying.value) {
-                    PANEL_BACKDROP_CAPTURE_PLAYING_INTERVAL_MS
-                } else {
-                    PANEL_BACKDROP_CAPTURE_PAUSED_INTERVAL_MS
-                },
-            )
-        }
-    }
-
-    val bitmap = frameBitmap ?: return null
-    return remember(bitmap) { bitmap.asImageBitmap() }
 }
 
 private fun View.canCaptureAmbienceFrame(): Boolean = isAttachedToWindow && isShown && width > 0 && height > 0

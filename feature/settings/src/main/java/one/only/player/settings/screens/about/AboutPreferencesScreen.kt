@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
@@ -54,6 +55,7 @@ import one.only.player.settings.screens.about.effect.FlowLightBackground
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
+import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
@@ -76,11 +78,14 @@ fun AboutPreferencesScreen(
     }
 
     FlowLightBackground(modifier = Modifier.fillMaxSize()) {
+        val scrollBehavior = MiuixScrollBehavior()
+
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
                 TopAppBar(
                     title = stringResource(id = R.string.about_name),
+                    scrollBehavior = scrollBehavior,
                     color = Color.Transparent,
                     navigationIcon = {
                         MiuixIconButton(
@@ -102,6 +107,7 @@ fun AboutPreferencesScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection)
                     .verticalScroll(rememberScrollState())
                     .padding(innerPadding.withBottomFallback())
                     .padding(horizontal = 16.dp),
