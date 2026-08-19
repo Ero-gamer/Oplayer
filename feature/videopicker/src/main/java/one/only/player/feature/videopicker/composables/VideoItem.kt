@@ -89,7 +89,7 @@ private fun VideoListItem(
         modifier = modifier.testTag("item_video_${video.displayName}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         onLongClick = onLongClick,
         leadingContent = {
@@ -155,7 +155,7 @@ private fun VideoGridItem(
             .testTag("item_video_${video.displayName}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         onLongClick = onLongClick,
         trailingContent = {

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import one.only.player.core.common.Utils
 import one.only.player.core.media.services.MediaMoveSpaceCheck
@@ -67,6 +68,7 @@ fun MoveTargetView(
                 MoveTargetDirectoryList(
                     directories = content.directories,
                     isStorageRoot = currentDirectory == null,
+                    bottomPadding = if (currentDirectory == null) contentPadding.calculateBottomPadding() else 8.dp,
                     onDirectoryClick = onDirectoryClick,
                 )
             }
@@ -148,6 +150,7 @@ private fun CurrentMoveDirectory(
 private fun MoveTargetDirectoryList(
     directories: List<MediaMoveTargetDirectory>,
     isStorageRoot: Boolean,
+    bottomPadding: Dp,
     onDirectoryClick: (MediaMoveTargetDirectory) -> Unit,
 ) {
     LazyColumn(
@@ -156,7 +159,7 @@ private fun MoveTargetDirectoryList(
             start = 12.dp,
             top = 4.dp,
             end = 12.dp,
-            bottom = 8.dp,
+            bottom = bottomPadding,
         ),
         verticalArrangement = Arrangement.spacedBy(CardItemGap),
     ) {
@@ -319,7 +322,7 @@ private fun MoveTargetIcon(
 private fun MoveTargetActionBar(
     isEnabled: Boolean,
     isMoving: Boolean,
-    bottomPadding: androidx.compose.ui.unit.Dp,
+    bottomPadding: Dp,
     onMoveHere: () -> Unit,
 ) {
     Surface(

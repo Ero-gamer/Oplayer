@@ -37,8 +37,11 @@ import one.only.player.core.model.Video
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ListSectionTitle
+import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.feature.videopicker.state.SelectionManager
 import one.only.player.feature.videopicker.state.rememberSelectionManager
+
+internal val MediaItemContentPadding = 8.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -60,6 +63,7 @@ fun MediaView(
     val videoMinWidth = 160.dp * layoutScale
     BoxWithConstraints {
         val layoutDirection = LocalLayoutDirection.current
+        val visualContentPadding = contentPadding.subtractBottomPadding(MediaItemContentPadding)
         val contentHorizontalPadding = when (preferences.mediaLayoutMode) {
             MediaLayoutMode.LIST -> 8.dp
             MediaLayoutMode.GRID -> 8.dp
@@ -94,7 +98,7 @@ fun MediaView(
                 start = contentPadding.calculateStartPadding(layoutDirection) + contentHorizontalPadding,
                 top = contentPadding.calculateTopPadding(),
                 end = contentPadding.calculateEndPadding(layoutDirection) + contentHorizontalPadding,
-                bottom = contentPadding.calculateBottomPadding(),
+                bottom = visualContentPadding.calculateBottomPadding(),
             ),
             verticalArrangement = Arrangement.spacedBy(itemSpacing),
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),

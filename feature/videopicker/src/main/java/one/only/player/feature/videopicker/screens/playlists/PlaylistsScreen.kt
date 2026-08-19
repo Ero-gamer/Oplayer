@@ -43,11 +43,13 @@ import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
+import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.composables.CreatePlaylistDialog
 import one.only.player.feature.videopicker.composables.FolderThumbnail
 import one.only.player.feature.videopicker.composables.LibraryEntryItem
 import one.only.player.feature.videopicker.composables.LibraryIconThumb
+import one.only.player.feature.videopicker.composables.MediaItemContentPadding
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.VideoThumbnail
@@ -218,7 +220,9 @@ internal fun PlaylistsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 16.dp),
-                    contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
+                    contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp)
+                        .withBottomFallback()
+                        .subtractBottomPadding(MediaItemContentPadding),
                     verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
                     if (isDetail) {

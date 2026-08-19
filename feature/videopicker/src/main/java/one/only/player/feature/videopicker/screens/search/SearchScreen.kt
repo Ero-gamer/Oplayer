@@ -58,10 +58,12 @@ import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
+import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.videopicker.composables.AddToPlaylistDialog
 import one.only.player.feature.videopicker.composables.FolderItem
+import one.only.player.feature.videopicker.composables.MediaItemContentPadding
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MediaView
 import one.only.player.feature.videopicker.composables.MenuAction
@@ -366,9 +368,14 @@ private fun SuggestionsContent(
         return
     }
 
+    val listContentPadding = if (popularFolders.isNotEmpty()) {
+        contentPadding.subtractBottomPadding(MediaItemContentPadding)
+    } else {
+        contentPadding
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 8.dp) + contentPadding,
+        contentPadding = PaddingValues(top = 8.dp) + listContentPadding,
     ) {
         if (searchHistory.isNotEmpty()) {
             item {

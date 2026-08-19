@@ -302,4 +302,4 @@ private fun RowScope.RootNavigationBarItem(
 }
 
 private val NAV_BAR_CONTENT_HEIGHT = 72.dp
-private val FLOATING_NAV_BAR_RESERVED_HEIGHT = 88.dp
+private val FLOATING_NAV_BAR_RESERVED_HEIGHT = 76.dp

@@ -56,7 +56,7 @@ fun LibraryEntryItem(
         modifier = modifier.testTag(testTag),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         leadingContent = leadingContent,
         trailingContent = {

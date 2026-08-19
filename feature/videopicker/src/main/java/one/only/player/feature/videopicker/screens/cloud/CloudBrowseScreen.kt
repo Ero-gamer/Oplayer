@@ -74,9 +74,11 @@ import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.designsystem.NextIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
+import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.composables.InfoChip
 import one.only.player.feature.videopicker.composables.LocalNetworkPermissionMissingScreen
+import one.only.player.feature.videopicker.composables.MediaItemContentPadding
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
@@ -509,7 +511,8 @@ private fun CloudRemoteMediaView(
             modifier = Modifier.fillMaxSize(),
             state = lazyGridState,
             columns = GridCells.Fixed(spans),
-            contentPadding = contentPadding + PaddingValues(horizontal = contentHorizontalPadding),
+            contentPadding = contentPadding
+                .subtractBottomPadding(MediaItemContentPadding) + PaddingValues(horizontal = contentHorizontalPadding),
             verticalArrangement = Arrangement.spacedBy(itemSpacing),
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
         ) {
@@ -657,7 +660,7 @@ private fun RemoteFileListItem(
         modifier = Modifier.testTag("remote_file_${file.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         onLongClick = onLongClick,
         leadingContent = {
@@ -740,7 +743,7 @@ private fun RemoteFileGridItem(
             .testTag("remote_file_${file.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         onLongClick = onLongClick,
         trailingContent = {

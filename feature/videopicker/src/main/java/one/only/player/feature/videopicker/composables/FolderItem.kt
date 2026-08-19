@@ -84,7 +84,7 @@ private fun FolderListItem(
         modifier = modifier.testTag("item_folder_${folder.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         onLongClick = onLongClick,
         leadingContent = {
@@ -177,7 +177,7 @@ private fun FolderGridItem(
             .testTag("item_folder_${folder.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
-        contentPadding = PaddingValues(8.dp),
+        contentPadding = PaddingValues(MediaItemContentPadding),
         onClick = onClick,
         onLongClick = onLongClick,
         trailingContent = {
