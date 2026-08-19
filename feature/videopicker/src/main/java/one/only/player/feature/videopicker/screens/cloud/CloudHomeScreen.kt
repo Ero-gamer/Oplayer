@@ -386,16 +386,8 @@ private fun AddEditServerDialog(
                     )
                 }
 
-                Text(
-                    text = stringResource(R.string.proxy_settings),
-                    style = MiuixTheme.textStyles.title4,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 4.dp),
-                )
                 PreferenceSwitch(
-                    title = stringResource(R.string.proxy_enabled),
-                    description = stringResource(R.string.proxy_settings),
-                    icon = AppIcons.Link,
+                    title = stringResource(R.string.proxy_settings),
                     isChecked = isProxyEnabled,
                     onClick = { isProxyEnabled = !isProxyEnabled },
                 )

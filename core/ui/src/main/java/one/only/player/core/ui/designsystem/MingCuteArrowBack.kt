@@ -3,12 +3,12 @@
 package one.only.player.core.ui.designsystem
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
 internal val MingCuteArrowBack: ImageVector by lazy {
@@ -20,14 +20,14 @@ internal val MingCuteArrowBack: ImageVector by lazy {
         viewportHeight = 24f,
         autoMirror = true,
     ).apply {
-            addPath(
-                pathData = PathParser().parsePathString("M5 18h9a6 6 0 0 0 0-12H4l3.5 3.5").toNodes(),
-                pathFillType = PathFillType.NonZero,
-                fill = null,
-                stroke = SolidColor(Color.Black),
-                strokeLineWidth = 2f,
-                strokeLineCap = StrokeCap.Round,
-                strokeLineJoin = StrokeJoin.Round,
-            )
+        addPath(
+            pathData = PathParser().parsePathString("M5 18h9a6 6 0 0 0 0-12H4l3.5 3.5").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = null,
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = 2f,
+            strokeLineCap = StrokeCap.Round,
+            strokeLineJoin = StrokeJoin.Round,
+        )
     }.build()
 }

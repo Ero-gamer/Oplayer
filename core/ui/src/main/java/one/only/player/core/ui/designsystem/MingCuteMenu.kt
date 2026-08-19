@@ -3,12 +3,12 @@
 package one.only.player.core.ui.designsystem
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
 internal val MingCuteMenu: ImageVector by lazy {
@@ -20,14 +20,14 @@ internal val MingCuteMenu: ImageVector by lazy {
         viewportHeight = 24f,
         autoMirror = false,
     ).apply {
-            addPath(
-                pathData = PathParser().parsePathString("M4 6h16M4 12h16M4 18h16").toNodes(),
-                pathFillType = PathFillType.NonZero,
-                fill = null,
-                stroke = SolidColor(Color.Black),
-                strokeLineWidth = 2f,
-                strokeLineCap = StrokeCap.Round,
-                strokeLineJoin = StrokeJoin.Miter,
-            )
+        addPath(
+            pathData = PathParser().parsePathString("M4 6h16M4 12h16M4 18h16").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = null,
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = 2f,
+            strokeLineCap = StrokeCap.Round,
+            strokeLineJoin = StrokeJoin.Miter,
+        )
     }.build()
 }

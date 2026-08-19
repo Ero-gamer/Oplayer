@@ -3,12 +3,12 @@
 package one.only.player.core.ui.designsystem
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
 internal val MingCuteHomeLine: ImageVector by lazy {
@@ -20,14 +20,14 @@ internal val MingCuteHomeLine: ImageVector by lazy {
         viewportHeight = 24f,
         autoMirror = false,
     ).apply {
-            addPath(
-                pathData = PathParser().parsePathString("M4 9.5a1 1 0 0 1 .4-.8l7-5.25a1 1 0 0 1 1.2 0l7 5.25a1 1 0 0 1 .4.8V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z").toNodes(),
-                pathFillType = PathFillType.NonZero,
-                fill = null,
-                stroke = SolidColor(Color.Black),
-                strokeLineWidth = 2f,
-                strokeLineCap = StrokeCap.Butt,
-                strokeLineJoin = StrokeJoin.Miter,
-            )
+        addPath(
+            pathData = PathParser().parsePathString("M3.003 10v-.002l8.383-6.52a1 1 0 0 1 1.228 0l8.384 6.52V10H19v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9z").toNodes(),
+            pathFillType = PathFillType.NonZero,
+            fill = null,
+            stroke = SolidColor(Color.Black),
+            strokeLineWidth = 2f,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Round,
+        )
     }.build()
 }
