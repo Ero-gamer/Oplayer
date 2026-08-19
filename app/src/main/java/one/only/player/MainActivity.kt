@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val shouldUseDarkTheme = shouldUseDarkTheme(
                 uiState = uiState,
-                bootstrapShouldUseDarkTheme = bootstrapTheme.shouldUseDarkTheme,
+                bootstrapThemeConfig = persistedStartupPreferences.themeConfig,
             )
             val shouldUseDynamicColor = shouldUseDynamicTheming(
                 uiState = uiState,
@@ -522,14 +522,17 @@ private fun isSystemDarkTheme(configuration: Configuration): Boolean = (configur
 @Composable
 fun shouldUseDarkTheme(
     uiState: MainActivityUiState,
-    bootstrapShouldUseDarkTheme: Boolean? = null,
-): Boolean = when (uiState) {
-    MainActivityUiState.Loading -> bootstrapShouldUseDarkTheme ?: isSystemInDarkTheme()
-    is MainActivityUiState.Success -> when (uiState.preferences.themeConfig) {
-        ThemeConfig.SYSTEM -> isSystemInDarkTheme()
-        ThemeConfig.OFF -> false
-        ThemeConfig.ON -> true
+    bootstrapThemeConfig: ThemeConfig = ThemeConfig.SYSTEM,
+): Boolean {
+    val isSystemDarkTheme = isSystemInDarkTheme()
+    val themeConfig = when (uiState) {
+        MainActivityUiState.Loading -> bootstrapThemeConfig
+        is MainActivityUiState.Success -> uiState.preferences.themeConfig
     }
+    return resolveBootstrapTheme(
+        themeConfig = themeConfig,
+        isSystemDarkTheme = isSystemDarkTheme,
+    ).shouldUseDarkTheme
 }
 
 @Composable
