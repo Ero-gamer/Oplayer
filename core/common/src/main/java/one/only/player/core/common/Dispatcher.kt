@@ -4,9 +4,9 @@ import javax.inject.Qualifier
 
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Dispatcher(val niaDispatcher: NextDispatchers)
+annotation class Dispatcher(val type: DispatcherType)
 
-enum class NextDispatchers {
+enum class DispatcherType {
     Default,
     IO,
 }

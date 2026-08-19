@@ -33,12 +33,12 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.CardItemGap
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.SearchTopAppBar
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -102,7 +102,7 @@ internal fun HistoryScreen(
                 label = "history_top_bar",
             ) { isSearching ->
                 if (isSearching) {
-                    NextSearchTopAppBar(
+                    SearchTopAppBar(
                         query = uiState.searchQuery,
                         placeholder = stringResource(R.string.search_watch_history),
                         searchFieldTestTag = "input_history_search",
@@ -125,7 +125,7 @@ internal fun HistoryScreen(
                                     .testTag("btn_history_back"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.ArrowBack,
+                                    imageVector = AppIcons.ArrowBack,
                                     contentDescription = stringResource(id = R.string.navigate_up),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -137,7 +137,7 @@ internal fun HistoryScreen(
                                 modifier = Modifier.testTag("btn_history_search"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.Search,
+                                    imageVector = AppIcons.Search,
                                     contentDescription = stringResource(R.string.search),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -148,7 +148,7 @@ internal fun HistoryScreen(
                                     modifier = Modifier.testTag("btn_history_clear"),
                                 ) {
                                     MiuixIcon(
-                                        imageVector = NextIcons.DeleteSweep,
+                                        imageVector = AppIcons.DeleteSweep,
                                         contentDescription = stringResource(R.string.clear_watch_history),
                                         tint = MiuixTheme.colorScheme.onSurface,
                                     )
@@ -170,7 +170,7 @@ internal fun HistoryScreen(
         ) {
             if (uiState.videos.isEmpty()) {
                 MediaMessageState(
-                    icon = NextIcons.History,
+                    icon = AppIcons.History,
                     title = stringResource(R.string.no_watch_history),
                     contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
                 )
@@ -201,7 +201,7 @@ internal fun HistoryScreen(
     }
 
     if (shouldShowClearDialog) {
-        NextDialog(
+        AppDialog(
             onDismissRequest = { shouldShowClearDialog = false },
             title = stringResource(R.string.clear_watch_history),
             content = {
@@ -264,7 +264,7 @@ private fun HistoryVideoItem(
         overflowActions = listOf(
             MenuAction(
                 text = stringResource(R.string.remove_from_history),
-                icon = NextIcons.Delete,
+                icon = AppIcons.Delete,
                 testTag = "item_history_remove_${video.displayName}",
                 onClick = onRemove,
             ),

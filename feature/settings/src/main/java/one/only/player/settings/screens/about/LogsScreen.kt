@@ -33,7 +33,7 @@ import kotlinx.coroutines.withContext
 import one.only.player.core.common.Logger
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon
@@ -89,7 +89,7 @@ fun LogsScreen(
                             .testTag("button_logs_back"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(R.string.navigate_up),
                         )
                     }
@@ -101,7 +101,7 @@ fun LogsScreen(
                         modifier = Modifier.testTag("button_logs_share"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.Share,
+                            imageVector = AppIcons.Share,
                             contentDescription = stringResource(R.string.share_logs),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -112,7 +112,7 @@ fun LogsScreen(
                         modifier = Modifier.testTag("button_logs_save"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.Save,
+                            imageVector = AppIcons.Save,
                             contentDescription = stringResource(R.string.save_logs),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -136,7 +136,7 @@ fun LogsScreen(
                         modifier = Modifier.testTag("button_logs_clear"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.DeleteSweep,
+                            imageVector = AppIcons.DeleteSweep,
                             contentDescription = stringResource(R.string.clear_logs),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )

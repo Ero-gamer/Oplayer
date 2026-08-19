@@ -46,7 +46,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import kotlin.time.Duration.Companion.milliseconds
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.model.currentChapterIndex
@@ -211,7 +211,7 @@ private fun ChapterItem(
                 contentAlignment = Alignment.Center,
             ) {
                 MiuixIcon(
-                    imageVector = NextIcons.Play,
+                    imageVector = AppIcons.Play,
                     contentDescription = stringResource(R.string.current_chapter),
                     tint = tokens.itemSelectedContentColor,
                     modifier = Modifier.size(16.dp),
@@ -259,7 +259,7 @@ private fun ChapterThumbnail(
         contentAlignment = Alignment.Center,
     ) {
         MiuixIcon(
-            imageVector = NextIcons.Video,
+            imageVector = AppIcons.Video,
             contentDescription = null,
             tint = tokens.secondaryContentColor.copy(alpha = 0.35f),
         )
@@ -314,7 +314,7 @@ private fun EmptyChaptersView(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             MiuixIcon(
-                imageVector = NextIcons.PlaylistPlay,
+                imageVector = AppIcons.PlaylistPlay,
                 contentDescription = null,
                 tint = tokens.secondaryContentColor,
             )

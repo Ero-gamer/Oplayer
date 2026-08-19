@@ -15,9 +15,9 @@ import androidx.compose.ui.res.stringResource
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
-import one.only.player.core.ui.components.NextDialog
 import top.yukonga.miuix.kmp.basic.TextField
 
 @Composable
@@ -28,7 +28,7 @@ fun RenameDialog(
 ) {
     var mediaName by rememberSaveable { mutableStateOf(name) }
     val focusRequester = remember { FocusRequester() }
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.rename_to),
         content = {

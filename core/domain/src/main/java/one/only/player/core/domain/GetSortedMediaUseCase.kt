@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaViewMode
@@ -20,7 +20,7 @@ class GetSortedMediaUseCase @Inject constructor(
     private val getSortedFoldersUseCase: GetSortedFoldersUseCase,
     private val getSortedFolderTreeUseCase: GetSortedFolderTreeUseCase,
     private val preferencesRepository: PreferencesRepository,
-    @Dispatcher(NextDispatchers.Default) private val defaultDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.Default) private val defaultDispatcher: CoroutineDispatcher,
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)

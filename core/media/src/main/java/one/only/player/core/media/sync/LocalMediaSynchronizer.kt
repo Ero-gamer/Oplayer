@@ -36,8 +36,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import one.only.player.core.common.Dispatcher
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.Logger
-import one.only.player.core.common.NextDispatchers
 import one.only.player.core.common.di.ApplicationScope
 import one.only.player.core.common.extensions.VIDEO_COLLECTION_URI
 import one.only.player.core.common.extensions.canonicalPathOrSelf
@@ -88,7 +88,7 @@ class LocalMediaSynchronizer @Inject constructor(
     private val mediaInfoSynchronizer: MediaInfoSynchronizer,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @ApplicationContext private val context: Context,
-    @Dispatcher(NextDispatchers.IO) private val dispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.IO) private val dispatcher: CoroutineDispatcher,
 ) : MediaSynchronizer {
 
     private var mediaSyncingJob: Job? = null

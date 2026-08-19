@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.window.WindowDialog
 
 @Composable
-fun NextDialog(
+fun AppDialog(
     onDismissRequest: () -> Unit,
     title: String,
     content: @Composable () -> Unit,
@@ -30,7 +30,7 @@ fun NextDialog(
     WindowDialog(
         show = true,
         modifier = modifier
-            .widthIn(max = configuration.screenWidthDp.dp - NextDialogDefaults.dialogMargin * 2),
+            .widthIn(max = configuration.screenWidthDp.dp - AppDialogDefaults.dialogMargin * 2),
         title = title,
         onDismissRequest = onDismissRequest,
     ) {
@@ -42,7 +42,7 @@ fun NextDialog(
             ) {
                 content()
             }
-            NextDialogButtonRow(
+            DialogButtonRow(
                 confirmButton = confirmButton,
                 dismissButton = dismissButton,
                 additionalButton = additionalButton,
@@ -52,13 +52,13 @@ fun NextDialog(
 }
 
 @Composable
-fun NextDialogWithDoneAndCancelButtons(
+fun DoneCancelDialog(
     title: String,
     onDoneClick: () -> Unit,
     onDismissClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         title = title,
         confirmButton = { DoneButton(onClick = onDoneClick) },
         dismissButton = { CancelButton(onClick = onDismissClick) },
@@ -68,7 +68,7 @@ fun NextDialogWithDoneAndCancelButtons(
 }
 
 @Composable
-private fun NextDialogButtonRow(
+private fun DialogButtonRow(
     confirmButton: @Composable (() -> Unit)?,
     dismissButton: @Composable (() -> Unit)?,
     additionalButton: @Composable (() -> Unit)?,
@@ -94,6 +94,6 @@ private fun NextDialogButtonRow(
     }
 }
 
-object NextDialogDefaults {
+object AppDialogDefaults {
     val dialogMargin: Dp = 16.dp
 }

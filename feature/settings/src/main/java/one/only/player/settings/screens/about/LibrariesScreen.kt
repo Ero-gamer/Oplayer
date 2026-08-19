@@ -30,7 +30,7 @@ import com.mikepenz.aboutlibraries.entity.Library
 import one.only.player.core.common.Logger
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.settings.R as SettingsR
@@ -68,7 +68,7 @@ fun LibrariesScreen(
                             .testTag("button_libraries_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )

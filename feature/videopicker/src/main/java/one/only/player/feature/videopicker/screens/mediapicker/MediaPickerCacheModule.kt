@@ -11,7 +11,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.di.ApplicationScope
 
 @Module
@@ -23,7 +23,7 @@ object MediaPickerCacheModule {
     fun provideSnapshotCache(
         @ApplicationContext context: Context,
         @ApplicationScope scope: CoroutineScope,
-        @Dispatcher(NextDispatchers.IO) ioDispatcher: CoroutineDispatcher,
+        @Dispatcher(DispatcherType.IO) ioDispatcher: CoroutineDispatcher,
     ): MediaPickerSnapshotCache = MediaPickerSnapshotCache(
         cacheDir = File(context.cacheDir, "media_snapshots"),
         scope = scope,

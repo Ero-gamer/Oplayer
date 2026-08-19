@@ -32,7 +32,7 @@ import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.withVideoSharpening
 import one.only.player.core.model.withVideoSharpeningFilterEnabled
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -59,7 +59,7 @@ fun VideoFiltersDialog(
         onPreviewPreferences = onPreviewPreferences,
         onConfirmPreferences = onConfirmPreferences,
     ) { draftPreferences, updateDraft, resetFilters, restoreAndDismiss, confirmAndDismiss ->
-        NextDialog(
+        AppDialog(
             modifier = dialogModifier.testTag("dialog_video_filters"),
             onDismissRequest = restoreAndDismiss,
             title = stringResource(R.string.video_filters),
@@ -287,7 +287,7 @@ private fun VideoFiltersSwitch(
         modifier = Modifier.testTag("switch_video_filters"),
         title = stringResource(R.string.enable_video_filters),
         description = stringResource(R.string.enable_video_filters_description),
-        icon = NextIcons.Sensitivity,
+        icon = AppIcons.Sensitivity,
         isChecked = preferences.shouldApplyVideoFilters,
         onClick = {
             onUpdatePreferences { it.copy(shouldApplyVideoFilters = !it.shouldApplyVideoFilters) }
@@ -423,7 +423,7 @@ private fun VideoFilterSlider(spec: VideoFilterSliderSpec) {
         valueRange = spec.valueRange,
         onValueChange = spec.onValueChange,
         trailingContent = {
-            NextSwitch(
+            AppSwitch(
                 modifier = Modifier.testTag(spec.switchTestTag),
                 isChecked = spec.isChecked,
                 onCheckedChange = { spec.onCheckedChange() },
@@ -459,7 +459,7 @@ private fun CompactVideoFilterSlider(
                 style = MaterialTheme.typography.bodySmall,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
-            NextSwitch(
+            AppSwitch(
                 modifier = Modifier.testTag(spec.switchTestTag),
                 isChecked = spec.isChecked,
                 onCheckedChange = { spec.onCheckedChange() },

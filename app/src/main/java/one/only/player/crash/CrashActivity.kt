@@ -50,7 +50,7 @@ import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.LogsSelectionContainer
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.DEFAULT_SEED_COLOR
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -262,7 +262,7 @@ private fun CrashScreen(
                         modifier = Modifier.testTag("button_crash_share"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.Share,
+                            imageVector = AppIcons.Share,
                             contentDescription = stringResource(R.string.crash_screen_share),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -272,7 +272,7 @@ private fun CrashScreen(
                         modifier = Modifier.testTag("button_crash_copy"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.Copy,
+                            imageVector = AppIcons.Copy,
                             contentDescription = stringResource(R.string.crash_screen_copy),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -282,7 +282,7 @@ private fun CrashScreen(
                         modifier = Modifier.testTag("button_crash_restart"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.Update,
+                            imageVector = AppIcons.Update,
                             contentDescription = stringResource(R.string.crash_screen_restart),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )

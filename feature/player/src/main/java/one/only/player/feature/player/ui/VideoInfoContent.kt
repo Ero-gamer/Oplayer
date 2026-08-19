@@ -37,7 +37,7 @@ import java.util.Locale
 import one.only.player.core.common.Utils
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.feature.player.service.VideoFormatInfo
 import one.only.player.feature.player.service.getVideoFormatInfo
 import one.only.player.feature.player.state.rememberTracksState
@@ -188,10 +188,10 @@ private fun buildVideoInfoSections(
     )
 
     return listOfNotNull(
-        fileRows.toSection("file", R.string.file, NextIcons.FileOpen),
-        videoRows.toSection("video", R.string.video_track, NextIcons.Movie),
-        audioRows.toSection("audio", R.string.audio_track, NextIcons.Audio),
-        subtitleRows.toSection("subtitle", R.string.subtitle_track, NextIcons.Subtitle),
+        fileRows.toSection("file", R.string.file, AppIcons.FileOpen),
+        videoRows.toSection("video", R.string.video_track, AppIcons.Movie),
+        audioRows.toSection("audio", R.string.audio_track, AppIcons.Audio),
+        subtitleRows.toSection("subtitle", R.string.subtitle_track, AppIcons.Subtitle),
     )
 }
 

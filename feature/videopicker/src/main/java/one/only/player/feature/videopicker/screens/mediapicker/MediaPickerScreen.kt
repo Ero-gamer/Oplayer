@@ -62,13 +62,13 @@ import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
 import one.only.player.core.ui.base.DataState
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.composables.PermissionMissingView
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.preview.DayNightPreview
@@ -283,7 +283,7 @@ internal fun MediaPickerScreen(
                                 .testTag("btn_selection_exit"),
                         ) {
                             Icon(
-                                imageVector = NextIcons.Close,
+                                imageVector = AppIcons.Close,
                                 contentDescription = stringResource(id = R.string.navigate_up),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -302,7 +302,7 @@ internal fun MediaPickerScreen(
                                 .testTag("btn_media_picker_back"),
                         ) {
                             Icon(
-                                imageVector = NextIcons.ArrowBack,
+                                imageVector = AppIcons.ArrowBack,
                                 contentDescription = stringResource(id = R.string.navigate_up),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -320,7 +320,7 @@ internal fun MediaPickerScreen(
                             modifier = Modifier.testTag("btn_cancel_move"),
                         ) {
                             Icon(
-                                imageVector = NextIcons.Close,
+                                imageVector = AppIcons.Close,
                                 contentDescription = stringResource(id = R.string.cancel),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -341,9 +341,9 @@ internal fun MediaPickerScreen(
                         ) {
                             Icon(
                                 imageVector = if (selectedItemsSize != totalItemsSize) {
-                                    NextIcons.SelectAll
+                                    AppIcons.SelectAll
                                 } else {
-                                    NextIcons.DeselectAll
+                                    AppIcons.DeselectAll
                                 },
                                 contentDescription = if (selectedItemsSize != totalItemsSize) {
                                     stringResource(R.string.select_all)
@@ -384,7 +384,7 @@ internal fun MediaPickerScreen(
                             modifier = Modifier.testTag("btn_selection_more"),
                         ) {
                             Icon(
-                                imageVector = NextIcons.MoreVert,
+                                imageVector = AppIcons.MoreVert,
                                 contentDescription = stringResource(id = R.string.more_actions),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -401,7 +401,7 @@ internal fun MediaPickerScreen(
                                 modifier = Modifier.testTag("btn_media_picker_search"),
                             ) {
                                 Icon(
-                                    imageVector = NextIcons.Search,
+                                    imageVector = AppIcons.Search,
                                     contentDescription = stringResource(id = R.string.search),
                                     tint = MiuixTheme.colorScheme.onBackground,
                                 )
@@ -412,7 +412,7 @@ internal fun MediaPickerScreen(
                                     modifier = Modifier.testTag("btn_media_picker_recycle_bin"),
                                 ) {
                                     Icon(
-                                        imageVector = NextIcons.DeleteSweep,
+                                        imageVector = AppIcons.DeleteSweep,
                                         contentDescription = stringResource(id = R.string.recycle_bin),
                                         tint = MiuixTheme.colorScheme.onBackground,
                                     )
@@ -423,7 +423,7 @@ internal fun MediaPickerScreen(
                                 modifier = Modifier.testTag("btn_quick_settings"),
                             ) {
                                 Icon(
-                                    imageVector = NextIcons.DashBoard,
+                                    imageVector = AppIcons.DashBoard,
                                     contentDescription = stringResource(id = R.string.quick_settings),
                                     tint = MiuixTheme.colorScheme.onBackground,
                                 )
@@ -434,7 +434,7 @@ internal fun MediaPickerScreen(
                                 modifier = Modifier.testTag("btn_main_menu"),
                             ) {
                                 Icon(
-                                    imageVector = NextIcons.ExpandMore,
+                                    imageVector = AppIcons.ExpandMore,
                                     contentDescription = stringResource(id = R.string.menu),
                                     tint = MiuixTheme.colorScheme.onBackground,
                                 )
@@ -855,7 +855,7 @@ private fun MoveProgressDialog(
     }
     val progressPercent = ((fileProgress ?: 0f) * 100).toInt().coerceIn(0, 100)
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = onContinue,
         title = stringResource(R.string.move_progress_title),
         content = {
@@ -932,7 +932,7 @@ private fun DeleteConfirmationDialog(
     onConfirm: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         onDismissRequest = onCancel,
         title = if (deleteAction == MediaPickerDeleteAction.MoveToRecycleBin) {
             stringResource(R.string.move_to_recycle_bin)
@@ -1072,7 +1072,7 @@ private fun selectionPrimaryActions(
     if (isRecycleBinMode) {
         actions += MenuAction(
             text = stringResource(id = R.string.restore),
-            icon = NextIcons.ArrowUpward,
+            icon = AppIcons.ArrowUpward,
             testTag = "item_selection_restore",
             onClick = {
                 onEvent(MediaPickerUiEvent.RestoreVideos(selectionManager.allSelectedVideos.map { it.uriString }))
@@ -1082,7 +1082,7 @@ private fun selectionPrimaryActions(
     }
     actions += MenuAction(
         text = stringResource(id = R.string.share),
-        icon = NextIcons.Share,
+        icon = AppIcons.Share,
         testTag = "item_selection_share",
         onClick = {
             onEvent(MediaPickerUiEvent.ShareVideos(selectionManager.allSelectedVideos.map { it.uriString }))
@@ -1091,7 +1091,7 @@ private fun selectionPrimaryActions(
     if (isLibraryMode) {
         actions += MenuAction(
             text = stringResource(id = R.string.favorites),
-            icon = NextIcons.LibraryBooks,
+            icon = AppIcons.LibraryBooks,
             testTag = "item_selection_add_favorites",
             onClick = {
                 val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@MenuAction
@@ -1107,7 +1107,7 @@ private fun selectionPrimaryActions(
         )
         actions += MenuAction(
             text = stringResource(id = R.string.add_to_playlist),
-            icon = NextIcons.PlaylistPlay,
+            icon = AppIcons.PlaylistPlay,
             testTag = "item_selection_add_playlist",
             onClick = {
                 val rootFolder = (uiState.mediaDataState as? DataState.Success)?.value ?: return@MenuAction
@@ -1122,7 +1122,7 @@ private fun selectionPrimaryActions(
         )
         actions += MenuAction(
             text = stringResource(id = R.string.move),
-            icon = NextIcons.DriveFileMove,
+            icon = AppIcons.DriveFileMove,
             testTag = "item_selection_move",
             onClick = {
                 onEvent(
@@ -1153,7 +1153,7 @@ private fun selectionDeleteAction(
             }
         },
     ),
-    icon = NextIcons.Delete,
+    icon = AppIcons.Delete,
     testTag = "item_selection_delete",
     onClick = onDeleteRequest,
 )
@@ -1174,7 +1174,7 @@ private fun selectionOverflowActions(
     if (selectionManager.isSingleVideoSelected && isLibraryMode) {
         actions += MenuAction(
             text = stringResource(id = R.string.rename),
-            icon = NextIcons.Edit,
+            icon = AppIcons.Edit,
             testTag = "item_selection_rename",
             onClick = {
                 val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@MenuAction
@@ -1187,7 +1187,7 @@ private fun selectionOverflowActions(
     if (selectionManager.isSingleVideoSelected) {
         actions += MenuAction(
             text = stringResource(id = R.string.info),
-            icon = NextIcons.Info,
+            icon = AppIcons.Info,
             testTag = "item_selection_info",
             onClick = {
                 val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@MenuAction
@@ -1201,7 +1201,7 @@ private fun selectionOverflowActions(
     if (isLibraryMode) {
         actions += MenuAction(
             text = stringResource(id = R.string.mark_as_played),
-            icon = NextIcons.CheckBox,
+            icon = AppIcons.CheckBox,
             testTag = "item_selection_mark_played",
             onClick = {
                 onEvent(MediaPickerUiEvent.MarkVideosPlayed(selectionManager.allSelectedVideos.map { it.uriString }))
@@ -1210,7 +1210,7 @@ private fun selectionOverflowActions(
         )
         actions += MenuAction(
             text = stringResource(id = R.string.mark_as_unplayed),
-            icon = NextIcons.CheckBoxOutline,
+            icon = AppIcons.CheckBoxOutline,
             testTag = "item_selection_mark_unplayed",
             onClick = {
                 onEvent(MediaPickerUiEvent.MarkVideosUnplayed(selectionManager.allSelectedVideos.map { it.uriString }))
@@ -1221,7 +1221,7 @@ private fun selectionOverflowActions(
     if (selectionManager.selectedFolders.isNotEmpty() && isLibraryMode) {
         actions += MenuAction(
             text = stringResource(id = R.string.exclude),
-            icon = NextIcons.FolderOff,
+            icon = AppIcons.FolderOff,
             testTag = "item_selection_exclude",
             onClick = {
                 val paths = selectionManager.selectedFolders.map { it.path }
@@ -1245,13 +1245,13 @@ private fun mainMenuActionGroups(
     val libraryActions = listOf(
         MenuAction(
             text = stringResource(id = R.string.watch_history),
-            icon = NextIcons.History,
+            icon = AppIcons.History,
             testTag = "item_main_menu_history",
             onClick = onHistoryClick,
         ),
         MenuAction(
             text = stringResource(id = R.string.playlists),
-            icon = NextIcons.PlaylistPlay,
+            icon = AppIcons.PlaylistPlay,
             testTag = "item_main_menu_playlists",
             onClick = onPlaylistsClick,
         ),
@@ -1259,13 +1259,13 @@ private fun mainMenuActionGroups(
     val openActions = listOf(
         MenuAction(
             text = stringResource(id = R.string.open_network_stream),
-            icon = NextIcons.Link,
+            icon = AppIcons.Link,
             testTag = "item_main_menu_network_stream",
             onClick = onOpenNetworkStream,
         ),
         MenuAction(
             text = stringResource(id = R.string.open_local_video),
-            icon = NextIcons.FileOpen,
+            icon = AppIcons.FileOpen,
             testTag = "item_main_menu_local_video",
             onClick = onOpenLocalVideo,
         ),
@@ -1273,7 +1273,7 @@ private fun mainMenuActionGroups(
     val exitActions = listOf(
         MenuAction(
             text = stringResource(id = R.string.exit),
-            icon = NextIcons.Close,
+            icon = AppIcons.Close,
             testTag = "item_main_menu_exit_app",
             onClick = onExit,
         ),
@@ -1288,7 +1288,7 @@ private fun NetworkUrlDialog(
 ) {
     var url by rememberSaveable { mutableStateOf("") }
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.network_stream),
         content = {

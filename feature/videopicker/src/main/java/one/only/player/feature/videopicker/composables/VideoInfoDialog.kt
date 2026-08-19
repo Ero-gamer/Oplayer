@@ -16,7 +16,7 @@ import one.only.player.core.common.Utils
 import one.only.player.core.model.Video
 import one.only.player.core.model.displayCodecName
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.AppDialog
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -27,7 +27,7 @@ fun VideoInfoDialog(
     video: Video,
     onDismiss: () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = video.displayName,
         content = {

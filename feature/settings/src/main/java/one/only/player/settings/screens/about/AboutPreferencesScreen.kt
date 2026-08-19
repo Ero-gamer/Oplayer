@@ -43,14 +43,14 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.extensions.appIcon
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.settings.screens.about.effect.FlowLightBackground
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -96,7 +96,7 @@ fun AboutPreferencesScreen(
                                 .testTag("button_about_back"),
                         ) {
                             MiuixIcon(
-                                imageVector = NextIcons.ArrowBack,
+                                imageVector = AppIcons.ArrowBack,
                                 contentDescription = stringResource(id = R.string.navigate_up),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -127,13 +127,13 @@ fun AboutPreferencesScreen(
                     PreferenceItem(
                         title = stringResource(R.string.architecture),
                         description = rememberPrimaryArchitecture(),
-                        icon = NextIcons.Decoder,
+                        icon = AppIcons.Decoder,
                         isEnabled = true,
                     )
                     PreferenceItem(
                         title = stringResource(R.string.android_version),
                         description = rememberAndroidVersion(),
-                        icon = NextIcons.Update,
+                        icon = AppIcons.Update,
                         isEnabled = true,
                     )
                 }
@@ -156,7 +156,7 @@ private fun DiagnosticsSection(
             modifier = Modifier.testTag("item_settings_about_logs"),
             title = stringResource(R.string.app_logs),
             description = stringResource(R.string.app_logs_description),
-            icon = NextIcons.BugReport,
+            icon = AppIcons.BugReport,
             onClick = onLogsClick,
         )
     }
@@ -176,7 +176,7 @@ private fun UpdateSection(
             modifier = Modifier.testTag("item_settings_about_check_updates"),
             title = stringResource(R.string.check_for_updates),
             description = updateStatusText(uiState.updateState),
-            icon = NextIcons.Update,
+            icon = AppIcons.Update,
             onClick = {
                 when (val state = uiState.updateState) {
                     is UpdateState.UpdateAvailable -> {
@@ -217,7 +217,7 @@ private fun StartupUpdateDialog(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = { onEvent(AboutPreferencesUiEvent.DismissStartupUpdateDialog) },
         title = stringResource(R.string.update_dialog_title),
         content = { MiuixText(text = stringResource(R.string.update_dialog_message, state.latestVersion)) },
@@ -291,7 +291,7 @@ private fun AboutHero(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             AboutIconButton(
-                icon = NextIcons.LibraryBooks,
+                icon = AppIcons.LibraryBooks,
                 contentDescription = stringResource(R.string.libraries),
                 testTag = "btn_settings_about_libraries",
                 onClick = onLibrariesClick,

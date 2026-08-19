@@ -49,13 +49,13 @@ import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
+import one.only.player.core.ui.components.CardListItem
 import one.only.player.core.ui.components.DoneButton
 import one.only.player.core.ui.components.ListSectionTitle
-import one.only.player.core.ui.components.NextCardListItem
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextSearchTopAppBar
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.SearchTopAppBar
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.subtractBottomPadding
@@ -152,7 +152,7 @@ internal fun SearchScreen(
     Scaffold(
         topBar = {
             if (!selectionManager.isInSelectionMode) {
-                NextSearchTopAppBar(
+                SearchTopAppBar(
                     query = uiState.query,
                     placeholder = stringResource(R.string.search_videos_and_folders),
                     searchFieldTestTag = "input_search_query",
@@ -173,7 +173,7 @@ internal fun SearchScreen(
                                 .testTag("btn_search_selection_close"),
                         ) {
                             Icon(
-                                imageVector = NextIcons.Close,
+                                imageVector = AppIcons.Close,
                                 contentDescription = stringResource(id = R.string.navigate_up),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -193,9 +193,9 @@ internal fun SearchScreen(
                         ) {
                             Icon(
                                 imageVector = if (selectedItemsSize != totalItemsSize) {
-                                    NextIcons.SelectAll
+                                    AppIcons.SelectAll
                                 } else {
-                                    NextIcons.DeselectAll
+                                    AppIcons.DeselectAll
                                 },
                                 contentDescription = if (selectedItemsSize != totalItemsSize) {
                                     stringResource(R.string.select_all)
@@ -233,7 +233,7 @@ internal fun SearchScreen(
                             modifier = Modifier.testTag("btn_search_selection_more"),
                         ) {
                             Icon(
-                                imageVector = NextIcons.MoreVert,
+                                imageVector = AppIcons.MoreVert,
                                 contentDescription = stringResource(id = R.string.more_actions),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -361,7 +361,7 @@ private fun SuggestionsContent(
 ) {
     if (searchHistory.isEmpty() && popularFolders.isEmpty()) {
         MediaMessageState(
-            icon = NextIcons.Search,
+            icon = AppIcons.Search,
             title = stringResource(R.string.search_videos_and_folders),
             contentPadding = contentPadding,
         )
@@ -441,13 +441,13 @@ private fun SearchHistoryItem(
     onClick: () -> Unit,
     onRemove: () -> Unit,
 ) {
-    NextCardListItem(
+    CardListItem(
         modifier = Modifier.padding(horizontal = 8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         onClick = onClick,
         leadingContent = {
             Icon(
-                imageVector = NextIcons.History,
+                imageVector = AppIcons.History,
                 contentDescription = null,
                 tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
@@ -458,7 +458,7 @@ private fun SearchHistoryItem(
                 modifier = Modifier.size(24.dp),
             ) {
                 Icon(
-                    imageVector = NextIcons.Close,
+                    imageVector = AppIcons.Close,
                     contentDescription = stringResource(R.string.delete),
                     modifier = Modifier.size(18.dp),
                     tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
@@ -507,7 +507,7 @@ private fun SearchResultsContent(
     ) {
         if (searchResults.isEmpty) {
             MediaMessageState(
-                icon = NextIcons.Search,
+                icon = AppIcons.Search,
                 title = stringResource(R.string.no_results_found),
                 contentPadding = contentPadding,
             )
@@ -540,7 +540,7 @@ private fun searchSelectionPrimaryActions(
 ): List<MenuAction> = listOf(
     MenuAction(
         text = stringResource(id = R.string.share),
-        icon = NextIcons.Share,
+        icon = AppIcons.Share,
         testTag = "item_search_selection_share",
         onClick = {
             onEvent(SearchUiEvent.ShareVideos(selectedVideoUris))
@@ -548,7 +548,7 @@ private fun searchSelectionPrimaryActions(
     ),
     MenuAction(
         text = stringResource(id = R.string.favorites),
-        icon = NextIcons.LibraryBooks,
+        icon = AppIcons.LibraryBooks,
         testTag = "item_search_selection_add_favorites",
         onClick = {
             onEvent(SearchUiEvent.AddFavorites(selectedVideos, selectedFolders))
@@ -557,7 +557,7 @@ private fun searchSelectionPrimaryActions(
     ),
     MenuAction(
         text = stringResource(id = R.string.add_to_playlist),
-        icon = NextIcons.PlaylistPlay,
+        icon = AppIcons.PlaylistPlay,
         testTag = "item_search_selection_add_playlist",
         onClick = {
             onAddToPlaylist(selectedVideos, selectedFolders)
@@ -565,7 +565,7 @@ private fun searchSelectionPrimaryActions(
     ),
     MenuAction(
         text = stringResource(id = R.string.move),
-        icon = NextIcons.DriveFileMove,
+        icon = AppIcons.DriveFileMove,
         testTag = "item_search_selection_move",
         onClick = {
             onEvent(
@@ -584,7 +584,7 @@ private fun searchSelectionPrimaryActions(
 @Composable
 private fun searchSelectionDeleteAction(onDeleteRequest: () -> Unit): MenuAction = MenuAction(
     text = stringResource(id = R.string.delete),
-    icon = NextIcons.Delete,
+    icon = AppIcons.Delete,
     testTag = "item_search_selection_delete",
     onClick = onDeleteRequest,
 )
@@ -603,7 +603,7 @@ private fun searchSelectionOverflowActions(
     if (selectionManager.isSingleVideoSelected) {
         actions += MenuAction(
             text = stringResource(id = R.string.rename),
-            icon = NextIcons.Edit,
+            icon = AppIcons.Edit,
             testTag = "item_search_selection_rename",
             onClick = {
                 selectedVideos.firstOrNull()?.let(onRenameRequest)
@@ -611,7 +611,7 @@ private fun searchSelectionOverflowActions(
         )
         actions += MenuAction(
             text = stringResource(id = R.string.info),
-            icon = NextIcons.Info,
+            icon = AppIcons.Info,
             testTag = "item_search_selection_info",
             onClick = {
                 selectedVideos.firstOrNull()?.let(onInfoRequest)
@@ -621,7 +621,7 @@ private fun searchSelectionOverflowActions(
     }
     actions += MenuAction(
         text = stringResource(id = R.string.mark_as_played),
-        icon = NextIcons.CheckBox,
+        icon = AppIcons.CheckBox,
         testTag = "item_search_selection_mark_played",
         onClick = {
             onEvent(SearchUiEvent.MarkVideosPlayed(selectedVideoUris))
@@ -630,7 +630,7 @@ private fun searchSelectionOverflowActions(
     )
     actions += MenuAction(
         text = stringResource(id = R.string.mark_as_unplayed),
-        icon = NextIcons.CheckBoxOutline,
+        icon = AppIcons.CheckBoxOutline,
         testTag = "item_search_selection_mark_unplayed",
         onClick = {
             onEvent(SearchUiEvent.MarkVideosUnplayed(selectedVideoUris))
@@ -650,7 +650,7 @@ private fun SearchDeleteConfirmationDialog(
     val selectedVideoList = selectedVideos.toList()
     val totalDuration = selectedVideoList.sumOf(SelectedVideo::duration)
     val totalSize = selectedVideoList.sumOf(SelectedVideo::size)
-    NextDialog(
+    AppDialog(
         onDismissRequest = onCancel,
         title = if (isRecycleBinEnabled) {
             stringResource(R.string.move_to_recycle_bin)

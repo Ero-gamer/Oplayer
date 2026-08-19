@@ -29,8 +29,8 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import one.only.player.core.common.Dispatcher
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.Logger
-import one.only.player.core.common.NextDispatchers
 import one.only.player.core.common.di.ApplicationScope
 import one.only.player.core.common.extensions.externalSubtitleFontDir
 import one.only.player.core.common.extensions.externalSubtitleFontFile
@@ -44,7 +44,7 @@ import one.only.player.core.data.model.ExternalSubtitleFontMeta
 class LocalSubtitleFontRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,
-    @Dispatcher(NextDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.IO) private val ioDispatcher: CoroutineDispatcher,
     private val subtitleFontFileValidator: SubtitleFontFileValidator,
 ) : SubtitleFontRepository {
 

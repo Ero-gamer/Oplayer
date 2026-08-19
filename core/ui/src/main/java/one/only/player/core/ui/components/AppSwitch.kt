@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import top.yukonga.miuix.kmp.basic.Switch
 
 @Composable
-fun NextSwitch(
+fun AppSwitch(
     isChecked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,

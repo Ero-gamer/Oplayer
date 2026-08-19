@@ -32,7 +32,7 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.supportsDynamicTheming
 import one.only.player.settings.composables.OptionsDialog
@@ -125,7 +125,7 @@ private fun AppearancePreferencesContent(
                             .testTag("button_appearance_back"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -149,7 +149,7 @@ private fun AppearancePreferencesContent(
                     modifier = Modifier.testTag("item_settings_appearance_language"),
                     title = stringResource(id = R.string.app_language),
                     summary = languageLabels[languageIndex],
-                    startAction = { PrefIcon(NextIcons.Language) },
+                    startAction = { PrefIcon(AppIcons.Language) },
                     onClick = {
                         onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.AppLanguage))
                     },
@@ -158,7 +158,7 @@ private fun AppearancePreferencesContent(
                     modifier = Modifier.testTag("item_settings_appearance_theme"),
                     title = stringResource(id = R.string.theme_mode),
                     summary = preferences.themeConfig.name(),
-                    startAction = { PrefIcon(NextIcons.DarkMode) },
+                    startAction = { PrefIcon(AppIcons.DarkMode) },
                     onClick = {
                         onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.Theme))
                     },
@@ -170,7 +170,7 @@ private fun AppearancePreferencesContent(
                     SwitchPreference(
                         modifier = Modifier.testTag("switch_settings_appearance_dynamic_colors"),
                         title = stringResource(id = R.string.dynamic_theme),
-                        startAction = { PrefIcon(NextIcons.Appearance) },
+                        startAction = { PrefIcon(AppIcons.Appearance) },
                         checked = preferences.shouldUseDynamicColors,
                         onCheckedChange = { onEvent(AppearancePreferencesEvent.ToggleUseDynamicColors) },
                     )
@@ -180,7 +180,7 @@ private fun AppearancePreferencesContent(
                         modifier = Modifier.testTag("item_settings_appearance_theme_color"),
                         title = stringResource(id = R.string.theme_color),
                         summary = themeColorLabels[themeColorIndex],
-                        startAction = { PrefIcon(NextIcons.Appearance) },
+                        startAction = { PrefIcon(AppIcons.Appearance) },
                         onClick = {
                             onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.ThemeColor))
                         },
@@ -191,7 +191,7 @@ private fun AppearancePreferencesContent(
                         modifier = Modifier.testTag("dropdown_settings_appearance_palette_style"),
                         title = stringResource(id = R.string.theme_palette_style),
                         summary = preferences.themePaletteStyle.name(),
-                        startAction = { PrefIcon(NextIcons.Style) },
+                        startAction = { PrefIcon(AppIcons.Style) },
                         onClick = {
                             onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.PaletteStyle))
                         },
@@ -200,7 +200,7 @@ private fun AppearancePreferencesContent(
                         modifier = Modifier.testTag("dropdown_settings_appearance_color_spec"),
                         title = stringResource(id = R.string.theme_color_spec),
                         summary = preferences.themeColorSpec.name(),
-                        startAction = { PrefIcon(NextIcons.Contrast) },
+                        startAction = { PrefIcon(AppIcons.Contrast) },
                         onClick = {
                             onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.ColorSpec))
                         },
@@ -213,7 +213,7 @@ private fun AppearancePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_appearance_title_long_press_home"),
                     title = stringResource(id = R.string.home_title_long_press_to_root),
                     summary = stringResource(id = R.string.home_title_long_press_to_root_description),
-                    startAction = { PrefIcon(NextIcons.Title) },
+                    startAction = { PrefIcon(AppIcons.Title) },
                     checked = preferences.shouldNavigateHomeOnTitleLongPress,
                     onCheckedChange = {
                         onEvent(AppearancePreferencesEvent.ToggleNavigateHomeOnTitleLongPress)
@@ -223,7 +223,7 @@ private fun AppearancePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_appearance_floating_navigation_bar"),
                     title = stringResource(id = R.string.floating_navigation_bar),
                     summary = stringResource(id = R.string.floating_navigation_bar_description),
-                    startAction = { PrefIcon(NextIcons.SmartButton) },
+                    startAction = { PrefIcon(AppIcons.SmartButton) },
                     checked = preferences.shouldUseFloatingNavigationBar,
                     onCheckedChange = {
                         onEvent(AppearancePreferencesEvent.ToggleUseFloatingNavigationBar)
@@ -234,7 +234,7 @@ private fun AppearancePreferencesContent(
                         modifier = Modifier.testTag("switch_settings_appearance_floating_navigation_bar_blur"),
                         title = stringResource(id = R.string.floating_navigation_bar_blur),
                         summary = stringResource(id = R.string.floating_navigation_bar_blur_description),
-                        startAction = { PrefIcon(NextIcons.BlurOn) },
+                        startAction = { PrefIcon(AppIcons.BlurOn) },
                         checked = preferences.shouldBlurFloatingNavigationBar,
                         onCheckedChange = {
                             onEvent(AppearancePreferencesEvent.ToggleBlurFloatingNavigationBar)
@@ -246,7 +246,7 @@ private fun AppearancePreferencesContent(
                         modifier = Modifier.testTag("switch_settings_appearance_predictive_back"),
                         title = stringResource(id = R.string.predictive_back_gesture),
                         summary = stringResource(id = R.string.predictive_back_gesture_description),
-                        startAction = { PrefIcon(NextIcons.SwipeHorizontal) },
+                        startAction = { PrefIcon(AppIcons.SwipeHorizontal) },
                         checked = preferences.shouldEnablePredictiveBack,
                         onCheckedChange = onPredictiveBackToggle,
                     )

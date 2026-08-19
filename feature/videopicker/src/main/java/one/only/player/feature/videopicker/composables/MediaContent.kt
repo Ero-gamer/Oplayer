@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -86,7 +86,7 @@ fun MediaMessageState(
 @Composable
 fun NoVideosFound(contentPadding: PaddingValues) {
     MediaMessageState(
-        icon = NextIcons.Video,
+        icon = AppIcons.Video,
         title = stringResource(id = R.string.no_videos_found),
         contentPadding = contentPadding,
     )

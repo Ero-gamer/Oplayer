@@ -106,7 +106,7 @@ import one.only.player.core.model.Video
 import one.only.player.core.model.controllerAutoHideTimeoutSecondsOrNull
 import one.only.player.core.model.playerControls
 import one.only.player.core.ui.R as coreUiR
-import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.VideoFiltersPanel
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.playerCornerControlsCapacity
@@ -1223,7 +1223,7 @@ internal fun MediaPlayerScreen(
     }
 
     errorState.error?.let { error ->
-        NextDialog(
+        AppDialog(
             onDismissRequest = { },
             title = stringResource(coreUiR.string.error_playing_video),
             content = {

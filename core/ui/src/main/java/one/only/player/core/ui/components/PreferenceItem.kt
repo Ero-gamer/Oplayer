@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
@@ -157,7 +157,7 @@ fun PreferenceItemPreview() {
     PreferenceItem(
         title = "Title",
         description = "Description of the preference item goes here.",
-        icon = NextIcons.DoubleTap,
+        icon = AppIcons.DoubleTap,
         isEnabled = true,
     )
 }

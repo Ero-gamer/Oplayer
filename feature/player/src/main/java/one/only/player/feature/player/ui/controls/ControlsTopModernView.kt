@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.feature.player.ui.MenuRoute
 import one.only.player.feature.player.ui.PlayerControlBinding
@@ -54,7 +54,7 @@ internal fun ControlsTopModernView(
         ) {
             MiuixIcon(
                 modifier = Modifier.size(24.dp),
-                imageVector = NextIcons.ArrowBack,
+                imageVector = AppIcons.ArrowBack,
                 contentDescription = stringResource(R.string.navigate_up),
                 tint = Color.White,
             )
@@ -82,7 +82,7 @@ internal fun ControlsTopModernView(
         ) {
             MiuixIcon(
                 modifier = Modifier.size(24.dp),
-                imageVector = NextIcons.Menu,
+                imageVector = AppIcons.Menu,
                 contentDescription = stringResource(R.string.menu),
                 tint = Color.White,
             )

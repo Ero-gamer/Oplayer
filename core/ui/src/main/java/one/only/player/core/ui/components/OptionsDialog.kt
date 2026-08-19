@@ -15,7 +15,7 @@ fun OptionsDialog(
     modifier: Modifier = Modifier,
     options: LazyListScope.() -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         modifier = modifier,
         onDismissRequest = onDismissClick,
         title = title,

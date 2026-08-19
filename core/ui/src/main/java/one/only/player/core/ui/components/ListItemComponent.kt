@@ -25,7 +25,7 @@ val PageContentTopPadding = 10.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NextCardListItem(
+fun CardListItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
     isEnabled: Boolean = true,

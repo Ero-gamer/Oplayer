@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 
 // 控件的唯一小写标识，用于拼 testTag 和调试指令参数
 val PlayerControl.id: String
@@ -46,31 +46,31 @@ fun PlayerControl.labelRes(): Int = when (this) {
 fun PlayerControl.label(): String = stringResource(labelRes())
 
 fun PlayerControl.icon(): ImageVector = when (this) {
-    PlayerControl.BACK -> NextIcons.ArrowBack
-    PlayerControl.PLAYLIST -> NextIcons.PlaylistPlay
-    PlayerControl.PLAYBACK_SPEED -> NextIcons.Speed
-    PlayerControl.AUDIO -> NextIcons.Audio
-    PlayerControl.SUBTITLE -> NextIcons.Subtitle
-    PlayerControl.PREVIOUS -> NextIcons.SkipPrevious
-    PlayerControl.PLAY_PAUSE -> NextIcons.Play
-    PlayerControl.NEXT -> NextIcons.SkipNext
-    PlayerControl.LOCK -> NextIcons.Lock
-    PlayerControl.MUTE -> NextIcons.VolumeUp
-    PlayerControl.MARK -> NextIcons.History
-    PlayerControl.CHAPTERS -> NextIcons.PlaylistPlay
-    PlayerControl.SCALE -> NextIcons.Frame
-    PlayerControl.DECODER -> NextIcons.Decoder
-    PlayerControl.AMBIENCE_MODE -> NextIcons.Style
-    PlayerControl.VIDEO_FILTERS -> NextIcons.Sensitivity
-    PlayerControl.PIP -> NextIcons.Pip
-    PlayerControl.SCREENSHOT -> NextIcons.Screenshot
-    PlayerControl.BACKGROUND_PLAY -> NextIcons.Headset
-    PlayerControl.LOOP -> NextIcons.Loop
-    PlayerControl.SHUFFLE -> NextIcons.Shuffle
-    PlayerControl.SLEEP_TIMER -> NextIcons.Timer
-    PlayerControl.ROTATE -> NextIcons.Rotation
-    PlayerControl.MIRROR_VIDEO -> NextIcons.Size
-    PlayerControl.VIDEO_INFO -> NextIcons.Info
+    PlayerControl.BACK -> AppIcons.ArrowBack
+    PlayerControl.PLAYLIST -> AppIcons.PlaylistPlay
+    PlayerControl.PLAYBACK_SPEED -> AppIcons.Speed
+    PlayerControl.AUDIO -> AppIcons.Audio
+    PlayerControl.SUBTITLE -> AppIcons.Subtitle
+    PlayerControl.PREVIOUS -> AppIcons.SkipPrevious
+    PlayerControl.PLAY_PAUSE -> AppIcons.Play
+    PlayerControl.NEXT -> AppIcons.SkipNext
+    PlayerControl.LOCK -> AppIcons.Lock
+    PlayerControl.MUTE -> AppIcons.VolumeUp
+    PlayerControl.MARK -> AppIcons.History
+    PlayerControl.CHAPTERS -> AppIcons.PlaylistPlay
+    PlayerControl.SCALE -> AppIcons.Frame
+    PlayerControl.DECODER -> AppIcons.Decoder
+    PlayerControl.AMBIENCE_MODE -> AppIcons.Style
+    PlayerControl.VIDEO_FILTERS -> AppIcons.Sensitivity
+    PlayerControl.PIP -> AppIcons.Pip
+    PlayerControl.SCREENSHOT -> AppIcons.Screenshot
+    PlayerControl.BACKGROUND_PLAY -> AppIcons.Headset
+    PlayerControl.LOOP -> AppIcons.Loop
+    PlayerControl.SHUFFLE -> AppIcons.Shuffle
+    PlayerControl.SLEEP_TIMER -> AppIcons.Timer
+    PlayerControl.ROTATE -> AppIcons.Rotation
+    PlayerControl.MIRROR_VIDEO -> AppIcons.Size
+    PlayerControl.VIDEO_INFO -> AppIcons.Info
 }
 
 data class PlayerCornerControlsCapacity(

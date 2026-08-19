@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.preference.CheckboxLocation
@@ -67,7 +67,7 @@ fun PreferenceSwitchWithDividerPreview() {
     PreferenceSwitchWithDivider(
         title = "Title",
         description = "Description of the preference items goes here.",
-        icon = NextIcons.DoubleTap,
+        icon = AppIcons.DoubleTap,
         onClick = {},
         onChecked = {},
     )

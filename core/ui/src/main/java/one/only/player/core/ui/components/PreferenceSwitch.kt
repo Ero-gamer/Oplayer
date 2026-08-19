@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.preference.SwitchPreference
 
 @Composable
@@ -35,7 +35,7 @@ fun PreferenceSwitchPreview() {
     PreferenceSwitch(
         title = "Title",
         description = "Description of the preference item goes here.",
-        icon = NextIcons.DoubleTap,
+        icon = AppIcons.DoubleTap,
         onClick = {},
     )
 }

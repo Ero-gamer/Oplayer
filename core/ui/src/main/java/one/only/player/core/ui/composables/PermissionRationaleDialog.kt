@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -20,7 +20,7 @@ fun PermissionRationaleDialog(
     modifier: Modifier = Modifier,
     onConfirmButtonClick: () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         onDismissRequest = {},
         modifier = modifier,
         title = stringResource(R.string.permission_request),

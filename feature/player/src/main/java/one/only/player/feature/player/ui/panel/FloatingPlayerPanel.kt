@@ -60,7 +60,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -481,7 +481,7 @@ private fun PanelHeader(
                 onClick = onDismiss,
             ) {
                 MiuixIcon(
-                    imageVector = NextIcons.Close,
+                    imageVector = AppIcons.Close,
                     contentDescription = closeDescription,
                     tint = titleColor,
                 )

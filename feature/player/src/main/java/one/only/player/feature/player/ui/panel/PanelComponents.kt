@@ -21,7 +21,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import one.only.player.core.ui.components.NextSwitch
+import one.only.player.core.ui.components.AppSwitch
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.Slider as MiuixSlider
@@ -182,7 +182,7 @@ fun PanelSwitchRow(
             style = MiuixTheme.textStyles.body1,
             modifier = Modifier.weight(1f),
         )
-        NextSwitch(
+        AppSwitch(
             isChecked = isChecked,
             onCheckedChange = null,
         )

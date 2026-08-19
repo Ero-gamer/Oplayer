@@ -45,8 +45,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.ListSectionTitle
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.SubtitleStylePanel
 import one.only.player.feature.player.extensions.getName
 import one.only.player.feature.player.state.SubtitleOptionsEvent
@@ -169,7 +169,7 @@ fun SubtitleSelectorContent(
     }
 
     if (isOnlineSubtitleDialogVisible) {
-        NextDialog(
+        AppDialog(
             modifier = Modifier.testTag("dialog_online_subtitle"),
             onDismissRequest = { isOnlineSubtitleDialogVisible = false },
             title = stringResource(R.string.add_online_subtitle),

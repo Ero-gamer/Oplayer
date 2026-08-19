@@ -38,7 +38,7 @@ import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SubtitleStylePanel
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.settings.composables.OptionsDialog
@@ -119,7 +119,7 @@ private fun SubtitlePreferencesContent(
                             .testTag("button_subtitle_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -143,7 +143,7 @@ private fun SubtitlePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_subtitle_auto_load"),
                     title = stringResource(id = R.string.subtitle_auto_load),
                     description = stringResource(id = R.string.subtitle_auto_load_desc),
-                    icon = NextIcons.Subtitle,
+                    icon = AppIcons.Subtitle,
                     isChecked = uiState.preferences.isSubtitleAutoLoadEnabled,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ToggleSubtitleAutoLoad) },
                 )
@@ -152,14 +152,14 @@ private fun SubtitlePreferencesContent(
                     title = stringResource(id = R.string.preferred_subtitle_lang),
                     description = LocalesHelper.getLocaleDisplayLanguage(uiState.preferences.preferredSubtitleLanguage)
                         .takeIf { it.isNotBlank() } ?: stringResource(R.string.preferred_subtitle_lang_description),
-                    icon = NextIcons.Language,
+                    icon = AppIcons.Language,
                     isEnabled = uiState.preferences.isSubtitleAutoLoadEnabled,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ShowDialog(SubtitlePreferenceDialog.SubtitleLanguageDialog)) },
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_subtitle_remember_track"),
                     title = stringResource(id = R.string.remember_subtitle_track),
-                    icon = NextIcons.Subtitle,
+                    icon = AppIcons.Subtitle,
                     isChecked = uiState.preferences.shouldRememberSubtitleTrack,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ToggleRememberSubtitleTrack) },
                 )
@@ -167,7 +167,7 @@ private fun SubtitlePreferencesContent(
                     modifier = Modifier.testTag("item_settings_subtitle_encoding"),
                     title = stringResource(R.string.subtitle_text_encoding),
                     description = charsetResource.first { it.contains(uiState.preferences.subtitleTextEncoding) },
-                    icon = NextIcons.Subtitle,
+                    icon = AppIcons.Subtitle,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ShowDialog(SubtitlePreferenceDialog.SubtitleEncodingDialog)) },
                 )
             }
@@ -178,7 +178,7 @@ private fun SubtitlePreferencesContent(
                     switchModifier = Modifier.testTag("switch_settings_subtitle_system_caption_style"),
                     title = stringResource(R.string.system_caption_style),
                     description = stringResource(R.string.system_caption_style_desc),
-                    icon = NextIcons.Caption,
+                    icon = AppIcons.Caption,
                     isChecked = uiState.preferences.shouldUseSystemCaptionStyle,
                     onChecked = { onEvent(SubtitlePreferencesUiEvent.ToggleUseSystemCaptionStyle) },
                     onClick = { context.startActivity(Intent(Settings.ACTION_CAPTIONING_SETTINGS)) },
@@ -187,7 +187,7 @@ private fun SubtitlePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_subtitle_embedded_styles"),
                     title = stringResource(R.string.embedded_styles),
                     description = stringResource(R.string.embedded_styles_desc),
-                    icon = NextIcons.Style,
+                    icon = AppIcons.Style,
                     isChecked = uiState.preferences.shouldApplyEmbeddedStyles,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ToggleApplyEmbeddedStyles) },
                 )
@@ -195,7 +195,7 @@ private fun SubtitlePreferencesContent(
                     ClickablePreferenceItem(
                         title = stringResource(id = R.string.external_subtitle_font_notice_title),
                         description = stringResource(id = R.string.external_subtitle_font_system_style_notice),
-                        icon = NextIcons.Info,
+                        icon = AppIcons.Info,
                         isEnabled = false,
                     )
                 }
@@ -206,7 +206,7 @@ private fun SubtitlePreferencesContent(
                     modifier = Modifier.testTag("item_settings_subtitle_font"),
                     title = stringResource(id = R.string.subtitle_font),
                     description = uiState.preferences.subtitleFont.name(),
-                    icon = NextIcons.Font,
+                    icon = AppIcons.Font,
                     isEnabled = uiState.preferences.shouldUseSystemCaptionStyle.not(),
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ShowDialog(SubtitlePreferenceDialog.SubtitleFontDialog)) },
                 )
@@ -214,21 +214,21 @@ private fun SubtitlePreferencesContent(
                     modifier = Modifier.testTag("item_settings_subtitle_import_external_font"),
                     title = stringResource(id = R.string.external_subtitle_font_import),
                     description = stringResource(id = R.string.external_subtitle_font_import_desc),
-                    icon = NextIcons.FileOpen,
+                    icon = AppIcons.FileOpen,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ImportExternalSubtitleFont) },
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_current_external_font"),
                     title = stringResource(id = R.string.external_subtitle_font_current),
                     description = uiState.externalFontName.ifBlank { stringResource(id = R.string.external_subtitle_font_not_imported) },
-                    icon = NextIcons.Font,
+                    icon = AppIcons.Font,
                     isEnabled = false,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_clear_external_font"),
                     title = stringResource(id = R.string.external_subtitle_font_clear),
                     description = stringResource(id = R.string.external_subtitle_font_clear_desc),
-                    icon = NextIcons.DeleteSweep,
+                    icon = AppIcons.DeleteSweep,
                     isEnabled = uiState.isExternalFontAvailable,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ClearExternalSubtitleFont) },
                 )

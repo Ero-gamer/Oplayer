@@ -28,15 +28,15 @@ import one.only.player.core.model.PlayerControlSlot
 import one.only.player.core.model.controlsIn
 import one.only.player.core.model.slotOf
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.icon
 import one.only.player.core.ui.extensions.id
 import one.only.player.core.ui.extensions.label
@@ -87,7 +87,7 @@ fun PlayerControlsCustomizeScreen(
                             .testTag("button_customize_controls_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -112,14 +112,14 @@ fun PlayerControlsCustomizeScreen(
                     modifier = Modifier.testTag("item_settings_customize_preview_layout"),
                     title = stringResource(R.string.customize_controls_preview_layout),
                     description = previewLayout.label(),
-                    icon = NextIcons.Player,
+                    icon = AppIcons.Player,
                     onClick = { activeDialog = CustomizeDialog.PreviewPicker },
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_customize_reset"),
                     title = stringResource(R.string.customize_controls_reset),
                     description = stringResource(R.string.customize_controls_reset_description),
-                    icon = NextIcons.History,
+                    icon = AppIcons.History,
                     onClick = { activeDialog = CustomizeDialog.ResetConfirm },
                 )
             }
@@ -185,7 +185,7 @@ fun PlayerControlsCustomizeScreen(
             }
         }
 
-        CustomizeDialog.ResetConfirm -> NextDialog(
+        CustomizeDialog.ResetConfirm -> AppDialog(
             onDismissRequest = { activeDialog = null },
             title = stringResource(R.string.customize_controls_reset),
             confirmButton = {
@@ -248,7 +248,7 @@ private fun ArrangementSection(
                         if (slot != PlayerControlSlot.HIDDEN) {
                             ShiftButton(
                                 control = control,
-                                icon = NextIcons.ArrowUpward,
+                                icon = AppIcons.ArrowUpward,
                                 labelRes = R.string.customize_controls_move_up,
                                 testTag = "btn_customize_up_${control.id}",
                                 isEnabled = index > 0,
@@ -256,7 +256,7 @@ private fun ArrangementSection(
                             )
                             ShiftButton(
                                 control = control,
-                                icon = NextIcons.ArrowDownward,
+                                icon = AppIcons.ArrowDownward,
                                 labelRes = R.string.customize_controls_move_down,
                                 testTag = "btn_customize_down_${control.id}",
                                 isEnabled = index < controls.lastIndex,

@@ -36,12 +36,12 @@ import one.only.player.core.model.Playlist
 import one.only.player.core.model.PlaylistItem
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.CardItemGap
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.SearchTopAppBar
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -121,7 +121,7 @@ internal fun PlaylistsScreen(
                 label = "playlists_top_bar",
             ) { isSearching ->
                 if (isSearching) {
-                    NextSearchTopAppBar(
+                    SearchTopAppBar(
                         query = uiState.searchQuery,
                         placeholder = stringResource(
                             if (isDetail) R.string.search else R.string.search_playlists,
@@ -152,7 +152,7 @@ internal fun PlaylistsScreen(
                                     .testTag("btn_playlists_back"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.ArrowBack,
+                                    imageVector = AppIcons.ArrowBack,
                                     contentDescription = stringResource(id = R.string.navigate_up),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -164,7 +164,7 @@ internal fun PlaylistsScreen(
                                 modifier = Modifier.testTag("btn_playlists_search"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.Search,
+                                    imageVector = AppIcons.Search,
                                     contentDescription = stringResource(R.string.search),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -176,7 +176,7 @@ internal fun PlaylistsScreen(
                                         modifier = Modifier.testTag("btn_playlist_play_all"),
                                     ) {
                                         MiuixIcon(
-                                            imageVector = NextIcons.Play,
+                                            imageVector = AppIcons.Play,
                                             contentDescription = stringResource(R.string.play_all),
                                             tint = MiuixTheme.colorScheme.onSurface,
                                         )
@@ -188,7 +188,7 @@ internal fun PlaylistsScreen(
                                     modifier = Modifier.testTag("btn_playlists_add"),
                                 ) {
                                     MiuixIcon(
-                                        imageVector = NextIcons.Add,
+                                        imageVector = AppIcons.Add,
                                         contentDescription = stringResource(R.string.create_playlist),
                                         tint = MiuixTheme.colorScheme.onSurface,
                                     )
@@ -211,7 +211,7 @@ internal fun PlaylistsScreen(
             val isEmpty = if (isDetail) uiState.items.isEmpty() else uiState.playlists.isEmpty()
             if (isEmpty) {
                 MediaMessageState(
-                    icon = NextIcons.PlaylistPlay,
+                    icon = AppIcons.PlaylistPlay,
                     title = stringResource(if (isDetail) R.string.empty_playlist else R.string.no_playlists),
                     contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback(),
                 )
@@ -283,7 +283,7 @@ internal fun PlaylistsScreen(
     }
 
     deletingPlaylist?.let { playlist ->
-        NextDialog(
+        AppDialog(
             onDismissRequest = { deletingPlaylist = null },
             title = stringResource(R.string.delete_playlist),
             content = {
@@ -331,13 +331,13 @@ private fun PlaylistCollectionItem(
         overflowActions = listOf(
             MenuAction(
                 text = stringResource(R.string.rename),
-                icon = NextIcons.Edit,
+                icon = AppIcons.Edit,
                 testTag = "item_playlist_rename_${playlist.id}",
                 onClick = onRename,
             ),
             MenuAction(
                 text = stringResource(R.string.delete),
-                icon = NextIcons.Delete,
+                icon = AppIcons.Delete,
                 testTag = "item_playlist_delete_${playlist.id}",
                 onClick = onDelete,
             ),
@@ -380,13 +380,13 @@ private fun PlaylistMediaItem(
                     modifier = Modifier.width(libraryListThumbWidth()),
                 )
             } else {
-                LibraryIconThumb(icon = NextIcons.Video)
+                LibraryIconThumb(icon = AppIcons.Video)
             }
         },
         overflowActions = listOf(
             MenuAction(
                 text = stringResource(R.string.remove_from_playlist),
-                icon = NextIcons.Delete,
+                icon = AppIcons.Delete,
                 testTag = "item_playlist_remove_${item.id}",
                 onClick = onRemove,
             ),

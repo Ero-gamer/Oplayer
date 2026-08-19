@@ -14,7 +14,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.di.ApplicationScope
 import one.only.player.core.datastore.serializer.ApplicationPreferencesSerializer
 import one.only.player.core.datastore.serializer.PlayerPreferencesSerializer
@@ -35,7 +35,7 @@ object DataStoreModule {
     @Singleton
     fun provideAppPreferencesDataStore(
         @ApplicationContext context: Context,
-        @Dispatcher(NextDispatchers.IO) ioDispatcher: CoroutineDispatcher,
+        @Dispatcher(DispatcherType.IO) ioDispatcher: CoroutineDispatcher,
         @ApplicationScope scope: CoroutineScope,
     ): DataStore<ApplicationPreferences> = DataStoreFactory.create(
         serializer = ApplicationPreferencesSerializer,
@@ -48,7 +48,7 @@ object DataStoreModule {
     @Singleton
     fun providePlayerPreferencesDataStore(
         @ApplicationContext applicationContext: Context,
-        @Dispatcher(NextDispatchers.IO) ioDispatcher: CoroutineDispatcher,
+        @Dispatcher(DispatcherType.IO) ioDispatcher: CoroutineDispatcher,
         @ApplicationScope scope: CoroutineScope,
     ): DataStore<PlayerPreferences> = DataStoreFactory.create(
         serializer = PlayerPreferencesSerializer,
@@ -61,7 +61,7 @@ object DataStoreModule {
     @Singleton
     fun provideSearchHistoryDataStore(
         @ApplicationContext applicationContext: Context,
-        @Dispatcher(NextDispatchers.IO) ioDispatcher: CoroutineDispatcher,
+        @Dispatcher(DispatcherType.IO) ioDispatcher: CoroutineDispatcher,
         @ApplicationScope scope: CoroutineScope,
     ): DataStore<SearchHistory> = DataStoreFactory.create(
         serializer = SearchHistorySerializer,

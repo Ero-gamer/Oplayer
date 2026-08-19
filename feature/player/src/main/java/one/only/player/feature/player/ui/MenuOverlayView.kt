@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.feature.player.ui.panel.FloatingPlayerPanel
 import one.only.player.feature.player.ui.panel.FloatingPlayerPanelState
 import one.only.player.feature.player.ui.panel.rememberFloatingPlayerPanelState
@@ -79,7 +79,7 @@ fun BoxScope.MenuOverlayView(
                     onClick = onBack,
                 ) {
                     MiuixIcon(
-                        imageVector = NextIcons.ArrowBack,
+                        imageVector = AppIcons.ArrowBack,
                         contentDescription = stringResource(R.string.navigate_up),
                         tint = tokens.contentColor,
                     )

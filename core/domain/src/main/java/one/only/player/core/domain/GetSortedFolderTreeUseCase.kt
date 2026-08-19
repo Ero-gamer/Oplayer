@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ApplicationPreferences
@@ -16,7 +16,7 @@ import one.only.player.core.model.Sort
 class GetSortedFolderTreeUseCase @Inject constructor(
     private val mediaRepository: MediaRepository,
     private val preferencesRepository: PreferencesRepository,
-    @Dispatcher(NextDispatchers.Default) private val defaultDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.Default) private val defaultDispatcher: CoroutineDispatcher,
 ) {
     operator fun invoke(folderPath: String? = null): Flow<Folder?> = combine(
         mediaRepository.getFoldersFlow(),

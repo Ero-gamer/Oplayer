@@ -11,15 +11,15 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import one.only.player.core.common.Dispatcher
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.Logger
-import one.only.player.core.common.NextDispatchers
 import one.only.player.core.model.AudioStreamInfo
 import one.only.player.core.model.SubtitleStreamInfo
 import one.only.player.core.model.VideoStreamInfo
 
 class RemoteMediaInfoReader @Inject constructor(
     @ApplicationContext private val context: Context,
-    @Dispatcher(NextDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.IO) private val ioDispatcher: CoroutineDispatcher,
 ) {
     suspend fun read(
         probeUrl: String?,

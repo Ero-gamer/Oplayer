@@ -31,7 +31,7 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextCardListItem
+import one.only.player.core.ui.components.CardListItem
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Text
@@ -80,7 +80,7 @@ private fun FolderListItem(
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    NextCardListItem(
+    CardListItem(
         modifier = modifier.testTag("item_folder_${folder.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
@@ -171,7 +171,7 @@ private fun FolderGridItem(
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    NextCardListItem(
+    CardListItem(
         modifier = modifier
             .fillMaxWidth()
             .testTag("item_folder_${folder.name}"),

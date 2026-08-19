@@ -33,17 +33,17 @@ import one.only.player.core.model.PictureInPictureMode
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.ScreenOrientation
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
+import one.only.player.core.ui.components.ResetIconButton
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -100,7 +100,7 @@ private fun PlayerPreferencesContent(
                             .testTag("button_player_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -124,7 +124,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("item_settings_player_controller_timeout"),
                     title = stringResource(R.string.controller_timeout),
                     description = uiState.preferences.controllerAutoHideDescription(),
-                    icon = NextIcons.Timer,
+                    icon = AppIcons.Timer,
                     onClick = {
                         onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.ControllerAutoHideDialog))
                     },
@@ -133,7 +133,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_player_dim_video_controls"),
                     title = stringResource(id = R.string.dim_video_when_controls_visible),
                     description = stringResource(id = R.string.dim_video_when_controls_visible_description),
-                    icon = NextIcons.HideSource,
+                    icon = AppIcons.HideSource,
                     isChecked = uiState.preferences.shouldDimVideoWhenControlsVisible,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleDimVideoWhenControlsVisible) },
                 )
@@ -144,7 +144,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("item_settings_player_screen_orientation"),
                     title = stringResource(id = R.string.player_screen_orientation),
                     description = uiState.preferences.playerScreenOrientation.name(),
-                    icon = NextIcons.Rotation,
+                    icon = AppIcons.Rotation,
                     onClick = {
                         onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PlayerScreenOrientationDialog))
                     },
@@ -153,7 +153,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_player_remember_orientation"),
                     title = stringResource(id = R.string.remember_player_screen_orientation),
                     description = stringResource(id = R.string.remember_player_screen_orientation_description),
-                    icon = NextIcons.History,
+                    icon = AppIcons.History,
                     isChecked = uiState.preferences.shouldRememberPlayerScreenOrientation,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberPlayerScreenOrientation) },
                 )
@@ -163,7 +163,7 @@ private fun PlayerPreferencesContent(
                     description = stringResource(
                         id = R.string.remember_brightness_level_description,
                     ),
-                    icon = NextIcons.Brightness,
+                    icon = AppIcons.Brightness,
                     isChecked = uiState.preferences.shouldRememberPlayerBrightness,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel) },
                 )
@@ -174,7 +174,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("item_settings_player_customize_controls"),
                     title = stringResource(id = R.string.customize_player_controls),
                     description = stringResource(id = R.string.customize_player_controls_description),
-                    icon = NextIcons.Edit,
+                    icon = AppIcons.Edit,
                     onClick = onCustomizeControlsClick,
                 )
             }
@@ -184,7 +184,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_player_resume"),
                     title = stringResource(id = R.string.resume),
                     description = stringResource(id = R.string.resume_description),
-                    icon = NextIcons.Resume,
+                    icon = AppIcons.Resume,
                     isChecked = uiState.preferences.resume.isEnabled,
                     onClick = { onEvent(PlayerPreferencesUiEvent.TogglePlaybackResume) },
                 )
@@ -193,12 +193,12 @@ private fun PlayerPreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_player_default_speed"),
                     title = stringResource(id = R.string.default_playback_speed),
                     description = uiState.preferences.defaultPlaybackSpeed.toString(),
-                    icon = NextIcons.Speed,
+                    icon = AppIcons.Speed,
                     value = uiState.preferences.defaultPlaybackSpeed,
                     valueRange = 0.2f..4.0f,
                     onValueChange = { onEvent(PlayerPreferencesUiEvent.UpdateDefaultPlaybackSpeed(it.round(2))) },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_player_default_speed"),
                             onClick = { onEvent(PlayerPreferencesUiEvent.UpdateDefaultPlaybackSpeed(1f)) },
                             contentDescription = stringResource(id = R.string.reset_default_playback_speed),
@@ -211,7 +211,7 @@ private fun PlayerPreferencesContent(
                     description = stringResource(
                         id = R.string.autoplay_settings_description,
                     ),
-                    icon = NextIcons.Player,
+                    icon = AppIcons.Player,
                     isChecked = uiState.preferences.shouldAutoPlay,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleAutoplay) },
                 )
@@ -219,7 +219,7 @@ private fun PlayerPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_player_pause_at_end_of_queue"),
                     title = stringResource(id = R.string.pause_at_end_of_queue),
                     description = stringResource(id = R.string.pause_at_end_of_queue_description),
-                    icon = NextIcons.Pause,
+                    icon = AppIcons.Pause,
                     isChecked = uiState.preferences.shouldPauseAtEndOfQueue,
                     onClick = { onEvent(PlayerPreferencesUiEvent.TogglePauseAtEndOfQueue) },
                 )
@@ -231,7 +231,7 @@ private fun PlayerPreferencesContent(
                         modifier = Modifier.testTag("item_settings_player_pip_mode"),
                         title = stringResource(id = R.string.pip_mode),
                         description = uiState.preferences.pictureInPictureMode.displayName(),
-                        icon = NextIcons.Pip,
+                        icon = AppIcons.Pip,
                         onClick = {
                             onEvent(PlayerPreferencesUiEvent.ShowDialog(PlayerPreferenceDialog.PictureInPictureModeDialog))
                         },
@@ -242,7 +242,7 @@ private fun PlayerPreferencesContent(
                         description = stringResource(
                             id = R.string.pip_auto_enter_description,
                         ),
-                        icon = NextIcons.Pip,
+                        icon = AppIcons.Pip,
                         isChecked = uiState.preferences.shouldAutoEnterPip,
                         onClick = { onEvent(PlayerPreferencesUiEvent.ToggleAutoPip) },
                     )
@@ -253,7 +253,7 @@ private fun PlayerPreferencesContent(
                     description = stringResource(
                         id = R.string.background_play_description,
                     ),
-                    icon = NextIcons.Headset,
+                    icon = AppIcons.Headset,
                     isChecked = uiState.preferences.shouldAutoPlayInBackground,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleAutoBackgroundPlay) },
                 )
@@ -340,7 +340,7 @@ private fun ControllerAutoHideDialog(
     }
     val seconds = value.toIntOrNull()?.coerceAtLeast(1)
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(id = R.string.controller_timeout_select),
         content = {

@@ -22,9 +22,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.SearchTopAppBar
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
@@ -87,7 +87,7 @@ fun SettingsScreen(
                 label = "settings_top_bar",
             ) { isSearching ->
                 if (isSearching) {
-                    NextSearchTopAppBar(
+                    SearchTopAppBar(
                         query = searchQuery,
                         placeholder = stringResource(R.string.search_settings),
                         searchFieldTestTag = "settings_search_field",
@@ -111,7 +111,7 @@ fun SettingsScreen(
                                         .testTag("button_settings_back"),
                                 ) {
                                     MiuixIcon(
-                                        imageVector = NextIcons.ArrowBack,
+                                        imageVector = AppIcons.ArrowBack,
                                         contentDescription = stringResource(id = R.string.navigate_up),
                                         tint = MiuixTheme.colorScheme.onSurface,
                                     )
@@ -126,7 +126,7 @@ fun SettingsScreen(
                                 modifier = Modifier.testTag("btn_settings_search"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.Search,
+                                    imageVector = AppIcons.Search,
                                     contentDescription = stringResource(R.string.search),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -238,7 +238,7 @@ internal enum class SettingRow(
     APPEARANCE(
         titleResId = R.string.appearance_name,
         descriptionResId = R.string.appearance_description,
-        icon = NextIcons.Appearance,
+        icon = AppIcons.Appearance,
         setting = Setting.APPEARANCE,
         subSettingResIds = listOf(
             R.string.dark_theme,
@@ -256,7 +256,7 @@ internal enum class SettingRow(
     MEDIA_LIBRARY(
         titleResId = R.string.media_library,
         descriptionResId = R.string.media_library_description,
-        icon = NextIcons.Movie,
+        icon = AppIcons.Movie,
         setting = Setting.MEDIA_LIBRARY,
         subSettingResIds = listOf(
             R.string.manage_folders,
@@ -270,7 +270,7 @@ internal enum class SettingRow(
     PLAYER(
         titleResId = R.string.player_name,
         descriptionResId = R.string.player_description,
-        icon = NextIcons.Player,
+        icon = AppIcons.Player,
         setting = Setting.PLAYER,
         subSettingResIds = listOf(
             R.string.resume,
@@ -293,7 +293,7 @@ internal enum class SettingRow(
     GESTURES(
         titleResId = R.string.gestures_name,
         descriptionResId = R.string.gestures_description,
-        icon = NextIcons.SwipeHorizontal,
+        icon = AppIcons.SwipeHorizontal,
         setting = Setting.GESTURES,
         subSettingResIds = listOf(
             R.string.double_tap,
@@ -308,7 +308,7 @@ internal enum class SettingRow(
     DECODER(
         titleResId = R.string.video_processing,
         descriptionResId = R.string.decoder_desc,
-        icon = NextIcons.Decoder,
+        icon = AppIcons.Decoder,
         setting = Setting.DECODER,
         subSettingResIds = listOf(
             R.string.decoder_priority,
@@ -325,7 +325,7 @@ internal enum class SettingRow(
     AUDIO(
         titleResId = R.string.audio,
         descriptionResId = R.string.audio_desc,
-        icon = NextIcons.Audio,
+        icon = AppIcons.Audio,
         setting = Setting.AUDIO,
         subSettingResIds = listOf(
             R.string.preferred_audio_lang,
@@ -338,7 +338,7 @@ internal enum class SettingRow(
     SUBTITLE(
         titleResId = R.string.subtitle,
         descriptionResId = R.string.subtitle_desc,
-        icon = NextIcons.Subtitle,
+        icon = AppIcons.Subtitle,
         setting = Setting.SUBTITLE,
         subSettingResIds = listOf(
             R.string.preferred_subtitle_lang,
@@ -358,7 +358,7 @@ internal enum class SettingRow(
     PRIVACY(
         titleResId = R.string.privacy_protection,
         descriptionResId = R.string.privacy_protection_description,
-        icon = NextIcons.HideSource,
+        icon = AppIcons.HideSource,
         setting = Setting.PRIVACY,
         subSettingResIds = listOf(
             R.string.prevent_screenshots,
@@ -368,7 +368,7 @@ internal enum class SettingRow(
     GENERAL(
         titleResId = R.string.general_name,
         descriptionResId = R.string.general_description,
-        icon = NextIcons.ExtraSettings,
+        icon = AppIcons.ExtraSettings,
         setting = Setting.GENERAL,
         subSettingResIds = listOf(
             R.string.delete_video_cache,
@@ -380,7 +380,7 @@ internal enum class SettingRow(
     ABOUT(
         titleResId = R.string.about_name,
         descriptionResId = R.string.about_description,
-        icon = NextIcons.Info,
+        icon = AppIcons.Info,
         setting = Setting.ABOUT,
         subSettingResIds = listOf(
             R.string.device_info,

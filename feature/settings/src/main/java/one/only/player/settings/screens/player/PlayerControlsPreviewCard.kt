@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.icon
 import one.only.player.core.ui.extensions.id
 import one.only.player.core.ui.extensions.label
@@ -132,7 +132,7 @@ private fun CustomizePreviewTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        PreviewGlyph(imageVector = NextIcons.ArrowBack)
+        PreviewGlyph(imageVector = AppIcons.ArrowBack)
         MiuixText(
             text = stringResource(R.string.customize_controls_preview),
             color = PreviewGlyphTint,
@@ -145,7 +145,7 @@ private fun CustomizePreviewTopBar(
             controls = topRightControls,
             maxVisibleControls = maxVisibleControls,
         )
-        PreviewGlyph(imageVector = NextIcons.Menu)
+        PreviewGlyph(imageVector = AppIcons.Menu)
     }
 }
 
@@ -159,9 +159,9 @@ private fun CustomizePreviewBottomBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        PreviewGlyph(imageVector = NextIcons.Play)
-        PreviewGlyph(imageVector = NextIcons.SkipPrevious)
-        PreviewGlyph(imageVector = NextIcons.SkipNext)
+        PreviewGlyph(imageVector = AppIcons.Play)
+        PreviewGlyph(imageVector = AppIcons.SkipPrevious)
+        PreviewGlyph(imageVector = AppIcons.SkipNext)
         Spacer(modifier = Modifier.weight(1f))
         PreviewCornerControls(
             controls = bottomRightControls,

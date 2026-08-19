@@ -2,14 +2,14 @@ package one.only.player.core.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 // 段内 trailing 位置的重置按钮，仅保留图标本体
 @Composable
-fun NextResetIconButton(
+fun ResetIconButton(
     onClick: () -> Unit,
     contentDescription: String?,
     modifier: Modifier = Modifier,
@@ -21,7 +21,7 @@ fun NextResetIconButton(
         modifier = modifier,
     ) {
         Icon(
-            imageVector = NextIcons.History,
+            imageVector = AppIcons.History,
             contentDescription = contentDescription,
             tint = MiuixTheme.colorScheme.onBackground,
         )

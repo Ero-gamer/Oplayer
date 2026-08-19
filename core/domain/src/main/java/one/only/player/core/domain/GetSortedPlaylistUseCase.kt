@@ -9,7 +9,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.extensions.getPath
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.MediaViewMode
@@ -19,7 +19,7 @@ class GetSortedPlaylistUseCase @Inject constructor(
     private val getSortedVideosUseCase: GetSortedVideosUseCase,
     private val preferencesRepository: PreferencesRepository,
     @ApplicationContext private val context: Context,
-    @Dispatcher(NextDispatchers.Default) private val defaultDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.Default) private val defaultDispatcher: CoroutineDispatcher,
 ) {
     suspend operator fun invoke(uri: Uri): List<Video> = withContext(defaultDispatcher) {
         val path = context.getPath(uri) ?: return@withContext emptyList()

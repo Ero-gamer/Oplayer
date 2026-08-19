@@ -33,10 +33,10 @@ import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.model.MediaViewMode
 import one.only.player.core.model.Sort
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.extensions.name
 import top.yukonga.miuix.kmp.basic.Icon
@@ -67,7 +67,7 @@ fun QuickSettingsDialog(
     val sortOrder = preferences.sortOrder(target, cloudServerId)
     val configuration = LocalConfiguration.current
 
-    NextDialog(
+    AppDialog(
         modifier = Modifier
             .padding(PaddingValues(bottom = 0.dp).withBottomFallback())
             .testTag(target.dialogTestTag),
@@ -242,19 +242,19 @@ private fun MediaLayoutScaleControls(
             modifier = Modifier.testTag("text_media_layout_scale"),
         )
         ScaleIconButton(
-            icon = NextIcons.Remove,
+            icon = AppIcons.Remove,
             contentDescription = stringResource(R.string.media_layout_scale_decrease),
             testTag = "btn_media_layout_scale_decrease",
             onClick = onDecreaseClick,
         )
         ScaleIconButton(
-            icon = NextIcons.Add,
+            icon = AppIcons.Add,
             contentDescription = stringResource(R.string.media_layout_scale_increase),
             testTag = "btn_media_layout_scale_increase",
             onClick = onIncreaseClick,
         )
         ScaleIconButton(
-            icon = NextIcons.Replay,
+            icon = AppIcons.Replay,
             contentDescription = stringResource(R.string.media_layout_scale_reset),
             testTag = "btn_media_layout_scale_reset",
             onClick = onResetClick,

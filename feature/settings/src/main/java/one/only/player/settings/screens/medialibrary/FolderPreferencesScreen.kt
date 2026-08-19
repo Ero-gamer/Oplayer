@@ -24,7 +24,7 @@ import one.only.player.core.ui.base.DataState
 import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.SelectablePreference
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -71,7 +71,7 @@ private fun FolderPreferencesContent(
                             .testTag("button_folders_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )

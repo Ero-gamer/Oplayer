@@ -15,7 +15,7 @@ import one.only.player.core.ui.composables.PermissionDetailView
 import one.only.player.core.ui.composables.PermissionRationaleDialog
 import one.only.player.core.ui.composables.RuntimePermissionState
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Scaffold
@@ -54,7 +54,7 @@ fun LocalNetworkPermissionMissingScreen(
                             .testTag("button_local_network_permission_back"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )

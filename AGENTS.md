@@ -85,7 +85,7 @@ feature/videopicker→ 媒体库浏览，搜索，快速设置
 
 - Module 使用 `@InstallIn(SingletonComponent::class)`
 - 接口绑定用 `@Binds`（interface Module），实例提供用 `@Provides`（object Module）
-- Dispatcher 注入使用自定义 `@Dispatcher(NextDispatchers.IO/Default)` Qualifier
+- Dispatcher 注入使用自定义 `@Dispatcher(DispatcherType.IO/Default)` Qualifier
 - 应用级 CoroutineScope 使用 `@ApplicationScope` Qualifier
 
 ---

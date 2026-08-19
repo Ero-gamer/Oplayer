@@ -31,7 +31,7 @@ import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
@@ -115,7 +115,7 @@ private fun MediaLibraryPreferencesContent(
                             .testTag("button_media_library_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -141,7 +141,7 @@ private fun MediaLibraryPreferencesContent(
                     description = stringResource(
                         id = R.string.mark_last_played_media_desc,
                     ),
-                    icon = NextIcons.Check,
+                    icon = AppIcons.Check,
                     isChecked = preferences.shouldMarkLastPlayedMedia,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleMarkLastPlayedMedia) },
                 )
@@ -149,7 +149,7 @@ private fun MediaLibraryPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_media_restore_last_played_in_folders"),
                     title = stringResource(id = R.string.restore_last_played_media_in_folders),
                     description = stringResource(id = R.string.restore_last_played_media_in_folders_desc),
-                    icon = NextIcons.History,
+                    icon = AppIcons.History,
                     isChecked = preferences.shouldRestoreLastPlayedMediaInFolders,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRestoreLastPlayedMediaInFolders) },
                 )
@@ -160,14 +160,14 @@ private fun MediaLibraryPreferencesContent(
                     modifier = Modifier.testTag("item_settings_media_all_files_access"),
                     title = stringResource(id = R.string.all_files_access_title),
                     description = stringResource(id = R.string.media_library_all_files_access_desc),
-                    icon = NextIcons.Settings,
+                    icon = AppIcons.Settings,
                     onClick = onOpenAllFilesAccessSettings,
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_recycle_bin"),
                     title = stringResource(id = R.string.recycle_bin),
                     description = stringResource(id = R.string.recycle_bin_desc),
-                    icon = NextIcons.DeleteSweep,
+                    icon = AppIcons.DeleteSweep,
                     isEnabled = hasAllFilesAccess,
                     isChecked = preferences.isRecycleBinEnabled,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRecycleBinEnabled) },
@@ -179,7 +179,7 @@ private fun MediaLibraryPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_media_ignore_nomedia"),
                     title = stringResource(id = R.string.ignore_nomedia_files),
                     description = stringResource(id = R.string.ignore_nomedia_files_desc),
-                    icon = NextIcons.HideSource,
+                    icon = AppIcons.HideSource,
                     isEnabled = hasAllFilesAccess,
                     isChecked = preferences.shouldIgnoreNoMediaFiles,
                     onClick = {
@@ -190,14 +190,14 @@ private fun MediaLibraryPreferencesContent(
                     modifier = Modifier.testTag("item_settings_media_scan_folders"),
                     title = stringResource(id = R.string.scan_folders),
                     description = stringResource(id = R.string.scan_folders_desc),
-                    icon = NextIcons.Folder,
+                    icon = AppIcons.Folder,
                     onClick = onScanFolderSettingClick,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_media_folders"),
                     title = stringResource(id = R.string.manage_folders),
                     description = stringResource(id = R.string.manage_folders_desc),
-                    icon = NextIcons.FolderOff,
+                    icon = AppIcons.FolderOff,
                     onClick = onFolderSettingClick,
                 )
             }
@@ -211,7 +211,7 @@ private fun MediaLibraryPreferencesContent(
                         ThumbnailGenerationStrategy.FRAME_AT_PERCENTAGE -> stringResource(R.string.frame_at_position)
                         ThumbnailGenerationStrategy.HYBRID -> stringResource(id = R.string.hybrid)
                     },
-                    icon = NextIcons.Image,
+                    icon = AppIcons.Image,
                     onClick = onThumbnailSettingClick,
                 )
             }

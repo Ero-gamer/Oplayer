@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.Utils
 import one.only.player.core.common.hasLocalNetworkPermission
 import one.only.player.core.data.models.RemotePlaybackInfo
@@ -48,7 +48,7 @@ class CloudBrowseViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
     private val remoteMediaResolver: RemoteMediaResolver,
     private val remoteMediaInfoReader: RemoteMediaInfoReader,
-    @Dispatcher(NextDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val serverId: Long = savedStateHandle["serverId"] ?: 0L

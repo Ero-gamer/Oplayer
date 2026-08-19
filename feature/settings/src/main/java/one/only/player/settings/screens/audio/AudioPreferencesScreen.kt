@@ -21,14 +21,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
+import one.only.player.core.ui.components.ResetIconButton
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.settings.composables.OptionsDialog
@@ -80,7 +80,7 @@ private fun AudioPreferencesContent(
                             .testTag("button_audio_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -105,13 +105,13 @@ private fun AudioPreferencesContent(
                     title = stringResource(id = R.string.preferred_audio_lang),
                     description = LocalesHelper.getLocaleDisplayLanguage(uiState.preferences.preferredAudioLanguage)
                         .takeIf { it.isNotBlank() } ?: stringResource(R.string.preferred_audio_lang_description),
-                    icon = NextIcons.Language,
+                    icon = AppIcons.Language,
                     onClick = { onEvent(AudioPreferencesUiEvent.ShowDialog(AudioPreferenceDialog.AudioLanguageDialog)) },
                 )
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_remember_track"),
                     title = stringResource(id = R.string.remember_audio_track),
-                    icon = NextIcons.Audio,
+                    icon = AppIcons.Audio,
                     isChecked = uiState.preferences.shouldRememberAudioTrack,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleRememberAudioTrack) },
                 )
@@ -122,7 +122,7 @@ private fun AudioPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_audio_require_focus"),
                     title = stringResource(R.string.require_audio_focus),
                     description = stringResource(R.string.require_audio_focus_desc),
-                    icon = NextIcons.Focus,
+                    icon = AppIcons.Focus,
                     isChecked = uiState.preferences.shouldRequireAudioFocus,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleRequireAudioFocus) },
                 )
@@ -130,7 +130,7 @@ private fun AudioPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_audio_pause_on_headset_disconnect"),
                     title = stringResource(id = R.string.pause_on_headset_disconnect),
                     description = stringResource(id = R.string.pause_on_headset_disconnect_desc),
-                    icon = NextIcons.HeadsetOff,
+                    icon = AppIcons.HeadsetOff,
                     isChecked = uiState.preferences.shouldPauseOnHeadsetDisconnect,
                     onClick = { onEvent(AudioPreferencesUiEvent.TogglePauseOnHeadsetDisconnect) },
                 )
@@ -138,7 +138,7 @@ private fun AudioPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_audio_system_volume_panel"),
                     title = stringResource(id = R.string.system_volume_panel),
                     description = stringResource(id = R.string.system_volume_panel_desc),
-                    icon = NextIcons.Headset,
+                    icon = AppIcons.Headset,
                     isChecked = uiState.preferences.shouldShowSystemVolumePanel,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleShowSystemVolumePanel) },
                 )
@@ -149,7 +149,7 @@ private fun AudioPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_audio_remember_volume"),
                     title = stringResource(id = R.string.remember_volume_level),
                     description = stringResource(id = R.string.remember_volume_level_description),
-                    icon = NextIcons.VolumeUp,
+                    icon = AppIcons.VolumeUp,
                     isChecked = uiState.preferences.shouldRememberPlayerVolume,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleRememberPlayerVolume) },
                 )
@@ -158,13 +158,13 @@ private fun AudioPreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_audio_initial_volume_limit"),
                     title = stringResource(id = R.string.initial_volume_limit),
                     description = stringResource(id = R.string.percent, uiState.preferences.maxInitialPlayerVolumePercentage),
-                    icon = NextIcons.VolumeUp,
+                    icon = AppIcons.VolumeUp,
                     isEnabled = uiState.preferences.shouldRememberPlayerVolume,
                     value = uiState.preferences.maxInitialPlayerVolumePercentage.toFloat(),
                     valueRange = initialVolumeLimitRange,
                     onValueChange = { onEvent(AudioPreferencesUiEvent.UpdateMaxInitialPlayerVolume(it.toInt())) },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_audio_initial_volume_limit"),
                             enabled = uiState.preferences.shouldRememberPlayerVolume,
                             contentDescription = stringResource(id = R.string.reset_initial_volume_limit),
@@ -184,7 +184,7 @@ private fun AudioPreferencesContent(
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_spatial"),
                     title = stringResource(id = R.string.spatial_audio),
-                    icon = NextIcons.SurroundSound,
+                    icon = AppIcons.SurroundSound,
                     isChecked = uiState.preferences.isSpatialAudioEnabled,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleSpatialAudio) },
                 )
@@ -192,7 +192,7 @@ private fun AudioPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_audio_normalization"),
                     title = stringResource(id = R.string.volume_normalization),
                     description = stringResource(id = R.string.volume_normalization_desc),
-                    icon = NextIcons.VolumeUp,
+                    icon = AppIcons.VolumeUp,
                     isChecked = uiState.preferences.isVolumeNormalizationEnabled,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleVolumeNormalization) },
                 )
@@ -200,7 +200,7 @@ private fun AudioPreferencesContent(
                     modifier = Modifier.testTag("switch_settings_audio_boost"),
                     title = stringResource(id = R.string.volume_boost),
                     description = stringResource(id = R.string.volume_boost_desc),
-                    icon = NextIcons.VolumeUp,
+                    icon = AppIcons.VolumeUp,
                     isChecked = uiState.preferences.isVolumeBoostEnabled,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleVolumeBoost) },
                 )

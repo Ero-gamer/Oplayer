@@ -22,13 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
@@ -117,7 +117,7 @@ private fun GeneralPreferencesContent(
                             .testTag("button_general_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -141,14 +141,14 @@ private fun GeneralPreferencesContent(
                     modifier = Modifier.testTag("item_settings_general_backup_settings"),
                     title = stringResource(R.string.backup_settings),
                     description = stringResource(R.string.backup_settings_description),
-                    icon = NextIcons.FileOpen,
+                    icon = AppIcons.FileOpen,
                     onClick = { onEvent(GeneralPreferencesUiEvent.BackupSettings) },
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_general_restore_settings"),
                     title = stringResource(R.string.restore_settings),
                     description = stringResource(R.string.restore_settings_description),
-                    icon = NextIcons.History,
+                    icon = AppIcons.History,
                     onClick = { onEvent(GeneralPreferencesUiEvent.RestoreSettings) },
                 )
             }
@@ -157,14 +157,14 @@ private fun GeneralPreferencesContent(
                     modifier = Modifier.testTag("item_settings_general_clear_video_cache"),
                     title = stringResource(R.string.delete_video_cache),
                     description = stringResource(R.string.delete_video_cache_description),
-                    icon = NextIcons.DeleteSweep,
+                    icon = AppIcons.DeleteSweep,
                     onClick = { onEvent(GeneralPreferencesUiEvent.ShowDialog(GeneralPreferencesDialog.ClearVideoCacheDialog)) },
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_general_reset_settings"),
                     title = stringResource(R.string.reset_settings),
                     description = stringResource(R.string.reset_settings_description),
-                    icon = NextIcons.Delete,
+                    icon = AppIcons.Delete,
                     onClick = { onEvent(GeneralPreferencesUiEvent.ShowDialog(GeneralPreferencesDialog.ResetSettingsDialog)) },
                 )
             }
@@ -173,7 +173,7 @@ private fun GeneralPreferencesContent(
         uiState.showDialog?.let { dialog ->
             when (dialog) {
                 GeneralPreferencesDialog.ClearVideoCacheDialog -> {
-                    NextDialog(
+                    AppDialog(
                         onDismissRequest = { onEvent(GeneralPreferencesUiEvent.ShowDialog(null)) },
                         title = stringResource(R.string.delete_video_cache),
                         confirmButton = {
@@ -197,7 +197,7 @@ private fun GeneralPreferencesContent(
                     )
                 }
                 GeneralPreferencesDialog.ResetSettingsDialog -> {
-                    NextDialog(
+                    AppDialog(
                         onDismissRequest = { onEvent(GeneralPreferencesUiEvent.ShowDialog(null)) },
                         title = stringResource(R.string.reset_settings),
                         confirmButton = {

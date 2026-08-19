@@ -19,8 +19,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import one.only.player.core.common.Dispatcher
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.Logger
-import one.only.player.core.common.NextDispatchers
 import one.only.player.core.common.di.ApplicationScope
 import one.only.player.core.common.extensions.toPrivateLogSummary
 import one.only.player.core.database.dao.MediumDao
@@ -33,7 +33,7 @@ class LocalMediaInfoSynchronizer @Inject constructor(
     private val imageLoader: ImageLoader,
     @ApplicationScope private val applicationScope: CoroutineScope,
     @ApplicationContext private val context: Context,
-    @Dispatcher(NextDispatchers.Default) private val dispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.Default) private val dispatcher: CoroutineDispatcher,
 ) : MediaInfoSynchronizer {
 
     private val pendingSyncUris = LinkedHashSet<String>()

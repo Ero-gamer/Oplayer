@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextCardListItem
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.CardListItem
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
@@ -52,7 +52,7 @@ fun LibraryEntryItem(
 ) {
     var shouldShowOverflow by remember { mutableStateOf(false) }
 
-    NextCardListItem(
+    CardListItem(
         modifier = modifier.testTag(testTag),
         isSelected = false,
         containerColor = Color.Transparent,
@@ -68,7 +68,7 @@ fun LibraryEntryItem(
                         modifier = Modifier.testTag("${testTag}_more"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.MoreVert,
+                            imageVector = AppIcons.MoreVert,
                             contentDescription = stringResource(R.string.more_actions),
                             tint = MiuixTheme.colorScheme.onSurface,
                         )

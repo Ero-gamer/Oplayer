@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.milliseconds
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.feature.player.LocalControlsVisibilityState
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.extensions.noRippleClickable
@@ -105,7 +105,7 @@ internal fun ControlsBottomModernView(
             ) {
                 MiuixIcon(
                     modifier = Modifier.size(28.dp),
-                    imageVector = if (isPlaying) NextIcons.Pause else NextIcons.Play,
+                    imageVector = if (isPlaying) AppIcons.Pause else AppIcons.Play,
                     contentDescription = stringResource(R.string.player_controls_play_pause),
                     tint = Color.White,
                 )
@@ -143,7 +143,7 @@ internal fun ControlsBottomModernView(
             ) {
                 MiuixIcon(
                     modifier = Modifier.size(24.dp),
-                    imageVector = NextIcons.SkipPrevious,
+                    imageVector = AppIcons.SkipPrevious,
                     contentDescription = stringResource(R.string.player_controls_previous),
                     tint = if (hasPrevious) Color.White else Color.White.copy(alpha = 0.4f),
                 )
@@ -155,7 +155,7 @@ internal fun ControlsBottomModernView(
             ) {
                 MiuixIcon(
                     modifier = Modifier.size(24.dp),
-                    imageVector = NextIcons.SkipNext,
+                    imageVector = AppIcons.SkipNext,
                     contentDescription = stringResource(R.string.player_controls_next),
                     tint = if (hasNext) Color.White else Color.White.copy(alpha = 0.4f),
                 )

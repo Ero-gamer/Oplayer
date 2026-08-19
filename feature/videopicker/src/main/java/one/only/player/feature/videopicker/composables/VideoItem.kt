@@ -34,8 +34,8 @@ import coil3.request.crossfade
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.model.Video
-import one.only.player.core.ui.components.NextCardListItem
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.CardListItem
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
@@ -85,7 +85,7 @@ private fun VideoListItem(
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    NextCardListItem(
+    CardListItem(
         modifier = modifier.testTag("item_video_${video.displayName}"),
         isSelected = false,
         containerColor = Color.Transparent,
@@ -149,7 +149,7 @@ private fun VideoGridItem(
     onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
 ) {
-    NextCardListItem(
+    CardListItem(
         modifier = modifier
             .fillMaxWidth()
             .testTag("item_video_${video.displayName}"),
@@ -201,7 +201,7 @@ internal fun VideoThumbnail(
             .aspectRatio(16f / 10f),
     ) {
         Icon(
-            imageVector = NextIcons.Video,
+            imageVector = AppIcons.Video,
             contentDescription = null,
             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier

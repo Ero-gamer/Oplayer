@@ -23,16 +23,16 @@ import java.util.Locale
 import one.only.player.core.model.DecoderPriority
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppSwitch
 import one.only.player.core.ui.components.ClickablePreferenceItem
-import one.only.player.core.ui.components.NextResetIconButton
-import one.only.player.core.ui.components.NextSwitch
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.RadioTextButton
+import one.only.player.core.ui.components.ResetIconButton
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.settings.composables.OptionsDialog
@@ -81,7 +81,7 @@ private fun DecoderPreferencesContent(
                             .testTag("button_decoder_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -105,7 +105,7 @@ private fun DecoderPreferencesContent(
                     modifier = Modifier.testTag("item_settings_decoder_priority"),
                     title = stringResource(R.string.decoder_priority),
                     description = preferences.decoderPriority.name(),
-                    icon = NextIcons.Priority,
+                    icon = AppIcons.Priority,
                     onClick = { onEvent(DecoderPreferencesUiEvent.ShowDialog(DecoderPreferenceDialog.DecoderPriorityDialog)) },
                 )
             }
@@ -151,7 +151,7 @@ private fun VideoFiltersSettings(
             modifier = Modifier.testTag("switch_settings_video_filters"),
             title = stringResource(R.string.enable_video_filters),
             description = stringResource(R.string.enable_video_filters_description),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isChecked = preferences.shouldApplyVideoFilters,
             onClick = { onEvent(DecoderPreferencesUiEvent.ToggleVideoFilters) },
         )
@@ -160,7 +160,7 @@ private fun VideoFiltersSettings(
             sliderModifier = Modifier.testTag("slider_settings_video_brightness"),
             title = stringResource(R.string.video_brightness),
             description = signedPercent(preferences.videoBrightness),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isEnabled = preferences.shouldApplyVideoFilters,
             isSliderEnabled = preferences.shouldApplyVideoFilters && preferences.isVideoBrightnessFilterEnabled,
             value = preferences.videoBrightness,
@@ -183,7 +183,7 @@ private fun VideoFiltersSettings(
             sliderModifier = Modifier.testTag("slider_settings_video_contrast"),
             title = stringResource(R.string.video_contrast),
             description = signedPercent(preferences.videoContrast),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isEnabled = preferences.shouldApplyVideoFilters,
             isSliderEnabled = preferences.shouldApplyVideoFilters && preferences.isVideoContrastFilterEnabled,
             value = preferences.videoContrast,
@@ -206,7 +206,7 @@ private fun VideoFiltersSettings(
             sliderModifier = Modifier.testTag("slider_settings_video_saturation"),
             title = stringResource(R.string.video_saturation),
             description = signedInteger(preferences.videoSaturation),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isEnabled = preferences.shouldApplyVideoFilters,
             isSliderEnabled = preferences.shouldApplyVideoFilters && preferences.isVideoSaturationFilterEnabled,
             value = preferences.videoSaturation,
@@ -229,7 +229,7 @@ private fun VideoFiltersSettings(
             sliderModifier = Modifier.testTag("slider_settings_video_hue"),
             title = stringResource(R.string.video_hue),
             description = stringResource(R.string.degrees, preferences.videoHue.toInt()),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isEnabled = preferences.shouldApplyVideoFilters,
             isSliderEnabled = preferences.shouldApplyVideoFilters && preferences.isVideoHueFilterEnabled,
             value = preferences.videoHue,
@@ -252,7 +252,7 @@ private fun VideoFiltersSettings(
             sliderModifier = Modifier.testTag("slider_settings_video_gamma"),
             title = stringResource(R.string.video_gamma),
             description = String.format(Locale.ROOT, "%.2f", preferences.videoGamma),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isEnabled = preferences.shouldApplyVideoFilters,
             isSliderEnabled = preferences.shouldApplyVideoFilters && preferences.isVideoGammaFilterEnabled,
             value = preferences.videoGamma,
@@ -275,7 +275,7 @@ private fun VideoFiltersSettings(
             sliderModifier = Modifier.testTag("slider_settings_video_sharpening"),
             title = stringResource(R.string.video_sharpening),
             description = stringResource(R.string.percent, (preferences.videoSharpening * 100).toInt()),
-            icon = NextIcons.Sensitivity,
+            icon = AppIcons.Sensitivity,
             isEnabled = preferences.shouldApplyVideoFilters,
             isSliderEnabled = preferences.shouldApplyVideoFilters && preferences.isVideoSharpeningFilterEnabled,
             value = preferences.videoSharpening,
@@ -310,13 +310,13 @@ private fun VideoFilterActions(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        NextSwitch(
+        AppSwitch(
             modifier = Modifier.testTag(switchTestTag),
             isChecked = isChecked,
             onCheckedChange = { onToggle() },
             isEnabled = isEnabled,
         )
-        NextResetIconButton(
+        ResetIconButton(
             modifier = Modifier.testTag(resetTestTag),
             enabled = isEnabled,
             onClick = onReset,

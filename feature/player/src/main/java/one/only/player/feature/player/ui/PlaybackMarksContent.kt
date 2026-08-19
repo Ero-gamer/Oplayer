@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.milliseconds
 import one.only.player.core.model.PlaybackMark
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.ui.panel.PanelActionButton
 import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
@@ -104,7 +104,7 @@ private fun PlaybackMarkItem(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         MiuixIcon(
-            imageVector = NextIcons.History,
+            imageVector = AppIcons.History,
             contentDescription = null,
             tint = tokens.itemContentColor,
         )
@@ -124,7 +124,7 @@ private fun PlaybackMarkItem(
         }
         MiuixIconButton(onClick = onDeleteClick) {
             MiuixIcon(
-                imageVector = NextIcons.Delete,
+                imageVector = AppIcons.Delete,
                 contentDescription = stringResource(R.string.delete_mark),
                 tint = tokens.secondaryContentColor,
             )

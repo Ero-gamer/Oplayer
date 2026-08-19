@@ -12,8 +12,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import one.only.player.core.model.Playlist
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.RadioTextButton
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -42,7 +42,7 @@ fun AddToPlaylistDialog(
         return
     }
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.add_to_playlist),
         content = {
@@ -77,7 +77,7 @@ fun CreatePlaylistDialog(
     initialName: String = "",
 ) {
     var name by rememberSaveable { mutableStateOf(initialName) }
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = title,
         content = {

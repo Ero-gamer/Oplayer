@@ -52,7 +52,7 @@ import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
 import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R as UiR
-import one.only.player.core.ui.components.NextDialog
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
 import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
 import one.only.player.core.ui.theme.DEFAULT_SEED_COLOR
@@ -548,7 +548,7 @@ fun shouldUseDynamicTheming(
 private fun AllFilesAccessDialog(
     onGrantClick: () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         onDismissRequest = {},
         title = stringResource(UiR.string.all_files_access_title),
         content = { Text(text = stringResource(UiR.string.all_files_access_required_desc)) },
@@ -570,7 +570,7 @@ private fun StartupUpdateDialog(viewModel: MainViewModel) {
 
     val uriHandler = LocalUriHandler.current
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = { viewModel.dismissUpdate() },
         title = stringResource(UiR.string.update_dialog_title),
         content = { Text(text = stringResource(UiR.string.update_dialog_message, info.latestVersion)) },

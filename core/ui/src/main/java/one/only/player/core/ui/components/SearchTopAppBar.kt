@@ -18,14 +18,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.TextField
 
 @Composable
-fun NextSearchTopAppBar(
+fun SearchTopAppBar(
     query: String,
     placeholder: String,
     searchFieldTestTag: String,
@@ -51,7 +51,7 @@ fun NextSearchTopAppBar(
                     modifier = Modifier.testTag(closeButtonTestTag),
                 ) {
                     Icon(
-                        imageVector = NextIcons.ArrowBack,
+                        imageVector = AppIcons.ArrowBack,
                         contentDescription = stringResource(R.string.navigate_up),
                     )
                 }
@@ -63,7 +63,7 @@ fun NextSearchTopAppBar(
                         onClick = { onQueryChange("") },
                     ) {
                         Icon(
-                            imageVector = NextIcons.Close,
+                            imageVector = AppIcons.Close,
                             contentDescription = stringResource(R.string.clear_history),
                         )
                     }

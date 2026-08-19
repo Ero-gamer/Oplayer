@@ -39,13 +39,13 @@ import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.CardItemGap
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextSearchTopAppBar
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.RadioTextButton
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.components.SearchTopAppBar
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -141,7 +141,7 @@ internal fun FavoritesScreen(
                 label = "favorites_top_bar",
             ) { isSearching ->
                 if (isSearching) {
-                    NextSearchTopAppBar(
+                    SearchTopAppBar(
                         query = uiState.searchQuery,
                         placeholder = stringResource(R.string.search_favorites),
                         searchFieldTestTag = "input_favorites_search",
@@ -164,7 +164,7 @@ internal fun FavoritesScreen(
                                     modifier = Modifier.padding(start = 12.dp),
                                 ) {
                                     MiuixIcon(
-                                        imageVector = NextIcons.ArrowBack,
+                                        imageVector = AppIcons.ArrowBack,
                                         contentDescription = stringResource(id = R.string.navigate_up),
                                         tint = MiuixTheme.colorScheme.onSurface,
                                     )
@@ -177,7 +177,7 @@ internal fun FavoritesScreen(
                                 modifier = Modifier.testTag("btn_favorites_search"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.Search,
+                                    imageVector = AppIcons.Search,
                                     contentDescription = stringResource(R.string.search),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -187,7 +187,7 @@ internal fun FavoritesScreen(
                                 modifier = Modifier.testTag("btn_favorites_add_folder"),
                             ) {
                                 MiuixIcon(
-                                    imageVector = NextIcons.Add,
+                                    imageVector = AppIcons.Add,
                                     contentDescription = stringResource(R.string.add_favorite_folder),
                                     tint = MiuixTheme.colorScheme.onSurface,
                                 )
@@ -275,7 +275,7 @@ internal fun FavoritesScreen(
 @Composable
 private fun EmptyFavoritesContent(contentPadding: PaddingValues) {
     MediaMessageState(
-        icon = NextIcons.LibraryBooks,
+        icon = AppIcons.LibraryBooks,
         title = stringResource(R.string.no_favorites),
         contentPadding = contentPadding,
     )
@@ -306,13 +306,13 @@ private fun FavoriteListItem(
         overflowActions = listOf(
             MenuAction(
                 text = stringResource(R.string.move),
-                icon = NextIcons.DriveFileMove,
+                icon = AppIcons.DriveFileMove,
                 testTag = "item_favorite_move_${item.id}",
                 onClick = onMoveClick,
             ),
             MenuAction(
                 text = stringResource(R.string.delete),
-                icon = NextIcons.Delete,
+                icon = AppIcons.Delete,
                 testTag = "item_favorite_delete_${item.id}",
                 onClick = onDeleteClick,
             ),
@@ -353,7 +353,7 @@ private fun FavoriteLeading(
         FavoriteTargetType.REMOTE_FILE,
         FavoriteTargetType.REMOTE_DIRECTORY,
         FavoriteTargetType.REMOTE_SERVER_ROOT,
-        -> LibraryIconThumb(icon = NextIcons.Cloud)
+        -> LibraryIconThumb(icon = AppIcons.Cloud)
     }
 }
 
@@ -363,7 +363,7 @@ private fun AddFavoriteFolderDialog(
     onAdd: (String) -> Unit,
 ) {
     var title by rememberSaveable { mutableStateOf("") }
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.add_favorite_folder),
         content = {
@@ -400,7 +400,7 @@ private fun MoveFavoriteDialog(
         .filter { it.targetType == FavoriteTargetType.FAVORITE_FOLDER && it.id !in disabledIds }
         .sortedWith(compareBy<FavoriteItem> { it.parentId ?: 0L }.thenBy { it.title.lowercase() })
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.move_favorite),
         content = {
@@ -432,7 +432,7 @@ private fun DeleteFavoriteDialog(
     onDismiss: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.delete_favorite),
         content = {

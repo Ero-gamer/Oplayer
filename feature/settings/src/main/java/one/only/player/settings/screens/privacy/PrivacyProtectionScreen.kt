@@ -19,7 +19,7 @@ import one.only.player.core.ui.R
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
@@ -64,7 +64,7 @@ private fun PrivacyProtectionContent(
                             .testTag("button_privacy_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -89,7 +89,7 @@ private fun PrivacyProtectionContent(
                     modifier = Modifier.testTag("switch_settings_privacy_prevent_screenshots"),
                     title = stringResource(id = R.string.prevent_screenshots),
                     description = stringResource(id = R.string.prevent_screenshots_description),
-                    icon = NextIcons.HideSource,
+                    icon = AppIcons.HideSource,
                     isChecked = uiState.preferences.shouldPreventScreenshots,
                     onClick = { onEvent(PrivacyProtectionUiEvent.TogglePreventScreenshots) },
                 )
@@ -98,7 +98,7 @@ private fun PrivacyProtectionContent(
                         modifier = Modifier.testTag("switch_settings_privacy_hide_in_recents"),
                         title = stringResource(id = R.string.hide_in_recents),
                         description = stringResource(id = R.string.hide_in_recents_description),
-                        icon = NextIcons.Background,
+                        icon = AppIcons.Background,
                         isChecked = uiState.preferences.shouldHideInRecents,
                         onClick = { onEvent(PrivacyProtectionUiEvent.ToggleHideInRecents) },
                     )

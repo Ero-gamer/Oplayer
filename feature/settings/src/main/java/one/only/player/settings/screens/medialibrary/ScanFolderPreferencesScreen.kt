@@ -25,7 +25,7 @@ import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceItem
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -78,7 +78,7 @@ private fun ScanFolderPreferencesContent(
                             .testTag("button_scan_folders_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -101,7 +101,7 @@ private fun ScanFolderPreferencesContent(
                     modifier = Modifier.testTag("item_settings_scan_folder_$index"),
                     title = folderPath.substringAfterLast('/'),
                     description = folderPath,
-                    icon = NextIcons.Folder,
+                    icon = AppIcons.Folder,
                     isEnabled = true,
                     trailingContent = {
                         MiuixIconButton(
@@ -109,7 +109,7 @@ private fun ScanFolderPreferencesContent(
                             modifier = Modifier.testTag("button_remove_scan_folder_$index"),
                         ) {
                             MiuixIcon(
-                                imageVector = NextIcons.Delete,
+                                imageVector = AppIcons.Delete,
                                 contentDescription = stringResource(id = R.string.delete),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -125,7 +125,7 @@ private fun ScanFolderPreferencesContent(
                         .testTag("item_settings_add_scan_folder"),
                     title = stringResource(id = R.string.add_folder),
                     description = stringResource(id = R.string.scan_folders_empty_desc).takeIf { scanFolders.isEmpty() },
-                    icon = NextIcons.Add,
+                    icon = AppIcons.Add,
                     onClick = { directoryPickerLauncher.launch(null) },
                 )
             }

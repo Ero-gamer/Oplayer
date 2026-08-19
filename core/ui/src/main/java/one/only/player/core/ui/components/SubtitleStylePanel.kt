@@ -12,7 +12,7 @@ import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.SubtitleColor
 import one.only.player.core.model.SubtitleEdgeStyle
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 
 @Composable
 fun SubtitleStylePanel(
@@ -31,7 +31,7 @@ fun SubtitleStylePanel(
                 modifier = Modifier.testTag("switch_settings_subtitle_bold"),
                 title = stringResource(id = R.string.subtitle_text_bold),
                 description = stringResource(id = R.string.subtitle_text_bold_desc),
-                icon = NextIcons.Bold,
+                icon = AppIcons.Bold,
                 isEnabled = isEnabled,
                 isChecked = preferences.shouldUseBoldSubtitleText,
                 onClick = { onPreferencesChange(preferences.copy(shouldUseBoldSubtitleText = !preferences.shouldUseBoldSubtitleText)) },
@@ -41,13 +41,13 @@ fun SubtitleStylePanel(
                 sliderModifier = Modifier.testTag("slider_settings_subtitle_size"),
                 title = stringResource(id = R.string.subtitle_text_size),
                 description = preferences.subtitleTextSize.toDisplayText(),
-                icon = NextIcons.FontSize,
+                icon = AppIcons.FontSize,
                 isEnabled = isEnabled,
                 value = preferences.subtitleTextSize,
                 valueRange = SUBTITLE_TEXT_SIZE_RANGE,
                 onValueChange = { onPreferencesChange(preferences.copy(subtitleTextSize = it.roundToStep(PlayerPreferences.SUBTITLE_TEXT_SIZE_STEP))) },
                 trailingContent = {
-                    NextResetIconButton(
+                    ResetIconButton(
                         modifier = Modifier.testTag("btn_reset_settings_subtitle_size"),
                         enabled = isEnabled,
                         contentDescription = stringResource(id = R.string.reset_subtitle_text_size),
@@ -63,7 +63,7 @@ fun SubtitleStylePanel(
                 modifier = Modifier.testTag("switch_settings_subtitle_background"),
                 title = stringResource(id = R.string.subtitle_background),
                 description = stringResource(id = R.string.subtitle_background_desc),
-                icon = NextIcons.Background,
+                icon = AppIcons.Background,
                 isEnabled = isEnabled,
                 isChecked = preferences.shouldShowSubtitleBackground,
                 onClick = { onPreferencesChange(preferences.copy(shouldShowSubtitleBackground = !preferences.shouldShowSubtitleBackground)) },
@@ -72,7 +72,7 @@ fun SubtitleStylePanel(
                 modifier = Modifier.testTag("item_settings_subtitle_color"),
                 title = stringResource(id = R.string.subtitle_text_color),
                 description = preferences.subtitleColor.displayName(),
-                icon = NextIcons.Appearance,
+                icon = AppIcons.Appearance,
                 isEnabled = isEnabled,
                 onClick = { onPreferencesChange(preferences.copy(subtitleColor = preferences.subtitleColor.next())) },
             )
@@ -84,7 +84,7 @@ fun SubtitleStylePanel(
                 sliderModifier = Modifier.testTag("slider_settings_subtitle_bottom_padding"),
                 title = stringResource(id = R.string.subtitle_position),
                 description = subtitleBottomPaddingFraction.toSubtitlePositionDisplayText(),
-                icon = NextIcons.Length,
+                icon = AppIcons.Length,
                 isEnabled = isEnabled,
                 value = subtitleBottomPaddingFraction,
                 valueRange = SUBTITLE_POSITION_RANGE,
@@ -98,7 +98,7 @@ fun SubtitleStylePanel(
                     )
                 },
                 trailingContent = {
-                    NextResetIconButton(
+                    ResetIconButton(
                         modifier = Modifier.testTag("btn_reset_settings_subtitle_bottom_padding"),
                         enabled = isEnabled,
                         contentDescription = stringResource(id = R.string.reset_subtitle_position),
@@ -117,12 +117,12 @@ fun SubtitleStylePanel(
                 sliderModifier = Modifier.testTag("slider_settings_subtitle_scale"),
                 title = stringResource(id = R.string.subtitle_scale),
                 description = preferences.subtitleScale.toSubtitleScaleDisplayText(),
-                icon = NextIcons.Pinch,
+                icon = AppIcons.Pinch,
                 value = preferences.subtitleScale,
                 valueRange = SUBTITLE_SCALE_RANGE,
                 onValueChange = { onPreferencesChange(preferences.copy(subtitleScale = it.roundToStep(PlayerPreferences.SUBTITLE_SCALE_STEP))) },
                 trailingContent = {
-                    NextResetIconButton(
+                    ResetIconButton(
                         modifier = Modifier.testTag("btn_reset_settings_subtitle_scale"),
                         contentDescription = stringResource(id = R.string.reset_subtitle_scale),
                         onClick = {
@@ -140,7 +140,7 @@ fun SubtitleStylePanel(
                 modifier = Modifier.testTag("item_settings_subtitle_edge_style"),
                 title = stringResource(id = R.string.subtitle_edge_style),
                 description = preferences.subtitleEdgeStyle.displayName(),
-                icon = NextIcons.Style,
+                icon = AppIcons.Style,
                 isEnabled = isEnabled,
                 onClick = { onPreferencesChange(preferences.copy(subtitleEdgeStyle = preferences.subtitleEdgeStyle.next())) },
             )
@@ -149,13 +149,13 @@ fun SubtitleStylePanel(
                 sliderModifier = Modifier.testTag("slider_settings_subtitle_outline_thickness"),
                 title = stringResource(id = R.string.subtitle_outline_thickness),
                 description = preferences.subtitleOutlineThickness.toString(),
-                icon = NextIcons.Style,
+                icon = AppIcons.Style,
                 isEnabled = isEnabled,
                 value = preferences.subtitleOutlineThickness,
                 valueRange = SUBTITLE_OUTLINE_THICKNESS_RANGE,
                 onValueChange = { onPreferencesChange(preferences.copy(subtitleOutlineThickness = it)) },
                 trailingContent = {
-                    NextResetIconButton(
+                    ResetIconButton(
                         modifier = Modifier.testTag("btn_reset_settings_subtitle_outline_thickness"),
                         enabled = isEnabled,
                         contentDescription = stringResource(id = R.string.reset_subtitle_outline_thickness),
@@ -172,13 +172,13 @@ fun SubtitleStylePanel(
                 sliderModifier = Modifier.testTag("slider_settings_subtitle_shadow_strength"),
                 title = stringResource(id = R.string.subtitle_shadow_strength),
                 description = preferences.subtitleShadowStrength.toString(),
-                icon = NextIcons.Style,
+                icon = AppIcons.Style,
                 isEnabled = isEnabled,
                 value = preferences.subtitleShadowStrength,
                 valueRange = SUBTITLE_SHADOW_STRENGTH_RANGE,
                 onValueChange = { onPreferencesChange(preferences.copy(subtitleShadowStrength = it)) },
                 trailingContent = {
-                    NextResetIconButton(
+                    ResetIconButton(
                         modifier = Modifier.testTag("btn_reset_settings_subtitle_shadow_strength"),
                         enabled = isEnabled,
                         contentDescription = stringResource(id = R.string.reset_subtitle_shadow_strength),

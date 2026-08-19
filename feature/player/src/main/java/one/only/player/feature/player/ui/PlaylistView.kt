@@ -48,7 +48,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import one.only.player.core.common.Utils
 import one.only.player.core.ui.R
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.feature.player.state.rememberPlaylistState
 import one.only.player.feature.player.ui.panel.rememberPlayerPanelTokens
 import sh.calvin.reorderable.DragGestureDetector
@@ -243,7 +243,7 @@ private fun ThumbnailView(
             .aspectRatio(16f / 10f),
     ) {
         MiuixIcon(
-            imageVector = NextIcons.Video,
+            imageVector = AppIcons.Video,
             contentDescription = null,
             tint = tokens.secondaryContentColor.copy(alpha = 0.4f),
             modifier = Modifier
@@ -291,7 +291,7 @@ private fun EmptyPlaylistView() {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         MiuixIcon(
-            imageVector = NextIcons.Video,
+            imageVector = AppIcons.Video,
             contentDescription = null,
             tint = tokens.secondaryContentColor.copy(alpha = 0.6f),
             modifier = Modifier.fillMaxSize(0.3f),

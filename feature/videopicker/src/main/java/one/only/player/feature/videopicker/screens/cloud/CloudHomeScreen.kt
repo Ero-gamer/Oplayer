@@ -41,11 +41,11 @@ import one.only.player.core.common.needsLocalNetworkPermission
 import one.only.player.core.model.RemoteServer
 import one.only.player.core.model.ServerProtocol
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceSwitch
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.composables.MediaMessageState
@@ -53,6 +53,7 @@ import one.only.player.feature.videopicker.composables.RequestLocalNetworkPermis
 import one.only.player.feature.videopicker.composables.rememberLocalNetworkPermissionState
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.DropdownEntry
 import top.yukonga.miuix.kmp.basic.DropdownItem
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.IconButton
@@ -62,7 +63,7 @@ import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.preference.WindowSpinnerPreference
+import top.yukonga.miuix.kmp.menu.WindowDropdownMenu
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -124,7 +125,7 @@ internal fun CloudHomeScreen(
                         modifier = Modifier.testTag("btn_cloud_add_server"),
                     ) {
                         Icon(
-                            imageVector = NextIcons.Add,
+                            imageVector = AppIcons.Add,
                             contentDescription = stringResource(R.string.add_server),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -187,7 +188,7 @@ internal fun CloudHomeScreen(
     }
 
     deletingServer?.let { server ->
-        NextDialog(
+        AppDialog(
             onDismissRequest = { deletingServer = null },
             title = stringResource(R.string.delete_server),
             content = {
@@ -214,7 +215,7 @@ private fun EmptyCloudHomeContent(
     contentPadding: PaddingValues,
 ) {
     MediaMessageState(
-        icon = NextIcons.Cloud,
+        icon = AppIcons.Cloud,
         title = stringResource(R.string.no_servers_configured),
         contentPadding = contentPadding,
     )
@@ -246,7 +247,7 @@ private fun ServerListItem(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = NextIcons.Cloud,
+                    imageVector = AppIcons.Cloud,
                     contentDescription = null,
                     tint = MiuixTheme.colorScheme.onSurface,
                     modifier = Modifier.size(25.dp),
@@ -273,14 +274,14 @@ private fun ServerListItem(
             Row {
                 IconButton(onClick = onEditClick) {
                     Icon(
-                        imageVector = NextIcons.Edit,
+                        imageVector = AppIcons.Edit,
                         contentDescription = stringResource(R.string.edit_server),
                         tint = MiuixTheme.colorScheme.onSurface,
                     )
                 }
                 IconButton(onClick = onDeleteClick) {
                     Icon(
-                        imageVector = NextIcons.Delete,
+                        imageVector = AppIcons.Delete,
                         contentDescription = stringResource(R.string.delete_server),
                         tint = MiuixTheme.colorScheme.onSurface,
                     )
@@ -307,9 +308,17 @@ private fun AddEditServerDialog(
     var isProxyEnabled by rememberSaveable { mutableStateOf(server?.isProxyEnabled ?: false) }
     var proxyHost by rememberSaveable { mutableStateOf(server?.proxyHost ?: "") }
     var proxyPort by rememberSaveable { mutableStateOf(server?.proxyPort?.toString() ?: "") }
-    val protocolItems = remember { ServerProtocol.entries.map { DropdownItem(text = it.name) } }
+    val protocolItems = remember(protocol) {
+        ServerProtocol.entries.map { item ->
+            DropdownItem(
+                text = item.name,
+                selected = item == protocol,
+                onClick = { protocol = item },
+            )
+        }
+    }
 
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(
             if (isEditing) R.string.edit_server else R.string.add_server,
@@ -321,13 +330,11 @@ private fun AddEditServerDialog(
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                WindowSpinnerPreference(
-                    items = protocolItems,
-                    selectedIndex = ServerProtocol.entries.indexOf(protocol),
+                WindowDropdownMenu(
+                    entries = listOf(DropdownEntry(items = protocolItems)),
                     title = stringResource(R.string.server_protocol),
-                    dialogButtonString = stringResource(R.string.done),
+                    summary = protocol.name,
                     modifier = Modifier.fillMaxWidth(),
-                    onSelectedIndexChange = { index -> protocol = ServerProtocol.entries[index] },
                 )
 
                 TextField(
@@ -388,7 +395,7 @@ private fun AddEditServerDialog(
                 PreferenceSwitch(
                     title = stringResource(R.string.proxy_enabled),
                     description = stringResource(R.string.proxy_settings),
-                    icon = NextIcons.Link,
+                    icon = AppIcons.Link,
                     isChecked = isProxyEnabled,
                     onClick = { isProxyEnabled = !isProxyEnabled },
                 )

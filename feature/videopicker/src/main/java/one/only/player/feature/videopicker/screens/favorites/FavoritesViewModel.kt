@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.data.remote.RemoteMediaResolver
 import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaRepository
@@ -35,7 +35,7 @@ class FavoritesViewModel @Inject constructor(
     private val remoteServerRepository: RemoteServerRepository,
     private val remoteMediaResolver: RemoteMediaResolver,
     preferencesRepository: PreferencesRepository,
-    @Dispatcher(NextDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
 
     private val searchQuery = MutableStateFlow("")

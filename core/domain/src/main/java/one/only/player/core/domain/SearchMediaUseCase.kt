@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import one.only.player.core.common.Dispatcher
-import one.only.player.core.common.NextDispatchers
+import one.only.player.core.common.DispatcherType
 import one.only.player.core.model.Folder
 import one.only.player.core.model.Video
 
@@ -30,7 +30,7 @@ fun SearchResults.asRootFolder(): Folder = Folder.rootFolder.copy(
 class SearchMediaUseCase @Inject constructor(
     private val getSortedVideosUseCase: GetSortedVideosUseCase,
     private val getSortedFoldersUseCase: GetSortedFoldersUseCase,
-    @Dispatcher(NextDispatchers.Default) private val defaultDispatcher: CoroutineDispatcher,
+    @Dispatcher(DispatcherType.Default) private val defaultDispatcher: CoroutineDispatcher,
 ) {
 
     operator fun invoke(query: String): Flow<SearchResults> {

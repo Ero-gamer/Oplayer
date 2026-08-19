@@ -26,16 +26,16 @@ import one.only.player.core.common.extensions.toString
 import one.only.player.core.model.DoubleTapGesture
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.NextDialogWithDoneAndCancelButtons
-import one.only.player.core.ui.components.NextResetIconButton
+import one.only.player.core.ui.components.DoneCancelDialog
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
 import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.PreferenceSwitchWithDivider
 import one.only.player.core.ui.components.RadioTextButton
+import one.only.player.core.ui.components.ResetIconButton
 import one.only.player.core.ui.components.SettingsGroupGap
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -85,7 +85,7 @@ private fun GesturePreferencesContent(
                             .testTag("button_gesture_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -109,7 +109,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_seek"),
                     title = stringResource(id = R.string.seek_gesture),
                     description = stringResource(id = R.string.seek_gesture_description),
-                    icon = NextIcons.SwipeHorizontal,
+                    icon = AppIcons.SwipeHorizontal,
                     isChecked = uiState.preferences.shouldUseSeekControls,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseSeekControls) },
                 )
@@ -118,13 +118,13 @@ private fun GesturePreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_gesture_seek_sensitivity"),
                     title = stringResource(R.string.seek_gesture_sensitivity),
                     description = uiState.preferences.seekSensitivity.toString(decimalPlaces = 2),
-                    icon = NextIcons.Sensitivity,
+                    icon = AppIcons.Sensitivity,
                     isEnabled = uiState.preferences.shouldUseSeekControls,
                     value = uiState.preferences.seekSensitivity,
                     valueRange = 0.1f..2.0f,
                     onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateSeekSensitivity(it)) },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_gesture_seek_sensitivity"),
                             enabled = uiState.preferences.shouldUseSeekControls,
                             onClick = { onEvent(GesturePreferencesUiEvent.UpdateSeekSensitivity(PlayerPreferences.DEFAULT_SEEK_SENSITIVITY)) },
@@ -137,12 +137,12 @@ private fun GesturePreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_gesture_seek_increment"),
                     title = stringResource(R.string.seek_increment),
                     description = stringResource(R.string.seconds, uiState.preferences.seekIncrement),
-                    icon = NextIcons.Replay,
+                    icon = AppIcons.Replay,
                     value = uiState.preferences.seekIncrement.toFloat(),
                     valueRange = 1.0f..PlayerPreferences.MAX_SEEK_INCREMENT.toFloat(),
                     onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(it.toInt())) },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_gesture_seek_increment"),
                             onClick = { onEvent(GesturePreferencesUiEvent.UpdateSeekIncrement(PlayerPreferences.DEFAULT_SEEK_INCREMENT)) },
                             contentDescription = stringResource(id = R.string.reset_seek_increment),
@@ -156,7 +156,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_brightness"),
                     title = stringResource(id = R.string.brightness_gesture),
                     description = stringResource(id = R.string.brightness_gesture_description),
-                    icon = NextIcons.SwipeVertical,
+                    icon = AppIcons.SwipeVertical,
                     isChecked = uiState.preferences.isBrightnessSwipeGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnableBrightnessSwipeGesture) },
                 )
@@ -165,13 +165,13 @@ private fun GesturePreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_gesture_brightness_sensitivity"),
                     title = stringResource(R.string.brightness_gesture_sensitivity),
                     description = uiState.preferences.brightnessGestureSensitivity.toString(decimalPlaces = 2),
-                    icon = NextIcons.Sensitivity,
+                    icon = AppIcons.Sensitivity,
                     isEnabled = uiState.preferences.isBrightnessSwipeGestureEnabled,
                     value = uiState.preferences.brightnessGestureSensitivity,
                     valueRange = 0.1f..2.0f,
                     onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateBrightnessGestureSensitivity(it)) },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_gesture_brightness_sensitivity"),
                             enabled = uiState.preferences.isBrightnessSwipeGestureEnabled,
                             onClick = { onEvent(GesturePreferencesUiEvent.UpdateBrightnessGestureSensitivity(PlayerPreferences.DEFAULT_BRIGHTNESS_GESTURE_SENSITIVITY)) },
@@ -186,7 +186,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_volume"),
                     title = stringResource(id = R.string.volume_gesture),
                     description = stringResource(id = R.string.volume_gesture_description),
-                    icon = NextIcons.SwipeVertical,
+                    icon = AppIcons.SwipeVertical,
                     isChecked = uiState.preferences.isVolumeSwipeGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnableVolumeSwipeGesture) },
                 )
@@ -195,13 +195,13 @@ private fun GesturePreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_gesture_volume_sensitivity"),
                     title = stringResource(R.string.volume_gesture_sensitivity),
                     description = uiState.preferences.volumeGestureSensitivity.toString(decimalPlaces = 2),
-                    icon = NextIcons.Sensitivity,
+                    icon = AppIcons.Sensitivity,
                     isEnabled = uiState.preferences.isVolumeSwipeGestureEnabled,
                     value = uiState.preferences.volumeGestureSensitivity,
                     valueRange = 0.1f..2.0f,
                     onValueChange = { onEvent(GesturePreferencesUiEvent.UpdateVolumeGestureSensitivity(it)) },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_gesture_volume_sensitivity"),
                             enabled = uiState.preferences.isVolumeSwipeGestureEnabled,
                             onClick = { onEvent(GesturePreferencesUiEvent.UpdateVolumeGestureSensitivity(PlayerPreferences.DEFAULT_VOLUME_GESTURE_SENSITIVITY)) },
@@ -217,7 +217,7 @@ private fun GesturePreferencesContent(
                     switchModifier = Modifier.testTag("switch_settings_gesture_double_tap"),
                     title = stringResource(id = R.string.double_tap),
                     description = stringResource(id = R.string.double_tap_description),
-                    icon = NextIcons.DoubleTap,
+                    icon = AppIcons.DoubleTap,
                     isChecked = (uiState.preferences.doubleTapGesture != DoubleTapGesture.NONE),
                     onChecked = { onEvent(GesturePreferencesUiEvent.ToggleDoubleTapGesture) },
                     onClick = { onEvent(GesturePreferencesUiEvent.ShowDialog(GesturePreferenceDialog.DoubleTapDialog)) },
@@ -230,7 +230,7 @@ private fun GesturePreferencesContent(
                     switchModifier = Modifier.testTag("switch_settings_gesture_long_press"),
                     title = stringResource(id = R.string.long_press_gesture),
                     description = stringResource(id = R.string.long_press_gesture_desc, uiState.preferences.longPressControlsSpeed),
-                    icon = NextIcons.Tap,
+                    icon = AppIcons.Tap,
                     isChecked = uiState.preferences.shouldUseLongPressControls,
                     onChecked = { onEvent(GesturePreferencesUiEvent.ToggleUseLongPressControls) },
                     onClick = { onEvent(GesturePreferencesUiEvent.ShowDialog(GesturePreferenceDialog.LongPressControlsSpeedDialog)) },
@@ -239,7 +239,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_long_press_variable_speed"),
                     title = stringResource(id = R.string.long_press_variable_speed),
                     description = stringResource(id = R.string.long_press_variable_speed_desc),
-                    icon = NextIcons.SwipeHorizontal,
+                    icon = AppIcons.SwipeHorizontal,
                     isEnabled = uiState.preferences.shouldUseLongPressControls,
                     isChecked = uiState.preferences.shouldUseLongPressVariableSpeed,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseLongPressVariableSpeed) },
@@ -251,7 +251,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_zoom"),
                     title = stringResource(id = R.string.zoom_gesture),
                     description = stringResource(id = R.string.zoom_gesture_description),
-                    icon = NextIcons.Pinch,
+                    icon = AppIcons.Pinch,
                     isChecked = uiState.preferences.shouldUseZoomControls,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseZoomControls) },
                 )
@@ -259,7 +259,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_pan"),
                     title = stringResource(id = R.string.pan_gesture),
                     description = stringResource(id = R.string.pan_gesture_description),
-                    icon = NextIcons.Pan,
+                    icon = AppIcons.Pan,
                     isEnabled = uiState.preferences.shouldUseZoomControls,
                     isChecked = uiState.preferences.isPanGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnablePanGesture) },
@@ -293,7 +293,7 @@ private fun GesturePreferencesContent(
                         mutableFloatStateOf(uiState.preferences.longPressControlsSpeed)
                     }
 
-                    NextDialogWithDoneAndCancelButtons(
+                    DoneCancelDialog(
                         title = stringResource(R.string.long_press_gesture),
                         onDoneClick = {
                             onEvent(GesturePreferencesUiEvent.UpdateLongPressControlsSpeed(longPressControlsSpeed))

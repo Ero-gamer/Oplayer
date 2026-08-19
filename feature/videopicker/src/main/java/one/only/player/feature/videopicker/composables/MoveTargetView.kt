@@ -27,9 +27,9 @@ import one.only.player.core.media.services.MediaMoveTargetDirectory
 import one.only.player.core.media.services.MediaMoveTargetDirectoryContent
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CardItemGap
+import one.only.player.core.ui.components.CardListItem
 import one.only.player.core.ui.components.ListSectionTitle
-import one.only.player.core.ui.components.NextCardListItem
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
@@ -60,7 +60,7 @@ fun MoveTargetView(
         Box(modifier = Modifier.weight(1f)) {
             if (currentDirectory != null && content.directories.isEmpty()) {
                 MediaMessageState(
-                    icon = NextIcons.Folder,
+                    icon = AppIcons.Folder,
                     title = stringResource(R.string.empty_directory),
                     contentPadding = PaddingValues(bottom = 8.dp),
                 )
@@ -207,7 +207,7 @@ private fun StorageTargetItem(
     }
     val usedFraction = availablePercent?.let { percent -> 1f - percent / 100f }
 
-    NextCardListItem(
+    CardListItem(
         modifier = Modifier.testTag("item_move_target_${directory.path}"),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
         onClick = onClick,
@@ -273,13 +273,13 @@ private fun FolderTargetItem(
     directory: MediaMoveTargetDirectory,
     onClick: () -> Unit,
 ) {
-    NextCardListItem(
+    CardListItem(
         modifier = Modifier.testTag("item_move_target_${directory.path}"),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
         onClick = onClick,
         leadingContent = {
             Icon(
-                imageVector = NextIcons.Folder,
+                imageVector = AppIcons.Folder,
                 contentDescription = null,
                 tint = MiuixTheme.colorScheme.primary,
                 modifier = Modifier.size(28.dp),
@@ -309,7 +309,7 @@ private fun MoveTargetIcon(
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
-                imageVector = if (isInsufficient) NextIcons.Priority else NextIcons.DriveFileMove,
+                imageVector = if (isInsufficient) AppIcons.Priority else AppIcons.DriveFileMove,
                 contentDescription = null,
                 tint = if (isInsufficient) MiuixTheme.colorScheme.error else MiuixTheme.colorScheme.primary,
                 modifier = Modifier.size(iconSize),
@@ -343,7 +343,7 @@ private fun MoveTargetActionBar(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = NextIcons.DriveFileMove,
+                    imageVector = AppIcons.DriveFileMove,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
                 )

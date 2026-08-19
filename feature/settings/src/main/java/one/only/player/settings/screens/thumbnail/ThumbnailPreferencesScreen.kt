@@ -27,15 +27,15 @@ import kotlin.math.abs
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.ThumbnailGenerationStrategy
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
-import one.only.player.core.ui.components.NextDialog
-import one.only.player.core.ui.components.NextResetIconButton
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
 import one.only.player.core.ui.components.PreferenceSlider
+import one.only.player.core.ui.components.ResetIconButton
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.components.SingleSelectablePreference
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -93,7 +93,7 @@ private fun ThumbnailPreferencesContent(
                             .testTag("button_thumbnail_back"),
                     ) {
                         MiuixIcon(
-                            imageVector = NextIcons.ArrowBack,
+                            imageVector = AppIcons.ArrowBack,
                             contentDescription = stringResource(id = R.string.navigate_up),
                             tint = MiuixTheme.colorScheme.onBackground,
                         )
@@ -151,7 +151,7 @@ private fun ThumbnailPreferencesContent(
                     sliderModifier = Modifier.testTag("slider_settings_thumbnail_frame_position"),
                     title = stringResource(R.string.frame_position),
                     description = stringResource(R.string.frame_position_value, frameSliderValue),
-                    icon = NextIcons.Frame,
+                    icon = AppIcons.Frame,
                     value = frameSliderValue,
                     valueRange = 0f..100f,
                     onValueChange = { frameSliderValue = it },
@@ -162,7 +162,7 @@ private fun ThumbnailPreferencesContent(
                         }
                     },
                     trailingContent = {
-                        NextResetIconButton(
+                        ResetIconButton(
                             modifier = Modifier.testTag("btn_reset_settings_thumbnail_frame_position"),
                             enabled = preferences.thumbnailGenerationStrategy != ThumbnailGenerationStrategy.FIRST_FRAME,
                             onClick = {
@@ -180,7 +180,7 @@ private fun ThumbnailPreferencesContent(
         }
 
         pendingChange?.let { change ->
-            NextDialog(
+            AppDialog(
                 onDismissRequest = {
                     pendingChange = null
                     frameSliderValue = preferences.thumbnailFramePosition * 100f

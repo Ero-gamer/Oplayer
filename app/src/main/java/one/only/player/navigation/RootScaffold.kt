@@ -17,11 +17,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Cloud
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.serialization.Serializable
 import one.only.player.core.ui.R as UiR
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
 import one.only.player.ui.component.FloatingBottomBar
 import one.only.player.ui.component.FloatingBottomBarItem
@@ -59,13 +55,14 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 // 根 Tab 定义，每项对应一个顶级导航目的地
 enum class RootDestination(
     val labelRes: Int,
-    val icon: ImageVector,
+    val unselectedIcon: ImageVector,
+    val selectedIcon: ImageVector,
     val tag: String,
 ) {
-    HOME(UiR.string.tab_home, Icons.Rounded.Home, "root_tab_home"),
-    CLOUD(UiR.string.tab_cloud, Icons.Rounded.Cloud, "root_tab_cloud"),
-    FAVORITES(UiR.string.tab_favorites, Icons.Rounded.Star, "root_tab_favorites"),
-    SETTINGS(UiR.string.tab_settings, Icons.Rounded.Settings, "root_tab_settings"),
+    HOME(UiR.string.tab_home, AppIcons.HomeLine, AppIcons.HomeFilled, "root_tab_home"),
+    CLOUD(UiR.string.tab_cloud, AppIcons.CloudLine, AppIcons.CloudFilled, "root_tab_cloud"),
+    FAVORITES(UiR.string.tab_favorites, AppIcons.FavoritesLine, AppIcons.FavoritesFilled, "root_tab_favorites"),
+    SETTINGS(UiR.string.tab_settings, AppIcons.SettingsLine, AppIcons.SettingsFilled, "root_tab_settings"),
 }
 
 @Serializable
@@ -237,7 +234,7 @@ private fun FloatingRootBottomBar(
             ) {
                 // 图标恒用 onSurface，选中态由上层 tint 采样药丸表现
                 Icon(
-                    imageVector = target.icon,
+                    imageVector = if (currentRoot == target) target.selectedIcon else target.unselectedIcon,
                     contentDescription = label,
                     tint = MiuixTheme.colorScheme.onSurface,
                     modifier = Modifier.size(26.dp),
@@ -284,7 +281,7 @@ private fun RowScope.RootNavigationBarItem(
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(
-            imageVector = destination.icon,
+            imageVector = if (isSelected) destination.selectedIcon else destination.unselectedIcon,
             contentDescription = label,
             tint = tint,
             modifier = Modifier.size(26.dp),

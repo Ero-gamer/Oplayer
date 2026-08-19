@@ -66,12 +66,12 @@ import one.only.player.core.model.MediaLayoutMode
 import one.only.player.core.model.RemoteFile
 import one.only.player.core.model.RemoteServer
 import one.only.player.core.ui.R
+import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CardItemGap
+import one.only.player.core.ui.components.CardListItem
 import one.only.player.core.ui.components.ListSectionTitle
-import one.only.player.core.ui.components.NextCardListItem
-import one.only.player.core.ui.components.NextDialog
 import one.only.player.core.ui.components.PageContentTopPadding
-import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.subtractBottomPadding
@@ -257,7 +257,7 @@ internal fun CloudBrowseScreen(
                             modifier = Modifier.padding(start = 12.dp),
                         ) {
                             MiuixIcon(
-                                imageVector = NextIcons.Close,
+                                imageVector = AppIcons.Close,
                                 contentDescription = stringResource(id = R.string.navigate_up),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -280,9 +280,9 @@ internal fun CloudBrowseScreen(
                         ) {
                             MiuixIcon(
                                 imageVector = if (selectedItemsSize != totalItemsSize) {
-                                    NextIcons.SelectAll
+                                    AppIcons.SelectAll
                                 } else {
-                                    NextIcons.DeselectAll
+                                    AppIcons.DeselectAll
                                 },
                                 contentDescription = if (selectedItemsSize != totalItemsSize) {
                                     stringResource(R.string.select_all)
@@ -298,7 +298,7 @@ internal fun CloudBrowseScreen(
                             modifier = Modifier.testTag("btn_cloud_selection_actions"),
                         ) {
                             MiuixIcon(
-                                imageVector = NextIcons.MoreVert,
+                                imageVector = AppIcons.MoreVert,
                                 contentDescription = stringResource(id = R.string.more_actions),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -336,7 +336,7 @@ internal fun CloudBrowseScreen(
                             modifier = Modifier.padding(start = 12.dp),
                         ) {
                             MiuixIcon(
-                                imageVector = NextIcons.ArrowBack,
+                                imageVector = AppIcons.ArrowBack,
                                 contentDescription = stringResource(R.string.navigate_up),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -348,7 +348,7 @@ internal fun CloudBrowseScreen(
                             modifier = Modifier.testTag("btn_cloud_quick_settings"),
                         ) {
                             MiuixIcon(
-                                imageVector = NextIcons.DashBoard,
+                                imageVector = AppIcons.DashBoard,
                                 contentDescription = stringResource(R.string.cloud_quick_settings),
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
@@ -390,7 +390,7 @@ internal fun CloudBrowseScreen(
                         uiState.isError -> {
                             CloudBrowseMessageState(
                                 contentPadding = contentPadding,
-                                icon = NextIcons.Cloud,
+                                icon = AppIcons.Cloud,
                                 title = stringResource(R.string.connection_failed),
                                 message = uiState.errorMessage,
                                 actionText = stringResource(R.string.retry),
@@ -401,7 +401,7 @@ internal fun CloudBrowseScreen(
                         uiState.files.isEmpty() -> {
                             CloudBrowseMessageState(
                                 contentPadding = contentPadding,
-                                icon = NextIcons.Folder,
+                                icon = AppIcons.Folder,
                                 title = stringResource(R.string.empty_directory),
                             )
                         }
@@ -656,7 +656,7 @@ private fun RemoteFileListItem(
 ) {
     val shouldHighlight = isRecentlyPlayed && shouldMarkLastPlayedMedia
     val highlightColor = MiuixTheme.colorScheme.primary
-    NextCardListItem(
+    CardListItem(
         modifier = Modifier.testTag("remote_file_${file.name}"),
         isSelected = false,
         containerColor = Color.Transparent,
@@ -737,7 +737,7 @@ private fun RemoteFileGridItem(
 ) {
     val shouldHighlight = isRecentlyPlayed && shouldMarkLastPlayedMedia
     val highlightColor = MiuixTheme.colorScheme.primary
-    NextCardListItem(
+    CardListItem(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("remote_file_${file.name}"),
@@ -800,7 +800,7 @@ private fun RemoteThumbnailView(
             .aspectRatio(16f / 10f),
     ) {
         MiuixIcon(
-            imageVector = NextIcons.Video,
+            imageVector = AppIcons.Video,
             contentDescription = null,
             tint = MiuixTheme.colorScheme.onSurfaceContainerVariant,
             modifier = Modifier
@@ -868,7 +868,7 @@ private fun cloudSelectionActions(
     add(
         MenuAction(
             text = stringResource(id = R.string.add_to_favorites),
-            icon = NextIcons.LibraryBooks,
+            icon = AppIcons.LibraryBooks,
             testTag = "item_cloud_selection_add_favorites",
             onClick = onFavoriteAction,
         ),
@@ -877,7 +877,7 @@ private fun cloudSelectionActions(
         add(
             MenuAction(
                 text = stringResource(id = R.string.info),
-                icon = NextIcons.Info,
+                icon = AppIcons.Info,
                 testTag = "item_cloud_selection_info",
                 onClick = onInfoAction,
             ),
@@ -908,7 +908,7 @@ private fun resolveCloudRestoreScrollIndex(
 private fun RemoteFileInfoLoadingDialog(
     onDismiss: () -> Unit,
 ) {
-    NextDialog(
+    AppDialog(
         onDismissRequest = onDismiss,
         title = stringResource(id = R.string.info),
         content = {
