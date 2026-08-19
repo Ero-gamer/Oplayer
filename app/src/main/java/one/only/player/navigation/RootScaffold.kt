@@ -195,7 +195,6 @@ fun RootBottomBar(
             },
         ),
         color = barColor,
-        showDivider = !isBlurEnabled,
     ) {
         RootDestination.entries.forEach { target ->
             RootNavigationBarItem(
