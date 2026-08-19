@@ -38,6 +38,9 @@ import one.only.player.core.ui.components.RadioTextButton
 import one.only.player.core.ui.components.SettingsContentTopPadding
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.extensions.icon
+import one.only.player.core.ui.extensions.id
+import one.only.player.core.ui.extensions.label
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.settings.composables.OptionsDialog
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -48,6 +51,8 @@ import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+private const val DISABLED_ICON_ALPHA = 0.3f
 
 private sealed interface CustomizeDialog {
     data class SlotPicker(val control: PlayerControl) : CustomizeDialog
@@ -167,7 +172,7 @@ fun PlayerControlsCustomizeScreen(
             text = stringResource(R.string.customize_controls_preview_layout),
             onDismissClick = { activeDialog = null },
         ) {
-            items(ControlsPreviewLayout.entries.toTypedArray()) { layout ->
+            items(ControlsPreviewLayout.entries) { layout ->
                 RadioTextButton(
                     modifier = Modifier.testTag("option_settings_customize_preview_${layout.name.lowercase()}"),
                     text = layout.label(),
@@ -274,9 +279,8 @@ private fun ShiftButton(
     isEnabled: Boolean,
     onClick: () -> Unit,
 ) {
-    val tint = MiuixTheme.colorScheme.onBackground.let {
-        if (isEnabled) it else it.copy(alpha = 0.3f)
-    }
+    val onBackground = MiuixTheme.colorScheme.onBackground
+    val tint = if (isEnabled) onBackground else onBackground.copy(alpha = DISABLED_ICON_ALPHA)
     MiuixIconButton(
         modifier = Modifier.testTag(testTag),
         onClick = onClick,

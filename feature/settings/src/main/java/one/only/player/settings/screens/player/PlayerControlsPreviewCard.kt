@@ -30,6 +30,9 @@ import androidx.compose.ui.unit.dp
 import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.NextIcons
+import one.only.player.core.ui.extensions.icon
+import one.only.player.core.ui.extensions.id
+import one.only.player.core.ui.extensions.label
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.MiuixTheme

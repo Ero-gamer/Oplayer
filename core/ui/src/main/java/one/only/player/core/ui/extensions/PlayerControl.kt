@@ -1,4 +1,4 @@
-package one.only.player.settings.screens.player
+package one.only.player.core.ui.extensions
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
@@ -8,11 +8,13 @@ import one.only.player.core.model.PlayerControl
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.NextIcons
 
-internal val PlayerControl.id: String
+// 控件的唯一小写标识，用于拼 testTag 和调试指令参数
+val PlayerControl.id: String
     get() = name.lowercase()
 
+// 图标与文案在此集中维护：播放器和设置页共用同一份，新增控件只改这里
 @StringRes
-internal fun PlayerControl.nameRes(): Int = when (this) {
+fun PlayerControl.labelRes(): Int = when (this) {
     PlayerControl.BACK -> R.string.navigate_up
     PlayerControl.PLAYLIST -> R.string.now_playing
     PlayerControl.PLAYBACK_SPEED -> R.string.select_playback_speed
@@ -39,7 +41,10 @@ internal fun PlayerControl.nameRes(): Int = when (this) {
     PlayerControl.MIRROR_VIDEO -> R.string.mirror_video
 }
 
-internal fun PlayerControl.icon(): ImageVector = when (this) {
+@Composable
+fun PlayerControl.label(): String = stringResource(labelRes())
+
+fun PlayerControl.icon(): ImageVector = when (this) {
     PlayerControl.BACK -> NextIcons.ArrowBack
     PlayerControl.PLAYLIST -> NextIcons.PlaylistPlay
     PlayerControl.PLAYBACK_SPEED -> NextIcons.Speed
@@ -65,6 +70,3 @@ internal fun PlayerControl.icon(): ImageVector = when (this) {
     PlayerControl.ROTATE -> NextIcons.Rotation
     PlayerControl.MIRROR_VIDEO -> NextIcons.Size
 }
-
-@Composable
-internal fun PlayerControl.label(): String = stringResource(nameRes())
