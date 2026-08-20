@@ -29,7 +29,6 @@ kotlinxSerializationJson = "1.11.0"
 ksp = "2.3.11"
 ktlint = "14.2.0"
 libassAndroid = "0.5.1"
-materialKolor = "5.0.0"
 miuix = "0.9.3"
 nextlib = "1.10.1-0.13.0"
 okhttp = "5.5.0"
@@ -92,7 +91,6 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 miuix-blur = { module = "top.yukonga.miuix.kmp:miuix-blur-android", version.ref = "miuix" }
 miuix-icons = { module = "top.yukonga.miuix.kmp:miuix-icons-android", version.ref = "miuix" }
 miuix-navigation3-ui = { module = "top.yukonga.miuix.kmp:miuix-navigation3-ui-android", version.ref = "miuix" }

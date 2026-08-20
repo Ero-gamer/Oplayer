@@ -50,7 +50,6 @@ dependencies {
     api(libs.miuix.ui)
     api(libs.miuix.icons)
     api(libs.miuix.preference)
-    api(libs.material.kolor)
 
     implementation(libs.androidx.hilt.navigation.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)

@@ -25,9 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.PredictiveBackSupport
-import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
-import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.RadioTextButton
@@ -100,17 +98,6 @@ private fun AppearancePreferencesContent(
     val languageIndex = languageTags.indexOf(preferences.appLanguage).coerceAtLeast(0)
 
     val themeConfigs = remember { ThemeConfig.entries }
-    val paletteStyles = remember { ThemePaletteStyle.entries }
-    val colorSpecs = remember { ThemeColorSpec.entries }
-    val themeColorLabels = listOf(stringResource(id = R.string.system_default)) +
-        SeedColorPalette.map { stringResource(id = it.labelRes) }
-    val themeColorIndex = if (preferences.shouldUseSystemDynamicColor) {
-        0
-    } else {
-        SeedColorPalette
-            .indexOfFirst { it.value == preferences.themeSeedColor }
-            .coerceAtLeast(0) + 1
-    }
 
     Scaffold(
         topBar = {
@@ -163,9 +150,6 @@ private fun AppearancePreferencesContent(
                         onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.Theme))
                     },
                 )
-            }
-
-            Card(modifier = Modifier.fillMaxWidth()) {
                 if (supportsDynamicTheming()) {
                     SwitchPreference(
                         modifier = Modifier.testTag("switch_settings_appearance_dynamic_colors"),
@@ -173,37 +157,6 @@ private fun AppearancePreferencesContent(
                         startAction = { PrefIcon(AppIcons.Appearance) },
                         checked = preferences.shouldUseDynamicColors,
                         onCheckedChange = { onEvent(AppearancePreferencesEvent.ToggleUseDynamicColors) },
-                    )
-                }
-                if (preferences.shouldUseDynamicColors) {
-                    ArrowPreference(
-                        modifier = Modifier.testTag("item_settings_appearance_theme_color"),
-                        title = stringResource(id = R.string.theme_color),
-                        summary = themeColorLabels[themeColorIndex],
-                        startAction = { PrefIcon(AppIcons.Appearance) },
-                        onClick = {
-                            onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.ThemeColor))
-                        },
-                    )
-                }
-                if (preferences.shouldUseDynamicColors && !preferences.shouldUseSystemDynamicColor) {
-                    ArrowPreference(
-                        modifier = Modifier.testTag("dropdown_settings_appearance_palette_style"),
-                        title = stringResource(id = R.string.theme_palette_style),
-                        summary = preferences.themePaletteStyle.name(),
-                        startAction = { PrefIcon(AppIcons.Style) },
-                        onClick = {
-                            onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.PaletteStyle))
-                        },
-                    )
-                    ArrowPreference(
-                        modifier = Modifier.testTag("dropdown_settings_appearance_color_spec"),
-                        title = stringResource(id = R.string.theme_color_spec),
-                        summary = preferences.themeColorSpec.name(),
-                        startAction = { PrefIcon(AppIcons.Contrast) },
-                        onClick = {
-                            onEvent(AppearancePreferencesEvent.ShowDialog(AppearancePreferenceDialog.ColorSpec))
-                        },
                     )
                 }
             }
@@ -295,75 +248,6 @@ private fun AppearancePreferencesContent(
                         }
                     }
                 }
-
-                AppearancePreferenceDialog.ThemeColor -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.theme_color),
-                        onDismissClick = { onEvent(AppearancePreferencesEvent.ShowDialog(null)) },
-                    ) {
-                        itemsIndexed(themeColorLabels) { index, label ->
-                            RadioTextButton(
-                                modifier = Modifier.testTag("option_settings_appearance_theme_color_$index"),
-                                text = label,
-                                isSelected = index == themeColorIndex,
-                                onClick = {
-                                    if (index == 0) {
-                                        onEvent(AppearancePreferencesEvent.UseSystemDynamicColor)
-                                    } else {
-                                        onEvent(
-                                            AppearancePreferencesEvent.UpdateThemeSeedColor(
-                                                SeedColorPalette[index - 1].value,
-                                            ),
-                                        )
-                                    }
-                                    onEvent(AppearancePreferencesEvent.ShowDialog(null))
-                                },
-                            )
-                        }
-                    }
-                }
-
-                AppearancePreferenceDialog.PaletteStyle -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.theme_palette_style),
-                        onDismissClick = { onEvent(AppearancePreferencesEvent.ShowDialog(null)) },
-                    ) {
-                        items(paletteStyles) { style ->
-                            RadioTextButton(
-                                modifier = Modifier.testTag(
-                                    "option_settings_appearance_palette_style_${style.name.lowercase()}",
-                                ),
-                                text = style.name(),
-                                isSelected = style == preferences.themePaletteStyle,
-                                onClick = {
-                                    onEvent(AppearancePreferencesEvent.UpdatePaletteStyle(style))
-                                    onEvent(AppearancePreferencesEvent.ShowDialog(null))
-                                },
-                            )
-                        }
-                    }
-                }
-
-                AppearancePreferenceDialog.ColorSpec -> {
-                    OptionsDialog(
-                        text = stringResource(id = R.string.theme_color_spec),
-                        onDismissClick = { onEvent(AppearancePreferencesEvent.ShowDialog(null)) },
-                    ) {
-                        items(colorSpecs) { spec ->
-                            RadioTextButton(
-                                modifier = Modifier.testTag(
-                                    "option_settings_appearance_color_spec_${spec.name.lowercase()}",
-                                ),
-                                text = spec.name(),
-                                isSelected = spec == preferences.themeColorSpec,
-                                onClick = {
-                                    onEvent(AppearancePreferencesEvent.UpdateColorSpec(spec))
-                                    onEvent(AppearancePreferencesEvent.ShowDialog(null))
-                                },
-                            )
-                        }
-                    }
-                }
             }
         }
     }
@@ -378,16 +262,3 @@ private fun PrefIcon(imageVector: ImageVector) {
         modifier = Modifier.padding(end = 12.dp).size(24.dp),
     )
 }
-
-// 预设主题色，关闭系统壁纸取色时供选择
-private data class SeedColor(val labelRes: Int, val value: Long)
-
-private val SeedColorPalette = listOf(
-    SeedColor(R.string.seed_color_purple, 0xFF6750A4),
-    SeedColor(R.string.seed_color_blue, 0xFF0061A4),
-    SeedColor(R.string.seed_color_teal, 0xFF006A67),
-    SeedColor(R.string.seed_color_green, 0xFF3A6A1E),
-    SeedColor(R.string.seed_color_orange, 0xFF9A4600),
-    SeedColor(R.string.seed_color_red, 0xFFA4302A),
-    SeedColor(R.string.seed_color_pink, 0xFF9A4058),
-)

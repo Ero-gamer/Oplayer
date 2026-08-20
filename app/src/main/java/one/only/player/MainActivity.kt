@@ -48,14 +48,11 @@ import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.common.storagePermission
 import one.only.player.core.media.services.MediaService
 import one.only.player.core.media.sync.MediaSynchronizer
-import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
-import one.only.player.core.model.ThemePaletteStyle
 import one.only.player.core.ui.R as UiR
 import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
 import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
-import one.only.player.core.ui.theme.DEFAULT_SEED_COLOR
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.player.PlayerActivity
 import one.only.player.feature.videopicker.navigation.navigateToHistory
@@ -190,10 +187,6 @@ class MainActivity : AppCompatActivity() {
             OnlyPlayerTheme(
                 shouldUseDarkTheme = shouldUseDarkTheme,
                 shouldUseDynamicColor = shouldUseDynamicColor,
-                shouldUseSystemDynamicColor = preferences?.shouldUseSystemDynamicColor != false,
-                seedColor = preferences?.themeSeedColor ?: DEFAULT_SEED_COLOR,
-                paletteStyle = preferences?.themePaletteStyle ?: ThemePaletteStyle.TONAL_SPOT,
-                colorSpec = preferences?.themeColorSpec ?: ThemeColorSpec.SPEC_2025,
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

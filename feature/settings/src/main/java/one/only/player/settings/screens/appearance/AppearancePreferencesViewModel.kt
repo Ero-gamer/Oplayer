@@ -16,9 +16,7 @@ import one.only.player.core.common.AppThemeMode
 import one.only.player.core.common.AppThemeModeManager
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ApplicationPreferences
-import one.only.player.core.model.ThemeColorSpec
 import one.only.player.core.model.ThemeConfig
-import one.only.player.core.model.ThemePaletteStyle
 
 @HiltViewModel
 class AppearancePreferencesViewModel @Inject constructor(
@@ -46,10 +44,6 @@ class AppearancePreferencesViewModel @Inject constructor(
             is AppearancePreferencesEvent.ShowDialog -> showDialog(event.value)
             is AppearancePreferencesEvent.UpdateThemeConfig -> updateThemeConfig(event.themeConfig)
             is AppearancePreferencesEvent.UpdateAppLanguage -> updateAppLanguage(event.languageTag)
-            is AppearancePreferencesEvent.UpdateThemeSeedColor -> updateThemeSeedColor(event.color)
-            AppearancePreferencesEvent.UseSystemDynamicColor -> useSystemDynamicColor()
-            is AppearancePreferencesEvent.UpdatePaletteStyle -> updatePaletteStyle(event.style)
-            is AppearancePreferencesEvent.UpdateColorSpec -> updateColorSpec(event.spec)
             AppearancePreferencesEvent.ToggleUseDynamicColors -> toggleUseDynamicColors()
             AppearancePreferencesEvent.ToggleNavigateHomeOnTitleLongPress -> toggleNavigateHomeOnTitleLongPress()
             AppearancePreferencesEvent.ToggleUseFloatingNavigationBar -> toggleUseFloatingNavigationBar()
@@ -84,41 +78,6 @@ class AppearancePreferencesViewModel @Inject constructor(
                 it.copy(appLanguage = languageTag)
             }
             AppLanguageManager.applyToCurrent(languageTag)
-        }
-    }
-
-    private fun updateThemeSeedColor(color: Long) {
-        viewModelScope.launch {
-            preferencesRepository.updateApplicationPreferences {
-                it.copy(
-                    shouldUseSystemDynamicColor = false,
-                    themeSeedColor = color,
-                )
-            }
-        }
-    }
-
-    private fun useSystemDynamicColor() {
-        viewModelScope.launch {
-            preferencesRepository.updateApplicationPreferences {
-                it.copy(shouldUseSystemDynamicColor = true)
-            }
-        }
-    }
-
-    private fun updatePaletteStyle(style: ThemePaletteStyle) {
-        viewModelScope.launch {
-            preferencesRepository.updateApplicationPreferences {
-                it.copy(themePaletteStyle = style)
-            }
-        }
-    }
-
-    private fun updateColorSpec(spec: ThemeColorSpec) {
-        viewModelScope.launch {
-            preferencesRepository.updateApplicationPreferences {
-                it.copy(themeColorSpec = spec)
-            }
         }
     }
 
@@ -189,10 +148,6 @@ sealed interface AppearancePreferencesEvent {
     data class ShowDialog(val value: AppearancePreferenceDialog?) : AppearancePreferencesEvent
     data class UpdateThemeConfig(val themeConfig: ThemeConfig) : AppearancePreferencesEvent
     data class UpdateAppLanguage(val languageTag: String) : AppearancePreferencesEvent
-    data class UpdateThemeSeedColor(val color: Long) : AppearancePreferencesEvent
-    data object UseSystemDynamicColor : AppearancePreferencesEvent
-    data class UpdatePaletteStyle(val style: ThemePaletteStyle) : AppearancePreferencesEvent
-    data class UpdateColorSpec(val spec: ThemeColorSpec) : AppearancePreferencesEvent
     data object ToggleUseDynamicColors : AppearancePreferencesEvent
     data object ToggleNavigateHomeOnTitleLongPress : AppearancePreferencesEvent
     data object ToggleUseFloatingNavigationBar : AppearancePreferencesEvent
@@ -206,7 +161,4 @@ sealed interface AppearancePreferencesEvent {
 sealed interface AppearancePreferenceDialog {
     data object Theme : AppearancePreferenceDialog
     data object AppLanguage : AppearancePreferenceDialog
-    data object ThemeColor : AppearancePreferenceDialog
-    data object PaletteStyle : AppearancePreferenceDialog
-    data object ColorSpec : AppearancePreferenceDialog
 }
