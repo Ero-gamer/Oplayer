@@ -1,6 +1,5 @@
 package one.only.player.navigation
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -81,10 +80,6 @@ fun RootScaffold(
     LaunchedEffect(currentPage) {
         rootNavigationState.syncPage()
     }
-    BackHandler(enabled = rootNavigationState.selectedDestination != RootDestination.HOME) {
-        rootNavigationState.animateTo(RootDestination.HOME)
-    }
-
     if (!shouldShowBottomBar) {
         Box(modifier = modifier.fillMaxSize()) {
             HorizontalPager(
