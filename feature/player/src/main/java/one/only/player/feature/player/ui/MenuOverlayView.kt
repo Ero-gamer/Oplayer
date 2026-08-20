@@ -56,14 +56,18 @@ fun BoxScope.MenuOverlayView(
     content: @Composable (MenuRoute) -> Unit,
 ) {
     val tokens = rememberPlayerPanelTokens()
+    // 面板退出动画期间沿用最后一次可见的路由与标题，避免内容先于面板消失
+    var lastVisibleRoute by remember { mutableStateOf(externalRoute) }
     var lastVisibleTitle by remember { mutableStateOf(title) }
     var lastVisibleCanGoBack by remember { mutableStateOf(canGoBack) }
     SideEffect {
         if (externalRoute != null) {
+            lastVisibleRoute = externalRoute
             lastVisibleTitle = title
             lastVisibleCanGoBack = canGoBack
         }
     }
+    val displayedRoute = externalRoute ?: lastVisibleRoute
     val displayedTitle = if (externalRoute != null) title else lastVisibleTitle
     val displayedCanGoBack = if (externalRoute != null) canGoBack else lastVisibleCanGoBack
     FloatingPlayerPanel(
@@ -90,7 +94,7 @@ fun BoxScope.MenuOverlayView(
         },
     ) {
         AnimatedContent(
-            targetState = externalRoute,
+            targetState = displayedRoute,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "menu_route",
             modifier = Modifier.fillMaxSize(),
