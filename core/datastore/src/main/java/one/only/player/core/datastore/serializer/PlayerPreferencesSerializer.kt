@@ -2,6 +2,7 @@ package one.only.player.core.datastore.serializer
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
+import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.serialization.SerializationException
@@ -12,6 +13,7 @@ import one.only.player.core.model.PlayerPreferences
 
 object PlayerPreferencesSerializer : Serializer<PlayerPreferences> {
 
+    private const val TAG = "PlayerPreferencesSerializer"
     private const val LEGACY_DEFAULT_MAX_INITIAL_PLAYER_VOLUME_PERCENTAGE = 100
 
     private val jsonFormat = Json {
@@ -54,9 +56,17 @@ object PlayerPreferencesSerializer : Serializer<PlayerPreferences> {
     override val defaultValue: PlayerPreferences
         get() = PlayerPreferences()
 
-    override suspend fun readFrom(input: InputStream): PlayerPreferences {
-        val serializedPreferences = input.readBytes().decodeToString()
+    override suspend fun readFrom(input: InputStream): PlayerPreferences = decode(input.readBytes().decodeToString())
 
+    internal fun readFromFile(file: File): PlayerPreferences = readPersistedDataStoreValue(
+        file = file,
+        defaultValue = defaultValue,
+        tag = TAG,
+        valueName = "player preferences",
+        decode = ::decode,
+    )
+
+    private fun decode(serializedPreferences: String): PlayerPreferences {
         if (serializedPreferences.containsLegacyPlayerPreferences()) {
             throw CorruptionException(
                 message = "Cannot read datastore",
@@ -64,12 +74,12 @@ object PlayerPreferencesSerializer : Serializer<PlayerPreferences> {
             )
         }
 
-        try {
+        return try {
             val preferences = jsonFormat.decodeFromString(
                 deserializer = PlayerPreferences.serializer(),
                 string = serializedPreferences,
             )
-            return preferences.upgradeLegacyDefaults(serializedPreferences)
+            preferences.upgradeLegacyDefaults(serializedPreferences)
         } catch (exception: SerializationException) {
             throw CorruptionException("Cannot read datastore", exception)
         }

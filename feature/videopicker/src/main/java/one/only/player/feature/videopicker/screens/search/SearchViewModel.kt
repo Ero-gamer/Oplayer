@@ -55,7 +55,12 @@ class SearchViewModel @Inject constructor(
     private val moveSelectionStore: MediaPickerMoveSelectionStore,
 ) : ViewModel() {
 
-    private val uiStateInternal = MutableStateFlow(SearchUiState())
+    private val uiStateInternal = MutableStateFlow(
+        SearchUiState(
+            preferences = preferencesRepository.applicationPreferences.value,
+            playerPreferences = preferencesRepository.playerPreferences.value,
+        ),
+    )
     val uiState = uiStateInternal.asStateFlow()
 
     private val searchQuery = MutableStateFlow("")

@@ -24,7 +24,7 @@ class OnlyPlayerApplication :
     override fun onCreate() {
         super.onCreate()
         AppForegroundTracker.register(this)
-        val startupPreferences = StartupPreferencesCache.initialize(dataDir = applicationInfo.dataDir)
+        val startupPreferences = StartupPreferencesCache.initialize(context = this)
         AppThemeModeManager.applyPlatformToCurrent(
             context = applicationContext,
             mode = startupPreferences.themeConfig.toAppThemeMode(),

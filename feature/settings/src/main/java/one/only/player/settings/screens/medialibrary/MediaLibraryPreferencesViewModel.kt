@@ -17,7 +17,11 @@ class MediaLibraryPreferencesViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
-    private val uiStateInternal = MutableStateFlow(MediaLibraryPreferencesUiState())
+    private val uiStateInternal = MutableStateFlow(
+        MediaLibraryPreferencesUiState(
+            preferences = preferencesRepository.applicationPreferences.value,
+        ),
+    )
     val uiState: StateFlow<MediaLibraryPreferencesUiState> = uiStateInternal.asStateFlow()
 
     init {

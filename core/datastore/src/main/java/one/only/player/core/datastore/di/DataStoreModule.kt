@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
-import androidx.datastore.dataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,16 +15,15 @@ import kotlinx.coroutines.CoroutineScope
 import one.only.player.core.common.Dispatcher
 import one.only.player.core.common.DispatcherType
 import one.only.player.core.common.di.ApplicationScope
+import one.only.player.core.datastore.applicationPreferencesDataStoreFile
+import one.only.player.core.datastore.playerPreferencesDataStoreFile
+import one.only.player.core.datastore.searchHistoryDataStoreFile
 import one.only.player.core.datastore.serializer.ApplicationPreferencesSerializer
 import one.only.player.core.datastore.serializer.PlayerPreferencesSerializer
 import one.only.player.core.datastore.serializer.SearchHistorySerializer
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.SearchHistory
-
-private const val APP_PREFERENCES_DATASTORE_FILE = "app_preferences.json"
-private const val PLAYER_PREFERENCES_DATASTORE_FILE = "player_preferences.json"
-private const val SEARCH_HISTORY_DATASTORE_FILE = "search_history.json"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -41,7 +39,7 @@ object DataStoreModule {
         serializer = ApplicationPreferencesSerializer,
         corruptionHandler = ReplaceFileCorruptionHandler { ApplicationPreferences() },
         scope = CoroutineScope(scope.coroutineContext + ioDispatcher),
-        produceFile = { context.dataStoreFile(APP_PREFERENCES_DATASTORE_FILE) },
+        produceFile = context::applicationPreferencesDataStoreFile,
     )
 
     @Provides
@@ -54,7 +52,7 @@ object DataStoreModule {
         serializer = PlayerPreferencesSerializer,
         corruptionHandler = ReplaceFileCorruptionHandler { PlayerPreferences() },
         scope = CoroutineScope(scope.coroutineContext + ioDispatcher),
-        produceFile = { applicationContext.dataStoreFile(PLAYER_PREFERENCES_DATASTORE_FILE) },
+        produceFile = applicationContext::playerPreferencesDataStoreFile,
     )
 
     @Provides
@@ -67,6 +65,6 @@ object DataStoreModule {
         serializer = SearchHistorySerializer,
         corruptionHandler = ReplaceFileCorruptionHandler { SearchHistory() },
         scope = CoroutineScope(scope.coroutineContext + ioDispatcher),
-        produceFile = { applicationContext.dataStoreFile(SEARCH_HISTORY_DATASTORE_FILE) },
+        produceFile = applicationContext::searchHistoryDataStoreFile,
     )
 }

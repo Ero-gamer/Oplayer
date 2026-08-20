@@ -27,14 +27,14 @@ class LocalPreferencesRepository @Inject constructor(
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.Eagerly,
-                initialValue = ApplicationPreferences(),
+                initialValue = sanitizeApplicationPreferences(appPreferencesDataSource.bootstrapPreferences),
             )
 
     override val playerPreferences: StateFlow<PlayerPreferences> =
         playerPreferencesDataSource.preferences.stateIn(
             scope = applicationScope,
             started = SharingStarted.Eagerly,
-            initialValue = PlayerPreferences(),
+            initialValue = playerPreferencesDataSource.bootstrapPreferences,
         )
 
     override suspend fun updateApplicationPreferences(

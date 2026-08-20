@@ -27,6 +27,8 @@ class HistoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val searchQuery = MutableStateFlow("")
+    private val initialPreferences = preferencesRepository.applicationPreferences.value
+    private val initialPlayerPreferences = preferencesRepository.playerPreferences.value
 
     val uiState = combine(
         getWatchHistoryUseCase(),
@@ -53,7 +55,10 @@ class HistoryViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HistoryUiState(),
+        initialValue = HistoryUiState(
+            preferences = initialPreferences,
+            playerPreferences = initialPlayerPreferences,
+        ),
     )
 
     fun onEvent(event: HistoryUiEvent) {

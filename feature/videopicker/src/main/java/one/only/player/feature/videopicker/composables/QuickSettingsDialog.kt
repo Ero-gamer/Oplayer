@@ -5,10 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -22,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,7 +35,6 @@ import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
 import one.only.player.core.ui.designsystem.AppIcons
-import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.feature.videopicker.extensions.name
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
@@ -65,12 +62,8 @@ fun QuickSettingsDialog(
     val layoutMode = preferences.layoutMode(target, cloudServerId)
     val sortBy = preferences.sortBy(target, cloudServerId)
     val sortOrder = preferences.sortOrder(target, cloudServerId)
-    val configuration = LocalConfiguration.current
-
     AppDialog(
-        modifier = Modifier
-            .padding(PaddingValues(bottom = 0.dp).withBottomFallback())
-            .testTag(target.dialogTestTag),
+        modifier = Modifier.testTag(target.dialogTestTag),
         onDismissRequest = onDismiss,
         title = stringResource(
             when (target) {
@@ -82,7 +75,7 @@ fun QuickSettingsDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = configuration.screenHeightDp.dp * 0.58f)
+                    .height(QuickSettingsContentHeight)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(SectionSpacing),
             ) {
@@ -559,3 +552,4 @@ fun QuickSettingsPreview() {
 }
 
 private val SectionSpacing = 14.dp
+private val QuickSettingsContentHeight = 420.dp

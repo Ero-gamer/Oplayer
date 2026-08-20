@@ -25,6 +25,8 @@ class MainViewModel @Inject constructor(
     private val appUpdateChecker: AppUpdateChecker,
 ) : ViewModel() {
 
+    private val initialPreferences = preferencesRepository.applicationPreferences.value
+
     val currentPreferences: ApplicationPreferences
         get() = preferencesRepository.applicationPreferences.value
 
@@ -33,7 +35,7 @@ class MainViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = MainActivityUiState.Loading,
+        initialValue = MainActivityUiState.Success(initialPreferences),
     )
 
     private val _updateInfo = MutableStateFlow<AppUpdateInfo?>(null)

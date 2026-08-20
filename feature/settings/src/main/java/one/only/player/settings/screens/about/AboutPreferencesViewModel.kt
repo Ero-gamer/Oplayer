@@ -18,7 +18,11 @@ class AboutPreferencesViewModel @Inject constructor(
     private val appUpdateChecker: AppUpdateChecker,
 ) : ViewModel() {
 
-    private val uiStateInternal = MutableStateFlow(AboutPreferencesUiState())
+    private val uiStateInternal = MutableStateFlow(
+        AboutPreferencesUiState(
+            shouldCheckForUpdatesOnStartup = preferencesRepository.applicationPreferences.value.shouldCheckForUpdatesOnStartup,
+        ),
+    )
     val uiState = uiStateInternal.asStateFlow()
 
     init {

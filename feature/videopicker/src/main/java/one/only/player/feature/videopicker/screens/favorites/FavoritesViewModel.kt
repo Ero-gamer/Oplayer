@@ -42,6 +42,7 @@ class FavoritesViewModel @Inject constructor(
     private val currentParentId = MutableStateFlow<Long?>(null)
     private val openTarget = MutableStateFlow<FavoriteOpenTarget?>(null)
     private val message = MutableStateFlow<String?>(null)
+    private val initialPreferences = preferencesRepository.applicationPreferences.value
 
     val uiState = combine(
         combine(favoriteRepository.observeAll(), searchQuery, currentParentId, ::Triple),
@@ -70,7 +71,7 @@ class FavoritesViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = FavoritesUiState(),
+        initialValue = FavoritesUiState(preferences = initialPreferences),
     )
 
     fun onEvent(event: FavoritesUiEvent) {

@@ -54,7 +54,11 @@ class CloudBrowseViewModel @Inject constructor(
     private val serverId: Long = savedStateHandle["serverId"] ?: 0L
     private val initialPath: String = (savedStateHandle["initialPath"] as? String)?.let(Uri::decode) ?: "/"
 
-    private val _uiState = MutableStateFlow(CloudBrowseUiState())
+    private val _uiState = MutableStateFlow(
+        CloudBrowseUiState(
+            preferences = preferencesRepository.applicationPreferences.value,
+        ),
+    )
     val uiState = _uiState.asStateFlow()
     private var fileInfoJob: Job? = null
     private var fileInfoRequestId = 0L

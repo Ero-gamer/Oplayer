@@ -35,6 +35,8 @@ class PlaylistsViewModel @Inject constructor(
     private val searchQuery = MutableStateFlow("")
     private val currentPlaylistId = MutableStateFlow<Long?>(null)
     private val openTarget = MutableStateFlow<PlaylistOpenTarget?>(null)
+    private val initialPreferences = preferencesRepository.applicationPreferences.value
+    private val initialPlayerPreferences = preferencesRepository.playerPreferences.value
 
     val uiState = combine(
         playlistRepository.observePlaylists(),
@@ -94,7 +96,10 @@ class PlaylistsViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = PlaylistsUiState(),
+        initialValue = PlaylistsUiState(
+            preferences = initialPreferences,
+            playerPreferences = initialPlayerPreferences,
+        ),
     )
 
     fun onEvent(event: PlaylistsUiEvent) {

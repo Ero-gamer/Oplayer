@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        val persistedStartupPreferences = StartupPreferencesCache.consume(dataDir = applicationInfo.dataDir)
+        val persistedStartupPreferences = StartupPreferencesCache.consume(context = this)
         val bootstrapTheme = resolveBootstrapTheme(
             themeConfig = persistedStartupPreferences.themeConfig,
             isSystemDarkTheme = isSystemDarkTheme(resources.configuration),
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
             shouldUseDarkTheme = bootstrapTheme.shouldUseDarkTheme,
         )
 
-        var uiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
+        var uiState: MainActivityUiState by mutableStateOf(viewModel.uiState.value)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
