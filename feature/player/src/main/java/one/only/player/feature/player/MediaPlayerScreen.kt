@@ -128,6 +128,7 @@ import one.only.player.feature.player.state.rememberErrorState
 import one.only.player.feature.player.state.rememberMediaPresentationState
 import one.only.player.feature.player.state.rememberMetadataState
 import one.only.player.feature.player.state.rememberPictureInPictureState
+import one.only.player.feature.player.state.rememberPlaylistState
 import one.only.player.feature.player.state.rememberRotationState
 import one.only.player.feature.player.state.rememberSeekGestureState
 import one.only.player.feature.player.state.rememberSleepTimerState
@@ -353,6 +354,7 @@ internal fun MediaPlayerScreen(
 
     val floatingPanelState = rememberFloatingPlayerPanelState()
     var menuRouteStack by remember { mutableStateOf<List<MenuRoute>>(emptyList()) }
+    val playlistState = rememberPlaylistState(player)
     var currentVideoInfo by remember { mutableStateOf<Video?>(null) }
     val currentMediaUri = player.currentMediaItem?.localConfiguration?.uri?.toString()
         ?: player.currentMediaItem?.requestMetadata?.mediaUri?.toString()
@@ -1072,7 +1074,10 @@ internal fun MediaPlayerScreen(
             }
             MenuOverlayView(
                 externalRoute = currentRoute,
-                title = titleForMenuRoute(currentRoute),
+                title = titleForMenuRoute(
+                    route = currentRoute,
+                    playlistItemCount = playlistState.playlist.size,
+                ),
                 canGoBack = canGoBack,
                 panelState = floatingPanelState,
                 onBack = {
@@ -1278,7 +1283,10 @@ private fun PlayerPreferences.hasSameSubtitleStyle(other: PlayerPreferences): Bo
 private fun Float.isDefaultVideoZoom(): Boolean = kotlin.math.abs(this - 1f) < 0.0001f
 
 @Composable
-private fun titleForMenuRoute(route: MenuRoute?): String = when (route) {
+private fun titleForMenuRoute(
+    route: MenuRoute?,
+    playlistItemCount: Int = 0,
+): String = when (route) {
     null, MenuRoute.Root -> stringResource(coreUiR.string.menu)
     MenuRoute.ControlLock -> stringResource(coreUiR.string.controls_lock_switch)
     MenuRoute.Mute -> stringResource(coreUiR.string.mute_switch)
@@ -1290,7 +1298,7 @@ private fun titleForMenuRoute(route: MenuRoute?): String = when (route) {
     MenuRoute.VideoContentScale -> stringResource(coreUiR.string.video_zoom)
     MenuRoute.VideoInfo -> stringResource(coreUiR.string.video_info)
     MenuRoute.VideoFilters -> stringResource(coreUiR.string.video_filters)
-    MenuRoute.Playlist -> stringResource(coreUiR.string.now_playing)
+    MenuRoute.Playlist -> stringResource(coreUiR.string.now_playing_with_count, playlistItemCount)
     MenuRoute.SleepTimer -> stringResource(coreUiR.string.sleep_timer)
     MenuRoute.Decoder -> stringResource(coreUiR.string.decoder_priority)
     MenuRoute.PlaybackMarks -> stringResource(coreUiR.string.playback_marks)

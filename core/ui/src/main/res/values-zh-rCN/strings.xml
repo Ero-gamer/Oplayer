@@ -415,6 +415,7 @@
     <string name="reorder">重新排序</string>
     <string name="no_videos_in_queue">队列中无视频</string>
     <string name="now_playing">正在播放</string>
+    <string name="now_playing_with_count">正在播放 · 共 %1$d 项</string>
     <string name="thumbnail_setting_change_confirmation">更改此设置会清除缩略图缓存。打开媒体列表时会重新生成缩略图。继续吗？</string>
     <string name="frame_position_value">视频时长的 %1$.0f%% 处的帧</string>
     <string name="frame_position">帧位置</string>

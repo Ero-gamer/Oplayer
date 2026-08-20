@@ -411,6 +411,7 @@
     <string name="clear_history">清除記錄</string>
     <string name="no_results_found">找不到結果</string>
     <string name="now_playing">現正播放</string>
+    <string name="now_playing_with_count">現正播放 · 共 %1$d 項</string>
     <string name="no_videos_in_queue">佇列中沒有影片</string>
     <string name="reorder">重新排序</string>
     <string name="remove">移除</string>
