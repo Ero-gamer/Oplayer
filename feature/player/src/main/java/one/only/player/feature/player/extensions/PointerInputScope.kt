@@ -140,7 +140,8 @@ suspend fun PointerInputScope.detectCustomHorizontalDragGestures(
             overSlop = over
         }
         if (drag != null && currentEvent.changes.count { it.pressed } == 1) {
-            onDragStart.invoke(drag.position)
+            val dragStartPosition = drag.position.copy(x = drag.position.x - overSlop)
+            onDragStart.invoke(dragStartPosition)
             onHorizontalDrag(drag, overSlop)
             if (
                 horizontalDrag(drag.id) {
