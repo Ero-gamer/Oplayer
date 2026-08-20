@@ -167,10 +167,6 @@ class PlayerService : MediaSessionService() {
 
     companion object {
         private const val TAG = "PlayerService"
-        private const val LOCAL_MIN_BUFFER_MS = 250
-        private const val LOCAL_MAX_BUFFER_MS = 30_000
-        private const val LOCAL_BUFFER_FOR_PLAYBACK_MS = 150
-        private const val LOCAL_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 150
         private const val DEFAULT_AMBIENCE_TARGET_ASPECT_RATIO = 16f / 9f
         private val EXACT_SEEK_PARAMETERS = SeekParameters.DEFAULT
         private val REMOTE_SOURCE_URI_SCHEMES = setOf("smb", "ftp")
@@ -1615,14 +1611,7 @@ class PlayerService : MediaSessionService() {
         ThemeConfig.ON -> true
     }
 
-    private fun createLoadControl(): DefaultLoadControl = DefaultLoadControl.Builder()
-        .setBufferDurationsMsForLocalPlayback(
-            LOCAL_MIN_BUFFER_MS,
-            LOCAL_MAX_BUFFER_MS,
-            LOCAL_BUFFER_FOR_PLAYBACK_MS,
-            LOCAL_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
-        )
-        .build()
+    private fun createLoadControl(): DefaultLoadControl = DefaultLoadControl.Builder().build()
 
     private fun createPlayer(
         decoderPriority: DecoderPriority,
