@@ -105,7 +105,7 @@ private fun VideoListItem(
         content = {
             Text(
                 text = if (preferences.shouldShowExtensionField) video.nameWithExtension else video.displayName,
-                maxLines = 2,
+                maxLines = 3,
                 style = MiuixTheme.textStyles.title4,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -172,7 +172,7 @@ private fun VideoGridItem(
                 )
                 Text(
                     text = if (preferences.shouldShowExtensionField) video.nameWithExtension else video.displayName,
-                    maxLines = 2,
+                    maxLines = 3,
                     style = MiuixTheme.textStyles.title4,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,

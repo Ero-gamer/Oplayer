@@ -118,7 +118,7 @@ private fun FolderListItem(
         content = {
             Text(
                 text = folder.name,
-                maxLines = 2,
+                maxLines = 3,
                 style = MiuixTheme.textStyles.title4,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -219,7 +219,7 @@ private fun FolderGridItem(
                 ) {
                     Text(
                         text = folder.name,
-                        maxLines = 2,
+                        maxLines = 3,
                         style = MiuixTheme.textStyles.title4,
                         overflow = TextOverflow.Ellipsis,
                         color = if (isRecentlyPlayedFolder && preferences.shouldMarkLastPlayedMedia) {

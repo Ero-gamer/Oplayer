@@ -84,7 +84,7 @@ fun LibraryEntryItem(
         content = {
             Text(
                 text = title,
-                maxLines = 2,
+                maxLines = 3,
                 style = MiuixTheme.textStyles.title4,
                 overflow = TextOverflow.Ellipsis,
             )
