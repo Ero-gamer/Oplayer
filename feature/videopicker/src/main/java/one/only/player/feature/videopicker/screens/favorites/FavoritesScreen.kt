@@ -275,7 +275,7 @@ internal fun FavoritesScreen(
 @Composable
 private fun EmptyFavoritesContent(contentPadding: PaddingValues) {
     MediaMessageState(
-        icon = AppIcons.LibraryBooks,
+        icon = AppIcons.FavoritesLine,
         title = stringResource(R.string.no_favorites),
         contentPadding = contentPadding,
     )

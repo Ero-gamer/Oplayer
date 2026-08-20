@@ -9,9 +9,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
-internal val MingCuteFavoritesFilled: ImageVector by lazy {
+internal val MingCuteStarFilled: ImageVector by lazy {
     ImageVector.Builder(
-        name = "MingCute.FavoritesFilled",
+        name = "MingCute.StarFilled",
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
@@ -19,7 +19,7 @@ internal val MingCuteFavoritesFilled: ImageVector by lazy {
         autoMirror = false,
     ).apply {
         addPath(
-            pathData = PathParser().parsePathString("M18.494 3.801c2.095 1.22 3.569 3.7 3.504 6.592C21.86 16.5 13.5 21 12 21s-9.861-4.5-9.998-10.607C1.937 7.5 3.411 5.022 5.506 3.8c1.96-1.142 4.422-1.148 6.494.537 2.072-1.685 4.534-1.679 6.494-.537").toNodes(),
+            pathData = PathParser().parsePathString("M10.92 2.37a1.25 1.25 0 0 1 2.16 0l2.795 4.8 5.428 1.175a1.25 1.25 0 0 1 .667 2.054l-3.7 4.142.56 5.525a1.25 1.25 0 0 1-1.748 1.27L12 19.096l-5.082 2.24a1.25 1.25 0 0 1-1.747-1.27l.559-5.525-3.7-4.142a1.25 1.25 0 0 1 .667-2.054L8.125 7.17z").toNodes(),
             pathFillType = PathFillType.NonZero,
             fill = SolidColor(Color.Black),
             stroke = null,

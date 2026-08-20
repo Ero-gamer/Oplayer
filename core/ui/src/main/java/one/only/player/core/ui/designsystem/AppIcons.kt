@@ -5,8 +5,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 /** 应用语义图标入口，具体路径由 MingCute 提供。 */
 object AppIcons {
     val Add: ImageVector get() = MingCuteAdd
+    val Ambience: ImageVector get() = MingCuteLight
     val Appearance: ImageVector get() = MingCuteAppearance
-    val ArrowBack: ImageVector get() = MingCuteArrowBack
+    val ArrowBack: ImageVector get() = MingCuteArrowLeftCircle
     val ArrowDownward: ImageVector get() = MingCuteArrowDownward
     val ArrowUpward: ImageVector get() = MingCuteArrowUpward
     val Audio: ImageVector get() = MingCuteAudio
@@ -21,7 +22,6 @@ object AppIcons {
     val CheckBoxOutline: ImageVector get() = MingCuteCheckBoxOutline
     val Close: ImageVector get() = MingCuteClose
     val Cloud: ImageVector get() = MingCuteCloud
-    val Contrast: ImageVector get() = MingCuteContrast
     val Copy: ImageVector get() = MingCuteCopy
     val DarkMode: ImageVector get() = MingCuteDarkMode
     val DashBoard: ImageVector get() = MingCuteDashBoard
@@ -97,8 +97,8 @@ object AppIcons {
     val HomeFilled: ImageVector get() = MingCuteHomeFilled
     val CloudLine: ImageVector get() = MingCuteCloud
     val CloudFilled: ImageVector get() = MingCuteCloudFilled
-    val FavoritesLine: ImageVector get() = MingCuteFavoritesLine
-    val FavoritesFilled: ImageVector get() = MingCuteFavoritesFilled
+    val FavoritesLine: ImageVector get() = MingCuteStarLine
+    val FavoritesFilled: ImageVector get() = MingCuteStarFilled
     val SettingsLine: ImageVector get() = MingCuteSettings
     val SettingsFilled: ImageVector get() = MingCuteSettingsFilled
 }

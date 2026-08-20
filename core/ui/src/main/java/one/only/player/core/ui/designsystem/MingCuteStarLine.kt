@@ -11,23 +11,23 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
-internal val MingCuteArrowBack: ImageVector by lazy {
+internal val MingCuteStarLine: ImageVector by lazy {
     ImageVector.Builder(
-        name = "MingCute.ArrowBack",
+        name = "MingCute.StarLine",
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
         viewportHeight = 24f,
-        autoMirror = true,
+        autoMirror = false,
     ).apply {
         addPath(
-            pathData = PathParser().parsePathString("M5 18h9a6 6 0 0 0 0-12H4l3.5 3.5").toNodes(),
+            pathData = PathParser().parsePathString("M11.784 2.87a.25.25 0 0 1 .432 0l2.961 5.085a.25.25 0 0 0 .164.119l5.75 1.245a.25.25 0 0 1 .134.41l-3.92 4.388a.25.25 0 0 0-.063.192l.593 5.854a.25.25 0 0 1-.35.254l-5.384-2.373a.25.25 0 0 0-.202 0l-5.384 2.373a.25.25 0 0 1-.35-.254l.593-5.854a.25.25 0 0 0-.062-.192L2.776 9.73a.25.25 0 0 1 .133-.411l5.75-1.245a.25.25 0 0 0 .164-.119z").toNodes(),
             pathFillType = PathFillType.NonZero,
             fill = null,
             stroke = SolidColor(Color.Black),
             strokeLineWidth = 2f,
-            strokeLineCap = StrokeCap.Round,
-            strokeLineJoin = StrokeJoin.Round,
+            strokeLineCap = StrokeCap.Butt,
+            strokeLineJoin = StrokeJoin.Miter,
         )
     }.build()
 }

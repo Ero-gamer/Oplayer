@@ -60,7 +60,7 @@ fun PlayerControl.icon(): ImageVector = when (this) {
     PlayerControl.CHAPTERS -> AppIcons.PlaylistPlay
     PlayerControl.SCALE -> AppIcons.Frame
     PlayerControl.DECODER -> AppIcons.Decoder
-    PlayerControl.AMBIENCE_MODE -> AppIcons.Style
+    PlayerControl.AMBIENCE_MODE -> AppIcons.Ambience
     PlayerControl.VIDEO_FILTERS -> AppIcons.Sensitivity
     PlayerControl.PIP -> AppIcons.Pip
     PlayerControl.SCREENSHOT -> AppIcons.Screenshot
