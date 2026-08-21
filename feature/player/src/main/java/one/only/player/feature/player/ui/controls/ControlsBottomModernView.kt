@@ -1,7 +1,12 @@
 package one.only.player.feature.player.ui.controls
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.IndicationNodeFactory
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -99,16 +105,24 @@ internal fun ControlsBottomModernView(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            MiuixIconButton(
-                modifier = Modifier.testTag("btn_play_pause_modern"),
-                onClick = onPlayPauseClick,
-            ) {
-                MiuixIcon(
-                    modifier = Modifier.size(28.dp),
-                    imageVector = if (isPlaying) AppIcons.Pause else AppIcons.Play,
-                    contentDescription = stringResource(R.string.player_controls_play_pause),
-                    tint = Color.White,
-                )
+            CompositionLocalProvider(LocalIndication provides NoOpIndication) {
+                MiuixIconButton(
+                    modifier = Modifier.testTag("btn_play_pause_modern"),
+                    onClick = onPlayPauseClick,
+                ) {
+                    Crossfade(
+                        targetState = isPlaying,
+                        animationSpec = tween(durationMillis = 120),
+                        label = "play_pause_icon",
+                    ) { playing ->
+                        MiuixIcon(
+                            modifier = Modifier.size(28.dp),
+                            imageVector = if (playing) AppIcons.Pause else AppIcons.Play,
+                            contentDescription = stringResource(R.string.player_controls_play_pause),
+                            tint = Color.White,
+                        )
+                    }
+                }
             }
             var shouldShowPendingPosition by rememberSaveable { mutableStateOf(false) }
             val positionText = when (shouldShowPendingPosition) {
@@ -170,6 +184,16 @@ internal fun ControlsBottomModernView(
         }
     }
 }
+
+private object NoOpIndication : IndicationNodeFactory {
+    override fun create(interactionSource: InteractionSource): DelegatableNode = NoOpIndicationNode()
+
+    override fun equals(other: Any?): Boolean = other === this
+
+    override fun hashCode(): Int = System.identityHashCode(this)
+}
+
+private class NoOpIndicationNode : Modifier.Node()
 
 @kotlin.OptIn(ExperimentalMaterial3Api::class)
 @Composable
