@@ -685,7 +685,7 @@ internal fun MediaPlayerScreen(
 
     fun markIdFrom(extras: android.os.Bundle?): Long? = extras.longValue("id") ?: extras.longValue("value")
 
-    fun markPositionFrom(extras: android.os.Bundle?): Long? = extras.longValue("position_ms") ?: extras.longValue("value")
+    fun markPositionFrom(extras: android.os.Bundle?): Long? = extras.longValue("value")
 
     fun handleDebugPlayerAction(action: String, extras: android.os.Bundle?): Boolean {
         when (action) {

@@ -4,8 +4,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionToken
@@ -17,11 +19,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.feature.player.PlayerDebugCommandBridge
+import one.only.player.feature.player.extensions.diagnostics
 import one.only.player.feature.player.extensions.isApproximateSeekEnabled
+import one.only.player.feature.player.extensions.toLogString
 import one.only.player.feature.player.model.VideoChapter
 import one.only.player.feature.player.model.currentChapterIndex
 import one.only.player.feature.player.service.CustomCommands
 import one.only.player.feature.player.service.PlayerService
+import one.only.player.feature.player.service.getPlaybackStallMetrics
 import one.only.player.feature.player.service.getVideoChapters
 import one.only.player.feature.player.service.getVideoFormatDebugInfo
 import one.only.player.feature.player.service.setTransientPlaybackSpeed
@@ -93,16 +98,14 @@ internal fun Context.runPlayerGet(target: String): Bundle {
                         message = "Player duration: ${controller.duration.safeTime()} ms",
                         command = command,
                         target = target,
-                        durationMs = controller.duration.safeTime(),
-                        positionMs = controller.currentPosition.safeTime(),
+                        mediaDurationMs = controller.duration.safeTime(),
                     )
                     "position" -> debugResult(
                         isOk = true,
                         message = "Player position: ${controller.currentPosition.safeTime()} ms",
                         command = command,
                         target = target,
-                        durationMs = controller.duration.safeTime(),
-                        positionMs = controller.currentPosition.safeTime(),
+                        currentPositionMs = controller.currentPosition.safeTime(),
                     )
                     "cues" -> debugResult(
                         isOk = true,
@@ -112,8 +115,6 @@ internal fun Context.runPlayerGet(target: String): Bundle {
                         command = command,
                         target = target,
                         value = controller.currentCues.cues.size.toString(),
-                        durationMs = controller.duration.safeTime(),
-                        positionMs = controller.currentPosition.safeTime(),
                     )
                     "video_format" -> controller.videoFormatBundle(
                         command = command,
@@ -208,8 +209,6 @@ private suspend fun MediaController.chaptersDebugBundle(
         command = command,
         target = target,
         value = chapters.size.toString(),
-        durationMs = duration.safeTime(),
-        positionMs = currentPosition.safeTime(),
     )
 }
 
@@ -292,31 +291,47 @@ private suspend fun MediaController.videoFormatBundle(
                 command = command,
                 target = target,
                 value = transfer.toString(),
-                durationMs = duration.safeTime(),
-                positionMs = currentPosition.safeTime(),
-                mediaId = currentMediaItem?.mediaId,
             ),
         )
     }
 }
 
-private fun MediaController.debugStateBundle(
+@OptIn(UnstableApi::class)
+private suspend fun MediaController.debugStateBundle(
     command: String,
     target: String?,
     value: String? = null,
-): Bundle = debugResult(
-    isOk = true,
-    message = "Player state: index=$currentMediaItemIndex count=$mediaItemCount mediaId=${currentMediaItem?.mediaId} position=${currentPosition.safeTime()} duration=${duration.safeTime()} playing=$isPlaying approximate=${currentMediaItem?.mediaMetadata?.isApproximateSeekEnabled}",
-    command = command,
-    target = target,
-    value = value,
-    durationMs = duration.safeTime(),
-    positionMs = currentPosition.safeTime(),
-    isPlaying = isPlaying,
-    mediaItemCount = mediaItemCount,
-    mediaItemIndex = currentMediaItemIndex,
-    mediaId = currentMediaItem?.mediaId,
-)
+): Bundle {
+    val diagnostics = diagnostics()
+    val stallMetrics = getPlaybackStallMetrics()
+    return debugResult(
+        isOk = true,
+        message = "Player state: ${diagnostics.toLogString()} stallCount=${stallMetrics.count} " +
+            "currentStallDurationMs=${stallMetrics.currentDurationMs} totalStallDurationMs=${stallMetrics.totalDurationMs}",
+        command = command,
+        target = target,
+        value = value,
+        currentPositionMs = diagnostics.positionMs,
+        mediaDurationMs = diagnostics.durationMs,
+        isCurrentlyPlaying = diagnostics.isPlaying,
+        sourceType = diagnostics.sourceType,
+        playbackState = diagnostics.playbackState,
+        playbackStateName = diagnostics.playbackStateName,
+        bufferedPositionMs = diagnostics.bufferedPositionMs,
+        remainingBufferedDurationMs = diagnostics.remainingBufferedDurationMs,
+        bufferedPercentage = diagnostics.bufferedPercentage,
+        playbackSpeed = diagnostics.playbackSpeed,
+        audioBitrate = diagnostics.audioBitrate,
+        videoBitrate = diagnostics.videoBitrate,
+        playWhenReady = diagnostics.playWhenReady,
+        isLoading = diagnostics.isLoading,
+        playerErrorCode = diagnostics.errorCode,
+        playerErrorName = diagnostics.errorCodeName,
+        stallCount = stallMetrics.count,
+        currentStallDurationMs = stallMetrics.currentDurationMs,
+        totalStallDurationMs = stallMetrics.totalDurationMs,
+    )
+}
 
 private fun Bundle.optionalRepeatMode(): Int? {
     val rawValue = getString(EXTRA_VALUE) ?: return null

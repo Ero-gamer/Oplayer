@@ -22,8 +22,10 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.only.player.core.common.Logger
+import one.only.player.feature.player.extensions.diagnostics
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.extensions.hasRenderedFirstFrame
+import one.only.player.feature.player.extensions.toLogString
 
 @UnstableApi
 @Composable
@@ -39,10 +41,25 @@ class MediaPresentationState(
     @param:IntRange(from = 0) private val tickIntervalMs: Long = 500,
 ) {
     private var pauseDiagnosticsJob: Job? = null
+    private var bufferingStartedAt = 0L
+    private var stallCount = 0
+    private var totalStallDurationMs = 0L
+    private var hasReachedReady = false
+    private var isCurrentBufferingStall = false
+
     var position: Long by mutableLongStateOf(0L)
         private set
 
     var duration: Long by mutableLongStateOf(0L)
+        private set
+
+    var bufferedPosition: Long by mutableLongStateOf(0L)
+        private set
+
+    var remainingBufferedDuration: Long by mutableLongStateOf(0L)
+        private set
+
+    var bufferedPercentage: Int by mutableStateOf(0)
         private set
 
     var isPlaying: Boolean by mutableStateOf(false)
@@ -60,9 +77,9 @@ class MediaPresentationState(
     suspend fun observe() {
         updatePosition()
         updateDuration()
+        updateBuffering()
         isPlaying = player.isPlaying
         isLoading = player.isLoading
-        isBuffering = player.playbackState == Player.STATE_BUFFERING
         hasRenderedFirstFrame = player.mediaMetadata.hasRenderedFirstFrame
 
         coroutineScope {
@@ -80,7 +97,7 @@ class MediaPresentationState(
                     }
 
                     if (events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED)) {
-                        this@MediaPresentationState.isBuffering = player.playbackState == Player.STATE_BUFFERING
+                        updateBuffering()
                         logPlaybackDiagnostics("playbackState")
                     }
 
@@ -93,6 +110,11 @@ class MediaPresentationState(
                     }
 
                     if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+                        bufferingStartedAt = 0L
+                        stallCount = 0
+                        totalStallDurationMs = 0L
+                        hasReachedReady = false
+                        isCurrentBufferingStall = false
                         this@MediaPresentationState.hasRenderedFirstFrame = player.mediaMetadata.hasRenderedFirstFrame
                         logPlaybackDiagnostics("mediaItemTransition")
                     }
@@ -123,6 +145,7 @@ class MediaPresentationState(
 
                     if (events.containsAny(Player.EVENT_IS_LOADING_CHANGED)) {
                         this@MediaPresentationState.isLoading = player.isLoading
+                        updateBufferedValues()
                         logPlaybackDiagnostics("loadingChanged")
                     }
                 }
@@ -133,6 +156,7 @@ class MediaPresentationState(
                 if (player.isPlaying) {
                     updatePosition()
                 }
+                updateBufferedValues()
                 if (duration == 0L) {
                     updateDuration()
                 }
@@ -151,6 +175,42 @@ class MediaPresentationState(
             ?: 0L
     }
 
+    private fun updateBufferedValues() {
+        val currentPosition = player.currentPosition
+            .takeIf { it != C.TIME_UNSET && it >= 0L }
+            ?: 0L
+        bufferedPosition = player.bufferedPosition
+            .takeIf { it != C.TIME_UNSET && it >= 0L }
+            ?: 0L
+        remainingBufferedDuration = (bufferedPosition - currentPosition).coerceAtLeast(0L)
+        bufferedPercentage = player.bufferedPercentage
+    }
+
+    private fun updateBuffering() {
+        val wasBuffering = isBuffering
+        val isBufferingNow = player.playbackState == Player.STATE_BUFFERING
+        if (isBufferingNow && !wasBuffering) {
+            bufferingStartedAt = System.currentTimeMillis()
+            isCurrentBufferingStall = hasReachedReady && player.playWhenReady
+        } else if (!isBufferingNow && wasBuffering && bufferingStartedAt != 0L) {
+            val stallDuration = System.currentTimeMillis() - bufferingStartedAt
+            if (isCurrentBufferingStall) {
+                stallCount++
+                totalStallDurationMs += stallDuration
+            }
+            Logger.info(
+                TAG,
+                "Buffering ended durationMs=$stallDuration isStall=$isCurrentBufferingStall stallCount=$stallCount " +
+                    "totalStallDurationMs=$totalStallDurationMs ${player.diagnostics().toLogString()}",
+            )
+            bufferingStartedAt = 0L
+            isCurrentBufferingStall = false
+        }
+        if (player.playbackState == Player.STATE_READY) hasReachedReady = true
+        isBuffering = isBufferingNow
+        updateBufferedValues()
+    }
+
     private fun schedulePauseDiagnostics(scope: CoroutineScope) {
         pauseDiagnosticsJob?.cancel()
         if (player.isPlaying) return
@@ -163,11 +223,18 @@ class MediaPresentationState(
     private fun logPlaybackDiagnostics(reason: String) {
         updatePosition()
         updateDuration()
+        updateBufferedValues()
+        val diagnostics = player.diagnostics()
+        val currentStallDuration = bufferingStartedAt
+            .takeIf { it != 0L }
+            ?.let { System.currentTimeMillis() - it }
         Logger.info(
             TAG,
-            "Playback diagnostics reason=$reason state=${player.playbackState} isPlaying=${player.isPlaying} playWhenReady=${player.playWhenReady} " +
-                "isLoading=${player.isLoading} hasRenderedFirstFrame=$hasRenderedFirstFrame positionMs=$position durationMs=$duration " +
-                "videoSize=${player.videoSize.width}x${player.videoSize.height} unappliedRotation=${player.videoSize.unappliedRotationDegrees}",
+            "Playback diagnostics reason=$reason ${diagnostics.toLogString()} " +
+                " hasRenderedFirstFrame=$hasRenderedFirstFrame stallCount=$stallCount " +
+                "stallDurationMs=${currentStallDuration ?: 0L} totalStallDurationMs=$totalStallDurationMs " +
+                "videoSize=${player.videoSize.width}x${player.videoSize.height} " +
+                "unappliedRotation=${player.videoSize.unappliedRotationDegrees}",
         )
     }
 
@@ -180,7 +247,11 @@ class MediaPresentationState(
 
     private fun logPlayerError(error: PlaybackException?) {
         if (error == null) return
-        Logger.error(TAG, "Player error code=${error.errorCode} name=${error.errorCodeName}", error)
+        Logger.error(
+            TAG,
+            "Player error code=${error.errorCode} name=${error.errorCodeName} ${player.diagnostics().toLogString()}",
+            error,
+        )
     }
 
     private companion object {

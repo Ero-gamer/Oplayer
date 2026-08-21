@@ -27,6 +27,13 @@ class WebDavClient @Inject constructor() {
     private val browseMutex = Mutex()
     private val directoryCache = LinkedHashMap<DirectoryCacheKey, DirectoryCacheEntry>()
     private val httpClients = LinkedHashMap<HttpClientKey, OkHttpClient>()
+    private val playbackHttpClient = OkHttpClient.Builder()
+        .followRedirects(true)
+        .followSslRedirects(true)
+        .build()
+
+    val playbackClient: OkHttpClient
+        get() = playbackHttpClient
 
     suspend fun listDirectory(
         server: RemoteServer,

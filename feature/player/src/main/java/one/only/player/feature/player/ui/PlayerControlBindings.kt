@@ -134,23 +134,9 @@ internal fun Map<PlayerControl, PlayerControlBinding>.resolve(controls: List<Pla
     .mapNotNull { control -> get(control) }
     .filter { it.isAvailable }
 
-// 下面两张表只登记与 id 推导不符的历史 tag，避免打断现有调试与自动化定位
-private val LegacyMenuTestTags = mapOf(
-    PlayerControl.SCALE to "menu_item_video_scale",
-    PlayerControl.MARK to "menu_item_playback_marks",
-    PlayerControl.AMBIENCE_MODE to "menu_item_ambience",
-    PlayerControl.BACKGROUND_PLAY to "menu_item_background",
-)
+private fun PlayerControl.menuTestTag(): String = "menu_item_$id"
 
-private val LegacyCornerTestTags = mapOf(
-    PlayerControl.ROTATE to "btn_rotate_modern",
-    PlayerControl.PLAYLIST to "btn_playlist_modern",
-    PlayerControl.PLAYBACK_SPEED to "btn_speed_modern",
-)
-
-private fun PlayerControl.menuTestTag(): String = LegacyMenuTestTags[this] ?: "menu_item_$id"
-
-private fun PlayerControl.cornerTestTag(): String = LegacyCornerTestTags[this] ?: "btn_corner_$id"
+private fun PlayerControl.cornerTestTag(): String = "btn_corner_$id"
 
 @Composable
 private fun binding(

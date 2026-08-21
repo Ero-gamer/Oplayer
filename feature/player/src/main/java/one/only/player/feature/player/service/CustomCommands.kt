@@ -31,6 +31,7 @@ enum class CustomCommands(val customAction: String) {
     PREVIEW_VIDEO_FILTERS(customAction = "PREVIEW_VIDEO_FILTERS"),
     SET_AMBIENCE_MODE_ENABLED(customAction = "SET_AMBIENCE_MODE_ENABLED"),
     GET_VIDEO_FORMAT(customAction = "GET_VIDEO_FORMAT"),
+    GET_STALL_METRICS(customAction = "GET_STALL_METRICS"),
     GET_VIDEO_CHAPTERS(customAction = "GET_VIDEO_CHAPTERS"),
     ;
 
@@ -75,6 +76,9 @@ enum class CustomCommands(val customAction: String) {
         const val IS_VIDEO_HDR_KEY = "is_video_hdr"
         const val IS_VIDEO_EFFECTS_AVAILABLE_KEY = "is_video_effects_available"
         const val IS_VIDEO_EFFECTS_ACTIVE_KEY = "is_video_effects_active"
+        const val STALL_COUNT_KEY = "stall_count"
+        const val CURRENT_STALL_DURATION_MS_KEY = "current_stall_duration_ms"
+        const val TOTAL_STALL_DURATION_MS_KEY = "total_stall_duration_ms"
         const val VIDEO_CHAPTERS_KEY = "video_chapters"
     }
 }
@@ -84,6 +88,12 @@ data class VideoFormatInfo(
     val width: Int,
     val height: Int,
     val isHdr: Boolean,
+)
+
+data class PlaybackStallMetrics(
+    val count: Int,
+    val currentDurationMs: Long,
+    val totalDurationMs: Long,
 )
 
 fun MediaController.addSubtitleTrack(uri: Uri) {
@@ -211,6 +221,18 @@ suspend fun MediaController.getVideoFormatDebugInfo(): SessionResult = sendCusto
     CustomCommands.GET_VIDEO_FORMAT.sessionCommand,
     Bundle.EMPTY,
 ).await()
+
+suspend fun MediaController.getPlaybackStallMetrics(): PlaybackStallMetrics {
+    val result = sendCustomCommand(CustomCommands.GET_STALL_METRICS.sessionCommand, Bundle.EMPTY).await()
+    if (result.resultCode != SessionResult.RESULT_SUCCESS) {
+        error("Stall metrics command failed: ${result.resultCode}")
+    }
+    return PlaybackStallMetrics(
+        count = result.extras.getInt(CustomCommands.STALL_COUNT_KEY),
+        currentDurationMs = result.extras.getLong(CustomCommands.CURRENT_STALL_DURATION_MS_KEY),
+        totalDurationMs = result.extras.getLong(CustomCommands.TOTAL_STALL_DURATION_MS_KEY),
+    )
+}
 
 suspend fun MediaController.getVideoFormatInfo(): VideoFormatInfo? {
     val result = getVideoFormatDebugInfo()

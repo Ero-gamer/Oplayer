@@ -79,7 +79,6 @@ import kotlinx.coroutines.guava.future
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import one.only.player.core.common.Logger
 import one.only.player.core.common.audio.DolbyAudioCapabilities
 import one.only.player.core.common.extensions.deleteFiles
@@ -1526,6 +1525,18 @@ class PlayerService : MediaSessionService() {
                     )
                 }
 
+                CustomCommands.GET_STALL_METRICS -> {
+                    val metrics = startupAnalyticsListener.currentStallMetrics()
+                    return@future SessionResult(
+                        SessionResult.RESULT_SUCCESS,
+                        Bundle().apply {
+                            putInt(CustomCommands.STALL_COUNT_KEY, metrics.count)
+                            putLong(CustomCommands.CURRENT_STALL_DURATION_MS_KEY, metrics.currentDurationMs)
+                            putLong(CustomCommands.TOTAL_STALL_DURATION_MS_KEY, metrics.totalDurationMs)
+                        },
+                    )
+                }
+
                 CustomCommands.GET_VIDEO_CHAPTERS -> {
                     val chapters = mediaSession?.player?.extractVideoChapters().orEmpty()
                     return@future SessionResult(
@@ -2091,11 +2102,7 @@ class PlayerService : MediaSessionService() {
             return DefaultDataSource.Factory(applicationContext)
         }
 
-        val okHttpClient = OkHttpClient.Builder()
-            .followRedirects(true)
-            .followSslRedirects(true)
-            .build()
-        val httpFactory = OkHttpDataSource.Factory(okHttpClient)
+        val httpFactory = OkHttpDataSource.Factory(webDavClient.playbackClient)
             .setDefaultRequestProperties(httpHeaders)
         return DefaultDataSource.Factory(applicationContext, httpFactory)
     }

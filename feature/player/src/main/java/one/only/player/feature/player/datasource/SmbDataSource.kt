@@ -14,9 +14,10 @@ import com.hierynomus.mssmb2.SMB2ShareAccess
 import com.hierynomus.smbj.SMBClient
 import com.hierynomus.smbj.SmbConfig
 import com.hierynomus.smbj.auth.AuthenticationContext
+import com.hierynomus.smbj.connection.Connection
+import com.hierynomus.smbj.session.Session
 import com.hierynomus.smbj.share.DiskShare
 import java.io.IOException
-import java.io.InputStream
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 
@@ -28,10 +29,12 @@ class SmbDataSource private constructor(
 ) : BaseDataSource(true) {
 
     private var client: SMBClient? = null
+    private var connection: Connection? = null
+    private var session: Session? = null
     private var share: DiskShare? = null
     private var smbFile: com.hierynomus.smbj.share.File? = null
-    private var inputStream: InputStream? = null
     private var uri: Uri? = null
+    private var filePosition: Long = 0
     private var bytesRemaining: Long = 0
     private var hasStartedTransfer: Boolean = false
 
@@ -55,54 +58,55 @@ class SmbDataSource private constructor(
         val smbClient = SMBClient(config)
         client = smbClient
 
-        val connection = smbClient.connect(host, port)
-        val authContext = toAuthenticationContext(username, password)
-        val session = connection.authenticate(authContext)
-        val diskShare = session.connectShare(shareName) as DiskShare
-        share = diskShare
+        try {
+            connection = smbClient.connect(host, port)
+            val authContext = toAuthenticationContext(username, password)
+            session = connection!!.authenticate(authContext)
+            val diskShare = session!!.connectShare(shareName) as DiskShare
+            share = diskShare
 
-        val file = diskShare.openFile(
-            filePath,
-            EnumSet.of(AccessMask.GENERIC_READ),
-            EnumSet.of(FileAttributes.FILE_ATTRIBUTE_NORMAL),
-            SMB2ShareAccess.ALL,
-            SMB2CreateDisposition.FILE_OPEN,
-            EnumSet.noneOf(com.hierynomus.mssmb2.SMB2CreateOptions::class.java),
-        )
-        smbFile = file
+            smbFile = diskShare.openFile(
+                filePath,
+                EnumSet.of(AccessMask.GENERIC_READ),
+                EnumSet.of(FileAttributes.FILE_ATTRIBUTE_NORMAL),
+                SMB2ShareAccess.ALL,
+                SMB2CreateDisposition.FILE_OPEN,
+                EnumSet.noneOf(com.hierynomus.mssmb2.SMB2CreateOptions::class.java),
+            )
 
-        val fileSize = file.fileInformation.standardInformation.endOfFile
-        val stream = file.inputStream
-
-        if (dataSpec.position > 0) {
-            var remaining = dataSpec.position
-            while (remaining > 0) {
-                val skipped = stream.skip(remaining)
-                if (skipped <= 0) break
-                remaining -= skipped
+            val fileSize = smbFile!!.fileInformation.standardInformation.endOfFile
+            if (dataSpec.position < 0L || dataSpec.position > fileSize) {
+                throw IOException("SMB position ${dataSpec.position} is outside file size $fileSize")
             }
-        }
-        inputStream = stream
 
-        bytesRemaining = if (dataSpec.length != C.LENGTH_UNSET.toLong()) {
-            dataSpec.length
-        } else {
-            fileSize - dataSpec.position
-        }
+            filePosition = dataSpec.position
+            val availableBytes = fileSize - filePosition
+            bytesRemaining = if (dataSpec.length == C.LENGTH_UNSET.toLong()) {
+                availableBytes
+            } else {
+                dataSpec.length.coerceAtMost(availableBytes)
+            }
 
-        transferStarted(dataSpec)
-        hasStartedTransfer = true
-        return bytesRemaining
+            transferStarted(dataSpec)
+            hasStartedTransfer = true
+            return bytesRemaining
+        } catch (exception: Exception) {
+            closeResources()
+            throw if (exception is IOException) exception else IOException("Failed to open SMB file", exception)
+        }
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+        if (length == 0) return 0
         if (bytesRemaining == 0L) return C.RESULT_END_OF_INPUT
 
         val bytesToRead = minOf(length.toLong(), bytesRemaining).toInt()
-        val bytesRead = inputStream?.read(buffer, offset, bytesToRead)
-            ?: return C.RESULT_END_OF_INPUT
-        if (bytesRead == -1) return C.RESULT_END_OF_INPUT
+        val file = smbFile ?: throw IOException("SMB file is not open")
+        val bytesRead = file.read(buffer, filePosition, offset, bytesToRead)
+        if (bytesRead < 0) throw IOException("SMB file ended before the requested range")
+        if (bytesRead == 0) throw IOException("SMB read returned no data")
 
+        filePosition += bytesRead
         bytesRemaining -= bytesRead
         bytesTransferred(bytesRead)
         return bytesRead
@@ -111,10 +115,14 @@ class SmbDataSource private constructor(
     override fun getUri(): Uri? = uri
 
     override fun close() {
-        try {
-            inputStream?.close()
-        } catch (_: Exception) {
+        closeResources()
+        if (hasStartedTransfer) {
+            hasStartedTransfer = false
+            transferEnded()
         }
+    }
+
+    private fun closeResources() {
         try {
             smbFile?.close()
         } catch (_: Exception) {
@@ -124,19 +132,25 @@ class SmbDataSource private constructor(
         } catch (_: Exception) {
         }
         try {
+            session?.close()
+        } catch (_: Exception) {
+        }
+        try {
+            connection?.close()
+        } catch (_: Exception) {
+        }
+        try {
             client?.close()
         } catch (_: Exception) {
         }
-        inputStream = null
         smbFile = null
         share = null
+        session = null
+        connection = null
         client = null
         uri = null
+        filePosition = 0
         bytesRemaining = 0
-        if (hasStartedTransfer) {
-            hasStartedTransfer = false
-            transferEnded()
-        }
     }
 
     class Factory(

@@ -45,12 +45,25 @@ private const val KEY_MESSAGE = "message"
 private const val KEY_COMMAND = "command"
 private const val KEY_TARGET = "target"
 private const val KEY_VALUE = "value"
-private const val KEY_DURATION_MS = "duration_ms"
-private const val KEY_POSITION_MS = "position_ms"
-private const val KEY_IS_PLAYING = "is_playing"
-private const val KEY_MEDIA_ITEM_COUNT = "media_item_count"
-private const val KEY_MEDIA_ITEM_INDEX = "media_item_index"
-private const val KEY_MEDIA_ID = "media_id"
+private const val KEY_CURRENT_POSITION_MS = "current_position_ms"
+private const val KEY_MEDIA_DURATION_MS = "media_duration_ms"
+private const val KEY_IS_CURRENTLY_PLAYING = "is_currently_playing"
+private const val KEY_SOURCE_TYPE = "source_type"
+private const val KEY_PLAYBACK_STATE = "playback_state"
+private const val KEY_PLAYBACK_STATE_NAME = "playback_state_name"
+private const val KEY_BUFFERED_POSITION_MS = "buffered_position_ms"
+private const val KEY_REMAINING_BUFFERED_DURATION_MS = "remaining_buffered_duration_ms"
+private const val KEY_BUFFERED_PERCENTAGE = "buffered_percentage"
+private const val KEY_PLAYBACK_SPEED = "playback_speed"
+private const val KEY_AUDIO_BITRATE = "audio_bitrate"
+private const val KEY_VIDEO_BITRATE = "video_bitrate"
+private const val KEY_PLAY_WHEN_READY = "play_when_ready"
+private const val KEY_IS_LOADING = "is_loading"
+private const val KEY_PLAYER_ERROR_CODE = "player_error_code"
+private const val KEY_PLAYER_ERROR_NAME = "player_error_name"
+private const val KEY_STALL_COUNT = "stall_count"
+private const val KEY_CURRENT_STALL_DURATION_MS = "current_stall_duration_ms"
+private const val KEY_TOTAL_STALL_DURATION_MS = "total_stall_duration_ms"
 
 internal val CLOUD_SERVER_METHODS = setOf(
     "cloud.server.add",
@@ -216,24 +229,50 @@ internal fun debugResult(
     command: String? = null,
     target: String? = null,
     value: String? = null,
-    durationMs: Long? = null,
-    positionMs: Long? = null,
-    isPlaying: Boolean? = null,
-    mediaItemCount: Int? = null,
-    mediaItemIndex: Int? = null,
-    mediaId: String? = null,
+    currentPositionMs: Long? = null,
+    mediaDurationMs: Long? = null,
+    isCurrentlyPlaying: Boolean? = null,
+    sourceType: String? = null,
+    playbackState: Int? = null,
+    playbackStateName: String? = null,
+    bufferedPositionMs: Long? = null,
+    remainingBufferedDurationMs: Long? = null,
+    bufferedPercentage: Int? = null,
+    playbackSpeed: Float? = null,
+    audioBitrate: Int? = null,
+    videoBitrate: Int? = null,
+    playWhenReady: Boolean? = null,
+    isLoading: Boolean? = null,
+    playerErrorCode: Int? = null,
+    playerErrorName: String? = null,
+    stallCount: Int? = null,
+    currentStallDurationMs: Long? = null,
+    totalStallDurationMs: Long? = null,
 ): Bundle = Bundle().apply {
     putBoolean(KEY_OK, isOk)
     putString(KEY_MESSAGE, message)
     putString(KEY_COMMAND, command)
     putString(KEY_TARGET, target)
     putString(KEY_VALUE, value)
-    durationMs?.let { putLong(KEY_DURATION_MS, it) }
-    positionMs?.let { putLong(KEY_POSITION_MS, it) }
-    isPlaying?.let { putBoolean(KEY_IS_PLAYING, it) }
-    mediaItemCount?.let { putInt(KEY_MEDIA_ITEM_COUNT, it) }
-    mediaItemIndex?.let { putInt(KEY_MEDIA_ITEM_INDEX, it) }
-    mediaId?.let { putString(KEY_MEDIA_ID, it) }
+    currentPositionMs?.let { putLong(KEY_CURRENT_POSITION_MS, it) }
+    mediaDurationMs?.let { putLong(KEY_MEDIA_DURATION_MS, it) }
+    isCurrentlyPlaying?.let { putBoolean(KEY_IS_CURRENTLY_PLAYING, it) }
+    sourceType?.let { putString(KEY_SOURCE_TYPE, it) }
+    playbackState?.let { putInt(KEY_PLAYBACK_STATE, it) }
+    playbackStateName?.let { putString(KEY_PLAYBACK_STATE_NAME, it) }
+    bufferedPositionMs?.let { putLong(KEY_BUFFERED_POSITION_MS, it) }
+    remainingBufferedDurationMs?.let { putLong(KEY_REMAINING_BUFFERED_DURATION_MS, it) }
+    bufferedPercentage?.let { putInt(KEY_BUFFERED_PERCENTAGE, it) }
+    playbackSpeed?.let { putFloat(KEY_PLAYBACK_SPEED, it) }
+    audioBitrate?.let { putInt(KEY_AUDIO_BITRATE, it) }
+    videoBitrate?.let { putInt(KEY_VIDEO_BITRATE, it) }
+    playWhenReady?.let { putBoolean(KEY_PLAY_WHEN_READY, it) }
+    isLoading?.let { putBoolean(KEY_IS_LOADING, it) }
+    playerErrorCode?.let { putInt(KEY_PLAYER_ERROR_CODE, it) }
+    playerErrorName?.let { putString(KEY_PLAYER_ERROR_NAME, it) }
+    stallCount?.let { putInt(KEY_STALL_COUNT, it) }
+    currentStallDurationMs?.let { putLong(KEY_CURRENT_STALL_DURATION_MS, it) }
+    totalStallDurationMs?.let { putLong(KEY_TOTAL_STALL_DURATION_MS, it) }
 }
 
 internal fun Bundle?.withTarget(target: String?): Bundle = Bundle(this ?: Bundle.EMPTY).apply {
