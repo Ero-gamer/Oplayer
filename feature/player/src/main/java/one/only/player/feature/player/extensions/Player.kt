@@ -8,6 +8,8 @@ import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
+import androidx.media3.session.SessionResult
+import com.google.common.util.concurrent.ListenableFuture
 import one.only.player.core.common.Logger
 import one.only.player.feature.player.service.preciseSeekTo
 import one.only.player.feature.player.service.setMediaControllerIsScrubbingModeEnabled
@@ -117,19 +119,23 @@ fun Player.canSeekCurrentMediaItem(): Boolean {
 }
 
 fun Player.seekToRequestedPosition(positionMs: Long) {
+    requestSeekToRequestedPosition(positionMs)
+}
+
+fun Player.requestSeekToRequestedPosition(positionMs: Long): ListenableFuture<SessionResult>? {
     val duration = availableDurationMs()
-    if (duration == C.TIME_UNSET) return
+    if (duration == C.TIME_UNSET) return null
 
     val targetPosition = positionMs.coerceIn(0L, duration)
     if (this is MediaController) {
         // approximate source 的 seekTo 会从头顺序读取，必须走 preciseSeekTo 触发 source 升级
         if (currentMediaItem?.mediaMetadata?.isApproximateSeekEnabled == true) {
-            preciseSeekTo(targetPosition)
-            return
+            return preciseSeekTo(targetPosition)
         }
     }
 
     seekTo(targetPosition)
+    return null
 }
 
 fun Player.seekByRequestedOffset(offsetMs: Long) {

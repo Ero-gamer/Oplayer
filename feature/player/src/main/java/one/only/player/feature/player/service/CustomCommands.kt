@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.guava.await
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.feature.player.model.VideoChapter
@@ -44,6 +45,7 @@ enum class CustomCommands(val customAction: String) {
 
         const val SUBTITLE_TRACK_URI_KEY = "subtitle_track_uri"
         const val SEEK_POSITION_MS_KEY = "seek_position_ms"
+        const val SEEK_WAS_APPLIED_KEY = "seek_was_applied"
         const val SKIP_SILENCE_ENABLED_KEY = "skip_silence_enabled"
         const val IS_SCRUBBING_MODE_ENABLED_KEY = "is_scrubbing_mode_enabled"
         const val PLAYBACK_SPEED_KEY = "playback_speed"
@@ -103,11 +105,11 @@ fun MediaController.addSubtitleTrack(uri: Uri) {
     sendCustomCommand(CustomCommands.ADD_SUBTITLE_TRACK.sessionCommand, args)
 }
 
-fun MediaController.preciseSeekTo(positionMs: Long) {
+fun MediaController.preciseSeekTo(positionMs: Long): ListenableFuture<SessionResult> {
     val args = Bundle().apply {
         putLong(CustomCommands.SEEK_POSITION_MS_KEY, positionMs)
     }
-    sendCustomCommand(CustomCommands.PRECISE_SEEK_TO.sessionCommand, args)
+    return sendCustomCommand(CustomCommands.PRECISE_SEEK_TO.sessionCommand, args)
 }
 
 suspend fun MediaController.setSkipSilenceEnabled(isEnabled: Boolean) {

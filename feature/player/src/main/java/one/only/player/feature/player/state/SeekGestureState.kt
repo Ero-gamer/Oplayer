@@ -2,6 +2,7 @@ package one.only.player.feature.player.state
 
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,18 +12,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.SessionResult
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import one.only.player.feature.player.extensions.availableDurationMs
+import one.only.player.feature.player.extensions.canSeekCurrentMediaItem
 import one.only.player.feature.player.extensions.formatted
-import one.only.player.feature.player.extensions.seekToRequestedPosition
+import one.only.player.feature.player.extensions.requestSeekToRequestedPosition
 import one.only.player.feature.player.extensions.setIsScrubbingModeEnabled
+import one.only.player.feature.player.service.CustomCommands
 
 @UnstableApi
 @Composable
@@ -40,6 +46,13 @@ fun rememberSeekGestureState(
             coroutineScope = coroutineScope,
         )
     }
+    DisposableEffect(player, seekGestureState) {
+        player.addListener(seekGestureState)
+        onDispose {
+            player.removeListener(seekGestureState)
+            seekGestureState.dispose()
+        }
+    }
     return seekGestureState
 }
 
@@ -49,7 +62,7 @@ class SeekGestureState(
     private val isSeekGestureEnabled: Boolean = true,
     private val sensitivity: Float = 0.5f,
     private val coroutineScope: CoroutineScope,
-) {
+) : Player.Listener {
     var isSeeking: Boolean by mutableStateOf(false)
         private set
 
@@ -63,19 +76,18 @@ class SeekGestureState(
         private set
 
     private var seekStartX = 0f
-    private var seekConfirmationJob: Job? = null
+    private var seekMediaId: String? = null
+    private var seekRequestId = 0L
+    private var seekRequestJob: Job? = null
 
     fun onSeek(value: Long) {
+        if (!player.canSeekCurrentMediaItem()) return
         val duration = player.availableDurationMs()
         if (duration == C.TIME_UNSET || duration <= 0L) return
         val currentPosition = player.currentPosition.takeIf { it != C.TIME_UNSET } ?: 0L
 
         if (!isSeeking) {
-            seekConfirmationJob?.cancel()
-            isSeeking = true
-            seekStartPosition = currentPosition
-            pendingSeekPosition = currentPosition
-            player.setIsScrubbingModeEnabled(true)
+            startSeek(currentPosition)
         }
 
         val newPosition = value.coerceIn(0L, duration)
@@ -92,24 +104,20 @@ class SeekGestureState(
 
     fun onDragStart(offset: Offset) {
         if (!isSeekGestureEnabled) return
+        if (!player.canSeekCurrentMediaItem()) return
         val duration = player.availableDurationMs()
         if (duration == C.TIME_UNSET || duration <= 0L) return
         val currentPosition = player.currentPosition.takeIf { it != C.TIME_UNSET } ?: 0L
 
-        seekConfirmationJob?.cancel()
-        isSeeking = true
+        startSeek(currentPosition)
         seekStartX = offset.x
-        seekStartPosition = currentPosition
-        pendingSeekPosition = currentPosition
-
-        player.setIsScrubbingModeEnabled(true)
     }
 
     @OptIn(UnstableApi::class)
     fun onDrag(change: PointerInputChange, dragAmount: Float) {
         val seekStartPosition = seekStartPosition ?: return
         val duration = player.availableDurationMs()
-        if (duration == C.TIME_UNSET) return
+        if (duration == C.TIME_UNSET || duration <= 0L) return
         if (change.isConsumed) return
 
         val currentPreviewPosition = pendingSeekPosition ?: seekStartPosition
@@ -129,49 +137,111 @@ class SeekGestureState(
         finishSeek()
     }
 
-    fun onPlayerPositionChanged(position: Long) {
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        reason: Int,
+    ) {
+        if (reason != Player.DISCONTINUITY_REASON_SEEK) return
         if (isSeeking) return
         val pendingSeekPosition = pendingSeekPosition ?: return
-        if (abs(position - pendingSeekPosition) > SEEK_CONFIRMATION_TOLERANCE_MS) return
+        val mediaId = newPosition.mediaItem?.mediaId ?: player.currentMediaItem?.mediaId
+        if (mediaId != seekMediaId) return
+        if (abs(newPosition.positionMs - pendingSeekPosition) > SEEK_CONFIRMATION_TOLERANCE_MS) return
 
         clearPendingSeek()
+    }
+
+    override fun onMediaItemTransition(
+        mediaItem: MediaItem?,
+        reason: Int,
+    ) {
+        if (pendingSeekPosition == null) return
+        if (mediaItem?.mediaId == seekMediaId) return
+        reset()
+    }
+
+    override fun onPlayerError(error: PlaybackException) {
+        if (pendingSeekPosition == null) return
+        reset()
+    }
+
+    fun dispose() {
+        reset()
+    }
+
+    private fun startSeek(currentPosition: Long) {
+        seekRequestId++
+        seekRequestJob?.cancel()
+        seekRequestJob = null
+        seekMediaId = player.currentMediaItem?.mediaId
+        isSeeking = true
+        seekStartPosition = currentPosition
+        pendingSeekPosition = currentPosition
+        player.setIsScrubbingModeEnabled(true)
     }
 
     private fun finishSeek() {
         val pendingSeekPosition = pendingSeekPosition ?: return
         val currentPosition = player.currentPosition.takeIf { it != C.TIME_UNSET }
-        if (currentPosition == null || currentPosition != pendingSeekPosition) {
-            player.seekToRequestedPosition(pendingSeekPosition)
-        }
-        player.setIsScrubbingModeEnabled(false)
         isSeeking = false
         seekStartPosition = null
         seekAmount = null
         seekStartX = 0f
+        player.setIsScrubbingModeEnabled(false)
 
-        val currentPositionAfterRequest = player.currentPosition.takeIf { it != C.TIME_UNSET }
-        if (currentPositionAfterRequest != null && abs(currentPositionAfterRequest - pendingSeekPosition) <= SEEK_CONFIRMATION_TOLERANCE_MS) {
+        if (currentPosition == pendingSeekPosition) {
+            clearPendingSeek()
+            return
+        }
+        if (!player.canSeekCurrentMediaItem()) {
             clearPendingSeek()
             return
         }
 
-        seekConfirmationJob?.cancel()
-        seekConfirmationJob = coroutineScope.launch {
-            delay(SEEK_CONFIRMATION_TIMEOUT_MS)
-            if (this@SeekGestureState.pendingSeekPosition != pendingSeekPosition || isSeeking) return@launch
-            clearPendingSeek()
+        val requestId = seekRequestId
+        val mediaId = seekMediaId
+        val request = player.requestSeekToRequestedPosition(pendingSeekPosition) ?: return
+        if (this.pendingSeekPosition != pendingSeekPosition || seekMediaId != mediaId) return
+        seekRequestJob = coroutineScope.launch {
+            try {
+                val result = runCatching { request.await() }.getOrNull()
+                if (requestId != seekRequestId || isSeeking) return@launch
+                if (this@SeekGestureState.pendingSeekPosition != pendingSeekPosition || seekMediaId != mediaId) return@launch
+                if (result?.resultCode != SessionResult.RESULT_SUCCESS) {
+                    clearPendingSeek(requestId)
+                    return@launch
+                }
+                if (!result.extras.getBoolean(CustomCommands.SEEK_WAS_APPLIED_KEY, true)) {
+                    clearPendingSeek(requestId)
+                }
+            } finally {
+                if (requestId == seekRequestId) seekRequestJob = null
+            }
         }
     }
 
-    private fun clearPendingSeek() {
-        seekConfirmationJob?.cancel()
-        seekConfirmationJob = null
+    private fun clearPendingSeek(requestId: Long = seekRequestId) {
+        if (requestId != seekRequestId) return
         pendingSeekPosition = null
+        seekMediaId = null
+    }
+
+    private fun reset() {
+        seekRequestId++
+        seekRequestJob?.cancel()
+        seekRequestJob = null
+        player.setIsScrubbingModeEnabled(false)
+        isSeeking = false
+        seekStartPosition = null
+        seekAmount = null
+        pendingSeekPosition = null
+        seekStartX = 0f
+        seekMediaId = null
     }
 
     private companion object {
         private const val SEEK_CONFIRMATION_TOLERANCE_MS = 1_000L
-        private const val SEEK_CONFIRMATION_TIMEOUT_MS = 5_000L
     }
 }
 

@@ -3,6 +3,7 @@ package one.only.player.feature.player.service.seek
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Bundle
 import androidx.core.net.toFile
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -31,6 +32,7 @@ import one.only.player.feature.player.engine.media3.buildSeekMapFromCues
 import one.only.player.feature.player.extensions.copy
 import one.only.player.feature.player.extensions.isApproximateSeekEnabled
 import one.only.player.feature.player.extensions.positionMs
+import one.only.player.feature.player.service.CustomCommands
 
 internal class PreciseSeekCoordinator(
     private val context: Context,
@@ -228,7 +230,10 @@ internal class PreciseSeekCoordinator(
                 TAG,
                 "Skip precise promotion media=${mediaLogSummary(currentItem.mediaId)} target=$targetPosition start=$startPosition",
             )
-            return SessionResult(SessionResult.RESULT_SUCCESS)
+            return SessionResult(
+                SessionResult.RESULT_SUCCESS,
+                Bundle().apply { putBoolean(CustomCommands.SEEK_WAS_APPLIED_KEY, false) },
+            )
         }
 
         if (shouldUseFastSeek(currentItem) && player.isCurrentMediaItemSeekable) {
