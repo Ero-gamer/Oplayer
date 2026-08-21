@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -14,6 +15,10 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.only.player.feature.player.extensions.availableDurationMs
 import one.only.player.feature.player.extensions.formatted
 import one.only.player.feature.player.extensions.seekToRequestedPosition
@@ -26,11 +31,13 @@ fun rememberSeekGestureState(
     sensitivity: Float = 0.5f,
     isSeekGestureEnabled: Boolean,
 ): SeekGestureState {
-    val seekGestureState = remember {
+    val coroutineScope = rememberCoroutineScope()
+    val seekGestureState = remember(player, sensitivity, isSeekGestureEnabled) {
         SeekGestureState(
             player = player,
             sensitivity = sensitivity,
             isSeekGestureEnabled = isSeekGestureEnabled,
+            coroutineScope = coroutineScope,
         )
     }
     return seekGestureState
@@ -41,6 +48,7 @@ class SeekGestureState(
     private val player: Player,
     private val isSeekGestureEnabled: Boolean = true,
     private val sensitivity: Float = 0.5f,
+    private val coroutineScope: CoroutineScope,
 ) {
     var isSeeking: Boolean by mutableStateOf(false)
         private set
@@ -55,6 +63,7 @@ class SeekGestureState(
         private set
 
     private var seekStartX = 0f
+    private var seekConfirmationJob: Job? = null
 
     fun onSeek(value: Long) {
         val duration = player.availableDurationMs()
@@ -62,6 +71,7 @@ class SeekGestureState(
         val currentPosition = player.currentPosition.takeIf { it != C.TIME_UNSET } ?: 0L
 
         if (!isSeeking) {
+            seekConfirmationJob?.cancel()
             isSeeking = true
             seekStartPosition = currentPosition
             pendingSeekPosition = currentPosition
@@ -77,8 +87,7 @@ class SeekGestureState(
     }
 
     fun onSeekEnd() {
-        commitPendingSeek()
-        reset()
+        finishSeek()
     }
 
     fun onDragStart(offset: Offset) {
@@ -87,6 +96,7 @@ class SeekGestureState(
         if (duration == C.TIME_UNSET || duration <= 0L) return
         val currentPosition = player.currentPosition.takeIf { it != C.TIME_UNSET } ?: 0L
 
+        seekConfirmationJob?.cancel()
         isSeeking = true
         seekStartX = offset.x
         seekStartPosition = currentPosition
@@ -116,26 +126,52 @@ class SeekGestureState(
     }
 
     fun onDragEnd() {
-        commitPendingSeek()
-        reset()
+        finishSeek()
     }
 
-    private fun commitPendingSeek() {
+    fun onPlayerPositionChanged(position: Long) {
+        if (isSeeking) return
+        val pendingSeekPosition = pendingSeekPosition ?: return
+        if (abs(position - pendingSeekPosition) > SEEK_CONFIRMATION_TOLERANCE_MS) return
+
+        clearPendingSeek()
+    }
+
+    private fun finishSeek() {
         val pendingSeekPosition = pendingSeekPosition ?: return
         val currentPosition = player.currentPosition.takeIf { it != C.TIME_UNSET }
         if (currentPosition == null || currentPosition != pendingSeekPosition) {
             player.seekToRequestedPosition(pendingSeekPosition)
         }
-    }
-
-    private fun reset() {
         player.setIsScrubbingModeEnabled(false)
         isSeeking = false
         seekStartPosition = null
         seekAmount = null
-        pendingSeekPosition = null
-
         seekStartX = 0f
+
+        val currentPositionAfterRequest = player.currentPosition.takeIf { it != C.TIME_UNSET }
+        if (currentPositionAfterRequest != null && abs(currentPositionAfterRequest - pendingSeekPosition) <= SEEK_CONFIRMATION_TOLERANCE_MS) {
+            clearPendingSeek()
+            return
+        }
+
+        seekConfirmationJob?.cancel()
+        seekConfirmationJob = coroutineScope.launch {
+            delay(SEEK_CONFIRMATION_TIMEOUT_MS)
+            if (this@SeekGestureState.pendingSeekPosition != pendingSeekPosition || isSeeking) return@launch
+            clearPendingSeek()
+        }
+    }
+
+    private fun clearPendingSeek() {
+        seekConfirmationJob?.cancel()
+        seekConfirmationJob = null
+        pendingSeekPosition = null
+    }
+
+    private companion object {
+        private const val SEEK_CONFIRMATION_TOLERANCE_MS = 1_000L
+        private const val SEEK_CONFIRMATION_TIMEOUT_MS = 5_000L
     }
 }
 

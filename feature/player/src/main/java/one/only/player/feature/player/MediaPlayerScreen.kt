@@ -244,6 +244,9 @@ internal fun MediaPlayerScreen(
         sensitivity = playerPreferences.seekSensitivity,
         isSeekGestureEnabled = playerPreferences.shouldUseSeekControls,
     )
+    LaunchedEffect(mediaPresentationState.position) {
+        seekGestureState.onPlayerPositionChanged(mediaPresentationState.position)
+    }
     val pictureInPictureState = rememberPictureInPictureState(
         player = player,
         shouldAutoEnter = playerPreferences.shouldAutoEnterPip && playerPreferences.pictureInPictureMode == PictureInPictureMode.NATIVE,

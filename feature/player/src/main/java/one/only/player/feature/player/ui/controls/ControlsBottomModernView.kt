@@ -183,7 +183,9 @@ private fun ModernSeekbar(
     val accentColor = MaterialTheme.colorScheme.primary
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Slider(
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier
+                .fillMaxWidth()
+                .testTag("seekbar_modern"),
             value = position.coerceIn(0f, duration.coerceAtLeast(0f)),
             valueRange = 0f..duration.coerceAtLeast(0f),
             onValueChange = onSeek,
