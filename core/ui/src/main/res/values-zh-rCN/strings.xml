@@ -371,13 +371,12 @@
     <string name="select_all">全选</string>
     <string name="deselect_all">全不选</string>
     <string name="reset_default_playback_speed">重置默认播放速度</string>
-    <string name="crash_screen_title">糟糕</string>
-    <string name="crash_screen_subtitle">%s 似乎意外出错了。建议创建 GitHub issue 分享崩溃日志。</string>
-    <string name="crash_screen_logs_title">崩溃日志：</string>
+    <string name="crash_screen_title">崩溃日志</string>
     <string name="crash_screen_share">分享崩溃日志</string>
-    <string name="crash_screen_copy">复制日志</string>
+    <string name="crash_screen_copy">复制崩溃日志</string>
     <string name="crash_screen_restart">重启应用</string>
-    <string name="crash_screen_logcat">日志：</string>
+    <string name="crash_screen_feedback_toast">应用意外崩溃，请携带日志反馈</string>
+    <string name="crash_screen_startup_timeout">应用启动超过 %1$d 秒仍未完成，已进入恢复页面，你可以查看并分享日志。</string>
     <string name="shuffle">随机播放</string>
     <string name="sleep_timer">睡眠定时</string>
     <string name="sleep_timer_off">关闭</string>

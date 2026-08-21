@@ -392,13 +392,12 @@
     <string name="sleep_timer_off">Off</string>
     <string name="sleep_timer_minutes">%d min</string>
     <string name="sleep_timer_remaining">Remaining</string>
-    <string name="crash_screen_title">Oops</string>
-    <string name="crash_screen_subtitle">Looks like %s experienced an unexpected error. Consider sharing the crash logs in a GitHub issue.</string>
-    <string name="crash_screen_logs_title">Crash logs:</string>
+    <string name="crash_screen_title">Crash logs</string>
     <string name="crash_screen_share">Share crash logs</string>
-    <string name="crash_screen_copy">Copy logs</string>
+    <string name="crash_screen_copy">Copy crash log</string>
     <string name="crash_screen_restart">Restart the app</string>
-    <string name="crash_screen_logcat">Logcat:</string>
+    <string name="crash_screen_feedback_toast">The app crashed unexpectedly. Please include the crash log when reporting the issue.</string>
+    <string name="crash_screen_startup_timeout">The app did not finish starting within %1$d seconds. It has opened the recovery page so you can inspect and share the logs.</string>
     <string name="privacy_protection">Privacy protection</string>
     <string name="privacy_protection_description">Prevent screenshots and hide app content in recents</string>
     <string name="prevent_screenshots">Prevent screenshots</string>

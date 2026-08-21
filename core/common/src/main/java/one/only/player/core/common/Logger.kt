@@ -64,7 +64,7 @@ object Logger {
         }
     }
 
-    private fun sanitize(text: String): String = text
+    fun sanitize(text: String): String = text
         .replace(URL_PATTERN, "<url>")
         .replace(ANDROID_PATH_PATTERN, "<path>")
         .replace(WINDOWS_PATH_PATTERN, "<path>")

@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,6 +55,7 @@ import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
 import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
 import one.only.player.core.ui.theme.OnlyPlayerTheme
+import one.only.player.crash.StartupRecovery
 import one.only.player.feature.player.PlayerActivity
 import one.only.player.feature.videopicker.navigation.navigateToHistory
 import one.only.player.feature.videopicker.navigation.navigateToPlaylists
@@ -127,6 +129,8 @@ class MainActivity : AppCompatActivity() {
 
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        StartupRecovery.begin(this)
+
         val persistedStartupPreferences = StartupPreferencesCache.consume(context = this)
         val bootstrapTheme = resolveBootstrapTheme(
             themeConfig = persistedStartupPreferences.themeConfig,
@@ -198,6 +202,12 @@ class MainActivity : AppCompatActivity() {
                         onMediaAccessAvailable = synchronizer::startSync,
                     )
                 }
+            }
+        }
+
+        window.decorView.doOnPreDraw {
+            window.decorView.post {
+                StartupRecovery.markReady(this@MainActivity)
             }
         }
     }

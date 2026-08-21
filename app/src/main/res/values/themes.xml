@@ -32,4 +32,13 @@
     </style>
 
     <style name="Theme.OnlyPlayer" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar" />
+
+    <style name="Theme.OnlyPlayer.Crash" parent="Theme.OnlyPlayer">
+        <item name="android:windowBackground">#F4FBF9</item>
+        <item name="android:colorBackground">#F4FBF9</item>
+        <item name="android:statusBarColor">#F4FBF9</item>
+        <item name="android:navigationBarColor">#F4FBF9</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 </resources>
