@@ -205,6 +205,22 @@ internal fun SearchScreen(
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        if (selectionManager.isSingleVideoSelected) {
+                            IconButton(
+                                onClick = {
+                                    val video = selectedVideos.firstOrNull() ?: return@IconButton
+                                    showInfoActionFor = video
+                                    selectionManager.exitSelectionMode()
+                                },
+                                modifier = Modifier.testTag("btn_search_selection_info"),
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.Info,
+                                    contentDescription = stringResource(id = R.string.info),
+                                    tint = MiuixTheme.colorScheme.onBackground,
+                                )
+                            }
+                        }
                         val primaryActions = searchSelectionPrimaryActions(
                             selectionManager = selectionManager,
                             selectedVideos = selectedVideos,
@@ -222,7 +238,6 @@ internal fun SearchScreen(
                             selectedVideoUris = selectedVideoUris,
                             onEvent = onEvent,
                             onRenameRequest = { video -> showRenameActionFor = video },
-                            onInfoRequest = { video -> showInfoActionFor = video },
                         )
                         val deleteMenuAction = searchSelectionDeleteAction(
                             onDeleteRequest = { shouldShowDeleteConfirmation = true },
@@ -597,7 +612,6 @@ private fun searchSelectionOverflowActions(
     selectedVideoUris: List<String>,
     onEvent: (SearchUiEvent) -> Unit,
     onRenameRequest: (Video) -> Unit,
-    onInfoRequest: (Video) -> Unit,
 ): List<MenuAction> {
     val actions = mutableListOf<MenuAction>()
     if (selectionManager.isSingleVideoSelected) {
@@ -607,15 +621,6 @@ private fun searchSelectionOverflowActions(
             testTag = "item_search_selection_rename",
             onClick = {
                 selectedVideos.firstOrNull()?.let(onRenameRequest)
-            },
-        )
-        actions += MenuAction(
-            text = stringResource(id = R.string.info),
-            icon = AppIcons.Info,
-            testTag = "item_search_selection_info",
-            onClick = {
-                selectedVideos.firstOrNull()?.let(onInfoRequest)
-                selectionManager.exitSelectionMode()
             },
         )
     }

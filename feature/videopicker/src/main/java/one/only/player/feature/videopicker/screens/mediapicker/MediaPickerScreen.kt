@@ -353,6 +353,24 @@ internal fun MediaPickerScreen(
                                 tint = MiuixTheme.colorScheme.onBackground,
                             )
                         }
+                        if (selectionManager.isSingleVideoSelected && !isRecycleBinMode) {
+                            IconButton(
+                                onClick = {
+                                    val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@IconButton
+                                    val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
+                                        ?.find { it.uriString == selectedVideo.uriString } ?: return@IconButton
+                                    showInfoActionFor = video
+                                    selectionManager.exitSelectionMode()
+                                },
+                                modifier = Modifier.testTag("btn_selection_info"),
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.Info,
+                                    contentDescription = stringResource(id = R.string.info),
+                                    tint = MiuixTheme.colorScheme.onBackground,
+                                )
+                            }
+                        }
                         val primaryActions = selectionPrimaryActions(
                             isLibraryMode = isLibraryMode,
                             isRecycleBinMode = isRecycleBinMode,
@@ -371,7 +389,6 @@ internal fun MediaPickerScreen(
                             uiState = uiState,
                             onEvent = onEvent,
                             onRenameRequest = { video -> showRenameActionFor = video },
-                            onInfoRequest = { video -> showInfoActionFor = video },
                         )
                         val deleteMenuAction = selectionDeleteAction(
                             isRecycleBinMode = isRecycleBinMode,
@@ -792,7 +809,7 @@ private fun MediaPickerSmallTitleTopAppBar(
                 .height(MediaPickerSmallTopBarHeight),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box {
+            Box(modifier = Modifier.padding(start = TopAppBarDefaults.NavigationIconPadding)) {
                 navigationIcon()
             }
             Text(
@@ -1158,7 +1175,7 @@ private fun selectionDeleteAction(
     onClick = onDeleteRequest,
 )
 
-// 选中模式顶栏溢出菜单的低频操作：重命名/详情仅单选视频可用，排除仅选中文件夹时可用。
+// 选中模式顶栏溢出菜单的低频操作：重命名仅单选视频可用，排除仅选中文件夹时可用。
 @Composable
 private fun selectionOverflowActions(
     isLibraryMode: Boolean,
@@ -1167,7 +1184,6 @@ private fun selectionOverflowActions(
     uiState: MediaPickerUiState,
     onEvent: (MediaPickerUiEvent) -> Unit,
     onRenameRequest: (Video) -> Unit,
-    onInfoRequest: (Video) -> Unit,
 ): List<MenuAction> {
     if (isRecycleBinMode) return emptyList()
     val actions = mutableListOf<MenuAction>()
@@ -1181,20 +1197,6 @@ private fun selectionOverflowActions(
                 val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
                     ?.find { it.uriString == selectedVideo.uriString } ?: return@MenuAction
                 onRenameRequest(video)
-            },
-        )
-    }
-    if (selectionManager.isSingleVideoSelected) {
-        actions += MenuAction(
-            text = stringResource(id = R.string.info),
-            icon = AppIcons.Info,
-            testTag = "item_selection_info",
-            onClick = {
-                val selectedVideo = selectionManager.selectedVideos.firstOrNull() ?: return@MenuAction
-                val video = (uiState.mediaDataState as? DataState.Success)?.value?.mediaList
-                    ?.find { it.uriString == selectedVideo.uriString } ?: return@MenuAction
-                onInfoRequest(video)
-                selectionManager.exitSelectionMode()
             },
         )
     }

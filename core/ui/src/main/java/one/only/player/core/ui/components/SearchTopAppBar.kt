@@ -48,7 +48,9 @@ fun SearchTopAppBar(
             navigationIcon = {
                 IconButton(
                     onClick = onClose,
-                    modifier = Modifier.testTag(closeButtonTestTag),
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .testTag(closeButtonTestTag),
                 ) {
                     Icon(
                         imageVector = AppIcons.ArrowBack,
