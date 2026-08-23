@@ -237,7 +237,7 @@
     <string name="thumbnail">缩略图</string>
     <string name="system_caption_style_desc">点按可打开系统字幕偏好设置</string>
     <string name="extension">扩展名</string>
-    <string name="path">路径</string>
+    <string name="folder_path">文件夹路径</string>
     <string name="resolution">分辨率</string>
     <string name="long_press_gesture_desc">长按以 %.1f 倍速播放</string>
     <string name="long_press_gesture">长按手势</string>
@@ -577,4 +577,5 @@
     <string name="chapter_preview_content_description">%1$s 的预览图</string>
     <string name="current_chapter">当前章节</string>
     <string name="delete_mark">删除标记</string>
+    <string name="video_duration">视频时长</string>
 </resources>

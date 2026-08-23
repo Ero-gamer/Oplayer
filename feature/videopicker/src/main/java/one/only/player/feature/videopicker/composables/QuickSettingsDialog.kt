@@ -290,7 +290,7 @@ private fun QuickSettingsFields(
         QuickSettingsTarget.LOCAL -> {
             FieldChip(
                 key = "duration",
-                label = stringResource(id = R.string.duration),
+                label = stringResource(id = R.string.video_duration),
                 isSelected = preferences.shouldShowDurationField,
                 onClick = { onPreferencesChange(preferences.copy(shouldShowDurationField = !preferences.shouldShowDurationField)) },
             )
@@ -302,7 +302,7 @@ private fun QuickSettingsFields(
             )
             FieldChip(
                 key = "path",
-                label = stringResource(id = R.string.path),
+                label = stringResource(id = R.string.folder_path),
                 isSelected = preferences.shouldShowPathField,
                 onClick = { onPreferencesChange(preferences.copy(shouldShowPathField = !preferences.shouldShowPathField)) },
             )
@@ -348,7 +348,7 @@ private fun QuickSettingsFields(
             )
             FieldChip(
                 key = "cloud_path",
-                label = stringResource(id = R.string.path),
+                label = stringResource(id = R.string.folder_path),
                 isSelected = cloudSettings.shouldShowPathField,
                 onClick = {
                     onPreferencesChange(

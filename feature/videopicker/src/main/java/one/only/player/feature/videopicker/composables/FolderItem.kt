@@ -1,7 +1,6 @@
 package one.only.player.feature.videopicker.composables
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,29 +86,15 @@ private fun FolderListItem(
         onClick = onClick,
         onLongClick = onLongClick,
         leadingContent = {
-            Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
-                    contentDescription = "",
-                    tint = MiuixTheme.colorScheme.surfaceContainerHigh,
-                    modifier = Modifier
-                        .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
-                        .aspectRatio(20 / 17f),
-                )
-
-                if (preferences.shouldShowDurationField) {
-                    InfoChip(
-                        text = Utils.formatDurationMillis(folder.mediaDuration),
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .padding(bottom = 3.dp)
-                            .align(Alignment.BottomEnd),
-                        backgroundColor = Color.Black.copy(alpha = 0.6f),
-                        contentColor = Color.White,
-                        shape = RoundedCornerShape(4.dp),
-                    )
-                }
-            }
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
+                contentDescription = "",
+                tint = MiuixTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
+                    .aspectRatio(20 / 17f),
+            )
         },
         trailingContent = {
             SelectionCheckIndicator(isSelected = isSelected)
@@ -132,6 +116,7 @@ private fun FolderListItem(
                         text = folder.path.substringBeforeLast("/"),
                         maxLines = 2,
                         style = MiuixTheme.textStyles.body2,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -189,29 +174,14 @@ private fun FolderGridItem(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
-                        contentDescription = "",
-                        tint = MiuixTheme.colorScheme.surfaceContainerHigh,
-                        modifier = Modifier
-                            .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
-                            .aspectRatio(20 / 17f),
-                    )
-
-                    if (preferences.shouldShowDurationField) {
-                        InfoChip(
-                            text = Utils.formatDurationMillis(folder.mediaDuration),
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .padding(bottom = 3.dp)
-                                .align(Alignment.BottomEnd),
-                            backgroundColor = Color.Black.copy(alpha = 0.6f),
-                            contentColor = Color.White,
-                            shape = RoundedCornerShape(4.dp),
-                        )
-                    }
-                }
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
+                    contentDescription = "",
+                    tint = MiuixTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier
+                        .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
+                        .aspectRatio(20 / 17f),
+                )
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),

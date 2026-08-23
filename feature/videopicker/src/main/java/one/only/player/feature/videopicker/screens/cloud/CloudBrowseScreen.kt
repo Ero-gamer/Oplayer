@@ -693,7 +693,7 @@ private fun RemoteFileListItem(
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (settings.shouldShowPathField) {
+                if (file.isDirectory && settings.shouldShowPathField) {
                     Text(
                         text = file.parentDirectoryPath(),
                         maxLines = 2,

@@ -256,7 +256,7 @@
     <string name="system_caption_style_desc">Click to open system captioning preferences</string>
     <string name="fields">Fields</string>
     <string name="extension">Extension</string>
-    <string name="path">Path</string>
+    <string name="folder_path">Folder path</string>
     <string name="resolution">Resolution</string>
     <string name="thumbnail">Thumbnail</string>
     <string name="require_audio_focus">Require audio focus</string>
@@ -580,4 +580,5 @@
     <string name="chapter_preview_content_description">Preview for %1$s</string>
     <string name="current_chapter">Current chapter</string>
     <string name="delete_mark">Delete mark</string>
+    <string name="video_duration">Video duration</string>
 </resources>

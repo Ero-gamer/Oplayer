@@ -28,8 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import java.io.File
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Playlist
@@ -363,8 +361,6 @@ private fun PlaylistMediaItem(
         if (video != null && preferences.shouldShowResolutionField && video.height > 0) {
             add("${video.height}p")
         }
-        val location = File(video?.path ?: item.mediaPath).parentFile?.prettyName
-        location?.takeIf { it.isNotBlank() }?.let(::add)
     }
 
     LibraryEntryItem(

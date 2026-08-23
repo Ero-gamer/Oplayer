@@ -523,10 +523,10 @@ private fun FavoriteItem.isVideoFavorite(): Boolean = when (targetType) {
 private fun FavoriteItem.isFolderFavorite(): Boolean = !isVideoFavorite()
 
 private fun FavoriteItem.locationLabel(): String? = when (targetType) {
-    FavoriteTargetType.FAVORITE_FOLDER -> null
+    FavoriteTargetType.FAVORITE_FOLDER,
     FavoriteTargetType.LOCAL_VIDEO,
-    FavoriteTargetType.LOCAL_FOLDER,
-    -> localPath?.let { path ->
+    -> null
+    FavoriteTargetType.LOCAL_FOLDER -> localPath?.let { path ->
         File(path).parentFile?.prettyName?.takeIf { it.isNotBlank() }
     }
     FavoriteTargetType.REMOTE_FILE,

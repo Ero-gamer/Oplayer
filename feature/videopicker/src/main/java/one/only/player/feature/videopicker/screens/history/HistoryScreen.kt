@@ -27,8 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import java.io.File
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Video
@@ -237,7 +235,6 @@ private fun HistoryVideoItem(
             DateUtils.MINUTE_IN_MILLIS,
         ).toString()
     }
-    val location = File(video.path).parentFile?.prettyName
     val chips = buildList {
         relativeTime?.let(::add)
         if (preferences.shouldShowSizeField) {
@@ -246,7 +243,6 @@ private fun HistoryVideoItem(
         if (preferences.shouldShowResolutionField && video.height > 0) {
             add("${video.height}p")
         }
-        location?.takeIf { it.isNotBlank() }?.let(::add)
     }
 
     LibraryEntryItem(

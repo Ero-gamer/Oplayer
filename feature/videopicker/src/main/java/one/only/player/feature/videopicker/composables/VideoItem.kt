@@ -114,14 +114,6 @@ private fun VideoListItem(
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (preferences.shouldShowPathField) {
-                    Text(
-                        text = video.path.substringBeforeLast("/"),
-                        maxLines = 2,
-                        style = MiuixTheme.textStyles.body2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
