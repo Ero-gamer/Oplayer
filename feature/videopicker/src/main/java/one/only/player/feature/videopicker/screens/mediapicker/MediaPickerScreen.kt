@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectTapGestures as detectGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -52,6 +54,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.Logger
 import one.only.player.core.common.Utils
+import one.only.player.core.common.extensions.canonicalPathOrSelf
 import one.only.player.core.common.storagePermission
 import one.only.player.core.data.repository.MediaMoveProgress
 import one.only.player.core.model.ApplicationPreferences
@@ -75,6 +78,7 @@ import one.only.player.core.ui.preview.DayNightPreview
 import one.only.player.core.ui.preview.VideoPickerPreviewParameterProvider
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.videopicker.composables.AddToPlaylistDialog
+import one.only.player.feature.videopicker.composables.MediaPickerPathPanel
 import one.only.player.feature.videopicker.composables.MediaView
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
@@ -83,6 +87,7 @@ import one.only.player.feature.videopicker.composables.NoVideosFound
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.RenameDialog
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
+import one.only.player.feature.videopicker.composables.buildMediaPickerPathEntries
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
 import one.only.player.feature.videopicker.state.SelectedFolder
@@ -198,9 +203,24 @@ internal fun MediaPickerScreen(
     var showInfoActionFor: Video? by rememberSaveable { mutableStateOf(null) }
     var shouldShowDeleteVideosConfirmation by rememberSaveable { mutableStateOf(false) }
     var shouldShowMoveProgressDialog by rememberSaveable { mutableStateOf(false) }
+    var shouldShowPathPanel by rememberSaveable { mutableStateOf(false) }
 
     val isLibraryMode = uiState.screenMode == MediaPickerScreenMode.LIBRARY
     val isMoveMode = uiState.moveSelection != null && isLibraryMode
+    val pathRootLabel = stringResource(R.string.tab_home)
+    val pathEntries = remember(uiState.folderPath, uiState.folderName, pathRootLabel) {
+        buildMediaPickerPathEntries(
+            context = context,
+            folderPath = uiState.folderPath,
+            currentFolderName = uiState.folderName,
+            rootLabel = pathRootLabel,
+        )
+    }
+    val canOpenPathPanel = isLibraryMode &&
+        !selectionManager.isInSelectionMode &&
+        !isMoveMode &&
+        pathEntries.size > 1
+    val isPathPanelExpanded = shouldShowPathPanel && canOpenPathPanel
     val isTitleLongPressHomeNavigationEnabled = shouldEnableTitleLongPressHomeNavigation(
         isInSelectionMode = selectionManager.isInSelectionMode || isMoveMode,
         folderName = uiState.folderName,
@@ -274,6 +294,9 @@ internal fun MediaPickerScreen(
                 scrollBehavior = scrollBehavior,
                 isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
                 onTitleLongPress = onNavigateHome,
+                isTitleClickEnabled = canOpenPathPanel,
+                isPathPanelExpanded = isPathPanelExpanded,
+                onTitleClick = { shouldShowPathPanel = !shouldShowPathPanel },
                 navigationIcon = {
                     if (selectionManager.isInSelectionMode) {
                         IconButton(
@@ -571,6 +594,20 @@ internal fun MediaPickerScreen(
                             .padding(end = 21.dp),
                     )
                 }
+
+                MediaPickerPathPanel(
+                    isExpanded = isPathPanelExpanded,
+                    entries = pathEntries,
+                    onDismissRequest = { shouldShowPathPanel = false },
+                    onPathSelected = { path ->
+                        shouldShowPathPanel = false
+                        if (path == null) {
+                            onNavigateHome()
+                        } else if (path.canonicalPathOrSelf() != uiState.folderPath?.canonicalPathOrSelf()) {
+                            onFolderClick(path, uiState.screenMode)
+                        }
+                    },
+                )
             }
         }
     }
@@ -594,6 +631,7 @@ internal fun MediaPickerScreen(
 
     LaunchedEffect(uiState.folderPath) {
         restoredPlaybackAnchor = null
+        shouldShowPathPanel = false
     }
 
     LaunchedEffect(
@@ -627,6 +665,7 @@ internal fun MediaPickerScreen(
     LaunchedEffect(selectionManager.isInSelectionMode, isMoveMode) {
         if (selectionManager.isInSelectionMode || isMoveMode) {
             shouldShowMainMenu = false
+            shouldShowPathPanel = false
         }
         if (!selectionManager.isInSelectionMode) {
             shouldShowSelectionMenu = false
@@ -635,6 +674,10 @@ internal fun MediaPickerScreen(
 
     BackHandler(enabled = selectionManager.isInSelectionMode) {
         selectionManager.exitSelectionMode()
+    }
+
+    BackHandler(enabled = shouldShowPathPanel) {
+        shouldShowPathPanel = false
     }
 
     BackHandler(enabled = isMoveMode && uiState.isMovingSelection) {
@@ -754,6 +797,9 @@ private fun MediaPickerTopAppBar(
     scrollBehavior: ScrollBehavior,
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
+    isTitleClickEnabled: Boolean,
+    isPathPanelExpanded: Boolean,
+    onTitleClick: () -> Unit,
     navigationIcon: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit,
 ) {
@@ -773,6 +819,9 @@ private fun MediaPickerTopAppBar(
         titlePadding = smallTitlePadding,
         isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
         onTitleLongPress = onTitleLongPress,
+        isTitleClickEnabled = isTitleClickEnabled,
+        isPathPanelExpanded = isPathPanelExpanded,
+        onTitleClick = onTitleClick,
         navigationIcon = navigationIcon,
         actions = actions,
     )
@@ -784,12 +833,23 @@ private fun MediaPickerSmallTitleTopAppBar(
     titlePadding: Dp,
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
+    isTitleClickEnabled: Boolean,
+    isPathPanelExpanded: Boolean,
+    onTitleClick: () -> Unit,
     navigationIcon: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    val titleLongPressModifier = if (isTitleLongPressHomeNavigationEnabled) {
-        Modifier.pointerInput(onTitleLongPress) {
-            detectGestures(onLongPress = { onTitleLongPress() })
+    val titleGestureModifier = if (isTitleLongPressHomeNavigationEnabled || isTitleClickEnabled) {
+        Modifier.pointerInput(
+            isTitleLongPressHomeNavigationEnabled,
+            isTitleClickEnabled,
+            onTitleLongPress,
+            onTitleClick,
+        ) {
+            detectGestures(
+                onTap = { if (isTitleClickEnabled) onTitleClick() },
+                onLongPress = { if (isTitleLongPressHomeNavigationEnabled) onTitleLongPress() },
+            )
         }
     } else {
         Modifier
@@ -812,20 +872,41 @@ private fun MediaPickerSmallTitleTopAppBar(
             Box(modifier = Modifier.padding(start = TopAppBarDefaults.NavigationIconPadding)) {
                 navigationIcon()
             }
-            Text(
-                text = title,
+            Row(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = titlePadding)
-                    .then(titleLongPressModifier)
-                    .testTag("title_media_picker"),
-                color = MiuixTheme.colorScheme.onSurface,
-                fontSize = MiuixTheme.textStyles.title3.fontSize,
-                fontWeight = FontWeight.Medium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                softWrap = false,
-            )
+                    .then(titleGestureModifier),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .testTag("title_media_picker"),
+                    color = MiuixTheme.colorScheme.onSurface,
+                    fontSize = MiuixTheme.textStyles.title3.fontSize,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    softWrap = false,
+                )
+                if (isTitleClickEnabled) {
+                    val pathPanelArrowRotation by animateFloatAsState(
+                        targetValue = if (isPathPanelExpanded) 180f else 0f,
+                        label = "pathPanelArrowRotation",
+                    )
+                    Icon(
+                        imageVector = AppIcons.ExpandMore,
+                        contentDescription = null,
+                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        modifier = Modifier
+                            .padding(start = 6.dp, end = 8.dp)
+                            .size(18.dp)
+                            .rotate(pathPanelArrowRotation),
+                    )
+                }
+            }
             Row(
                 modifier = Modifier.padding(end = TopAppBarDefaults.ActionIconPadding),
                 horizontalArrangement = Arrangement.End,

@@ -577,5 +577,8 @@
     <string name="chapter_preview_content_description">%1$s 的預覽圖</string>
     <string name="current_chapter">目前章節</string>
     <string name="delete_mark">刪除標記</string>
+    <string name="current_location">目前位置</string>
+    <string name="path_panel_more_levels">展開中間 %1$d 層</string>
+    <string name="collapse">收起</string>
     <string name="video_duration">影片時長</string>
 </resources>

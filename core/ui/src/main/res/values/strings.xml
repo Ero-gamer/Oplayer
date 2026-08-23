@@ -580,5 +580,8 @@
     <string name="chapter_preview_content_description">Preview for %1$s</string>
     <string name="current_chapter">Current chapter</string>
     <string name="delete_mark">Delete mark</string>
+    <string name="current_location">Current location</string>
+    <string name="path_panel_more_levels">Show %1$d more levels</string>
+    <string name="collapse">Collapse</string>
     <string name="video_duration">Video duration</string>
 </resources>
