@@ -7,13 +7,11 @@ data class Folder(
     val path: String,
     val dateModified: Long,
     val parentPath: String? = null,
-    val formattedMediaSize: String = "",
     val mediaList: List<Video> = emptyList(),
     val folderList: List<Folder> = emptyList(),
 ) : Serializable {
 
     val mediaSize: Long = mediaList.sumOf { it.size } + folderList.sumOf { it.mediaSize }
-    val mediaDuration: Long = mediaList.sumOf { it.duration } + folderList.sumOf { it.mediaDuration }
     val allMediaList: List<Video> = mediaList + folderList.flatMap { it.allMediaList }
     val recentlyPlayedVideo: Video? = allMediaList.recentPlayed()
     val firstVideo: Video? = allMediaList.firstOrNull()
@@ -35,7 +33,6 @@ data class Folder(
             name = "Sample Folder",
             path = "/storage/emulated/0/Movies/Sample",
             dateModified = 2000,
-            formattedMediaSize = "1KB",
         )
     }
 }
