@@ -85,12 +85,9 @@ fun VideoInfoDialog(
                                     value = "${audioStream.sampleRate} Hz",
                                 ),
                             )
-                            add(
-                                InfoField.narrow(
-                                    label = stringResource(R.string.sample_format),
-                                    value = audioStream.sampleFormat.toString(),
-                                ),
-                            )
+                            audioStream.sampleFormat?.let {
+                                add(InfoField.narrow(stringResource(R.string.sample_format), it))
+                            }
                             Utils.formatBitrate(audioStream.bitRate)?.let {
                                 add(InfoField.narrow(stringResource(R.string.bitrate), it))
                             }
@@ -192,14 +189,14 @@ private fun List<InfoField>.chunkIntoRows(): List<List<InfoField>> = buildList {
             narrowRun.add(field)
             continue
         }
-        addAll(narrowRun.chunked(NarrowFieldsPerRow))
+        addAll(narrowRun.chunked(NARROW_FIELDS_PER_ROW))
         narrowRun = mutableListOf()
         add(listOf(field))
     }
-    addAll(narrowRun.chunked(NarrowFieldsPerRow))
+    addAll(narrowRun.chunked(NARROW_FIELDS_PER_ROW))
 }
 
 private val SectionTopSpacing = 18.dp
 private val SectionBottomSpacing = 8.dp
 private val FieldSpacing = 12.dp
-private const val NarrowFieldsPerRow = 2
+private const val NARROW_FIELDS_PER_ROW = 2
