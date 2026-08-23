@@ -96,4 +96,5 @@ private fun DialogButtonRow(
 
 object AppDialogDefaults {
     val dialogMargin: Dp = 16.dp
+    val contentMaxHeight: Dp = 420.dp
 }

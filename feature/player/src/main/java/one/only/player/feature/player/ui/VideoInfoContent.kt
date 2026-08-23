@@ -33,7 +33,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
-import java.util.Locale
 import one.only.player.core.common.Utils
 import one.only.player.core.model.Video
 import one.only.player.core.ui.R
@@ -149,7 +148,7 @@ private fun buildVideoInfoSections(
         infoRow("resolution", R.string.resolution, resolution(videoWidth, videoHeight)),
         infoRow("codec", R.string.codec, videoFormat.codecLabel() ?: sourceVideoStream?.codecName),
         infoRow("bitrate", R.string.bitrate, videoBitrate?.let(Utils::formatBitrate)),
-        infoRow("frame_rate", R.string.frame_rate, videoFrameRate?.let(::formatFrameRate)),
+        infoRow("frame_rate", R.string.frame_rate, videoFrameRate?.let(Utils::formatFrameRate)),
         infoRow("dynamic_range", R.string.dynamic_range, isHdr?.let { if (it) "HDR" else "SDR" }),
     )
 
@@ -314,10 +313,6 @@ private fun resolution(
     width: Int?,
     height: Int?,
 ): String? = if (width != null && height != null) "$width x $height" else null
-
-private fun formatFrameRate(frameRate: Double): String = String.format(Locale.US, "%.3f fps", frameRate)
-    .replace(Regex("0+ fps$"), " fps")
-    .replace(". fps", " fps")
 
 private fun Format.isHdr(): Boolean? {
     val colorTransfer = colorInfo?.colorTransfer ?: return null

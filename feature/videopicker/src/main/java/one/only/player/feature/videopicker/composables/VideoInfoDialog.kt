@@ -3,6 +3,7 @@ package one.only.player.feature.videopicker.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,6 +18,7 @@ import one.only.player.core.model.Video
 import one.only.player.core.model.displayCodecName
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.AppDialog
+import one.only.player.core.ui.components.AppDialogDefaults
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -33,6 +35,7 @@ fun VideoInfoDialog(
         content = {
             Column(
                 modifier = Modifier
+                    .heightIn(max = AppDialogDefaults.contentMaxHeight)
                     .verticalScroll(rememberScrollState())
                     .testTag("panel_video_info"),
             ) {
@@ -61,7 +64,7 @@ fun VideoInfoDialog(
                             add(
                                 InfoField.narrow(
                                     label = stringResource(R.string.frame_rate),
-                                    value = videoStream.frameRate.toInt().toString(),
+                                    value = Utils.formatFrameRate(videoStream.frameRate),
                                 ),
                             )
                             Utils.formatBitrate(videoStream.bitRate)?.let {

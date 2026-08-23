@@ -32,6 +32,7 @@ import one.only.player.core.model.MediaViewMode
 import one.only.player.core.model.Sort
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.AppDialog
+import one.only.player.core.ui.components.AppDialogDefaults
 import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.DoneButton
 import one.only.player.core.ui.designsystem.AppIcons
@@ -75,7 +76,7 @@ fun QuickSettingsDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(QuickSettingsContentHeight)
+                    .height(AppDialogDefaults.contentMaxHeight)
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(SectionSpacing),
             ) {
@@ -552,4 +553,3 @@ fun QuickSettingsPreview() {
 }
 
 private val SectionSpacing = 14.dp
-private val QuickSettingsContentHeight = 420.dp

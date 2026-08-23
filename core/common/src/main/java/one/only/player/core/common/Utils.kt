@@ -99,5 +99,9 @@ object Utils {
         }
     }
 
+    fun formatFrameRate(frameRate: Double): String = String.format(Locale.US, "%.3f fps", frameRate)
+        .replace(Regex("0+ fps$"), " fps")
+        .replace(". fps", " fps")
+
     fun formatLanguage(language: String?): String? = language?.let { lang -> Locale.forLanguageTag(lang).displayLanguage.takeIf { it.isNotEmpty() } }
 }
