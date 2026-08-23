@@ -5,7 +5,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures as detectGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,7 +36,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -894,19 +893,19 @@ private fun MediaPickerSmallTitleTopAppBar(
                     softWrap = false,
                 )
                 if (canOpenPathPanel) {
-                    val pathPanelArrowRotation by animateFloatAsState(
-                        targetValue = if (isPathPanelExpanded) 180f else 0f,
-                        label = "pathPanelArrowRotation",
-                    )
-                    Icon(
-                        imageVector = AppIcons.ExpandMore,
-                        contentDescription = null,
-                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                        modifier = Modifier
-                            .padding(start = 6.dp, end = 8.dp)
-                            .size(18.dp)
-                            .rotate(pathPanelArrowRotation),
-                    )
+                    Crossfade(
+                        targetState = isPathPanelExpanded,
+                        label = "pathPanelIndicator",
+                    ) { isExpanded ->
+                        Icon(
+                            imageVector = if (isExpanded) AppIcons.UpSmall else AppIcons.DownSmall,
+                            contentDescription = null,
+                            tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                            modifier = Modifier
+                                .padding(start = 2.dp, end = 4.dp)
+                                .size(24.dp),
+                        )
+                    }
                 }
             }
             Row(

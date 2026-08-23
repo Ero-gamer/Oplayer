@@ -30,6 +30,7 @@ object AppIcons {
     val DeleteSweep: ImageVector get() = MingCuteDeleteSweep
     val DeselectAll: ImageVector get() = MingCuteDeselectAll
     val DoubleTap: ImageVector get() = MingCuteDoubleTap
+    val DownSmall: ImageVector get() = MingCuteDownSmall
     val DriveFileMove: ImageVector get() = MingCuteDriveFileMove
     val Edit: ImageVector get() = MingCuteEdit
     val ExpandMore: ImageVector get() = MingCuteExpandMore
@@ -90,6 +91,7 @@ object AppIcons {
     val Timer: ImageVector get() = MingCuteTimer
     val Title: ImageVector get() = MingCuteTitle
     val Update: ImageVector get() = MingCuteUpdate
+    val UpSmall: ImageVector get() = MingCuteUpSmall
     val Video: ImageVector get() = MingCuteVideo
     val VolumeUp: ImageVector get() = MingCuteVolumeUp
 
