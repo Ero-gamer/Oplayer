@@ -887,7 +887,7 @@ class LocalMediaSynchronizer @Inject constructor(
                         width = cursor.getInt(widthColumn),
                         height = cursor.getInt(heightColumn),
                         size = cursor.getLong(sizeColumn),
-                        dateModified = cursor.getLong(dateModifiedColumn),
+                        dateModified = cursor.getLong(dateModifiedColumn) * MILLIS_PER_SECOND,
                     ),
                 )
             }
@@ -1003,6 +1003,7 @@ class LocalMediaSynchronizer @Inject constructor(
         private const val TAG = "LocalMediaSynchronizer"
         private const val NO_MEDIA_FILE_NAME = ".nomedia"
         private const val RECYCLE_BIN_EXTENSION = "optrash"
+        private const val MILLIS_PER_SECOND = 1_000L
         private val KNOWN_VIDEO_EXTENSIONS = setOf(
             "3gp",
             "asf",
