@@ -584,4 +584,5 @@
     <string name="path_panel_more_levels">Show %1$d more levels</string>
     <string name="collapse">Collapse</string>
     <string name="video_duration">Video duration</string>
+    <string name="file_name">File name</string>
 </resources>

@@ -581,4 +581,5 @@
     <string name="path_panel_more_levels">展开中间 %1$d 层</string>
     <string name="collapse">收起</string>
     <string name="video_duration">视频时长</string>
+    <string name="file_name">文件名</string>
 </resources>
