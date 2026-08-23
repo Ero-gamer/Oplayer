@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.io.File
 import one.only.player.core.common.extensions.canonicalPathOrSelf
@@ -81,17 +82,15 @@ internal fun buildMediaPickerPathEntries(
         ?: return emptyList()
     val storageRoot = context.getStorageVolumes()
         .map { volume -> normalizePath(volume.path) }
-        .distinct()
         .firstOrNull { root ->
             normalizedPath == root || normalizedPath.startsWith("$root/")
         }
     val paths = buildList {
         var path = normalizedPath
-        while (true) {
+        while (path != "/") {
             add(path)
-            if (path == storageRoot || path == "/") break
-            val parent = parentPath(path) ?: break
-            path = parent
+            if (path == storageRoot) break
+            path = path.substringBeforeLast('/').ifBlank { "/" }
         }
     }.asReversed()
 
@@ -117,7 +116,7 @@ internal fun buildMediaPickerPathEntries(
                 ),
             )
         }
-    }.distinctBy(MediaPickerPathEntry::path)
+    }
 }
 
 @Composable
@@ -128,12 +127,12 @@ internal fun MediaPickerPathPanel(
     onPathSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isVisible = isExpanded && entries.isNotEmpty()
+    val isVisible = isExpanded
     Box(modifier = modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = isVisible,
-            enter = fadeIn(tween(ScrimDurationMillis)),
-            exit = fadeOut(tween(ScrimDurationMillis)),
+            enter = fadeIn(tween(SCRIM_DURATION_MILLIS)),
+            exit = fadeOut(tween(SCRIM_DURATION_MILLIS)),
         ) {
             Box(
                 modifier = Modifier
@@ -149,10 +148,10 @@ internal fun MediaPickerPathPanel(
         }
         AnimatedVisibility(
             visible = isVisible,
-            enter = fadeIn(tween(PanelEnterMillis)) +
-                expandVertically(tween(PanelEnterMillis), expandFrom = Alignment.Top),
-            exit = fadeOut(tween(PanelExitMillis)) +
-                shrinkVertically(tween(PanelExitMillis), shrinkTowards = Alignment.Top),
+            enter = fadeIn(tween(PANEL_ENTER_MILLIS)) +
+                expandVertically(tween(PANEL_ENTER_MILLIS), expandFrom = Alignment.Top),
+            exit = fadeOut(tween(PANEL_EXIT_MILLIS)) +
+                shrinkVertically(tween(PANEL_EXIT_MILLIS), shrinkTowards = Alignment.Top),
         ) {
             PathPanelContent(entries = entries, onPathSelected = onPathSelected)
         }
@@ -164,7 +163,7 @@ private fun PathPanelContent(
     entries: List<MediaPickerPathEntry>,
     onPathSelected: (String?) -> Unit,
 ) {
-    if (entries.isEmpty()) return
+    val fullPath = entries.lastOrNull()?.path ?: return
     var shouldShowAllLevels by remember(entries) { mutableStateOf(false) }
     Column(
         modifier = Modifier
@@ -176,8 +175,8 @@ private fun PathPanelContent(
             .testTag("panel_path"),
     ) {
         PathPanelHeader(
-            fullPath = entries.last().path,
-            canCollapseLevels = shouldShowAllLevels,
+            fullPath = fullPath,
+            shouldShowAllLevels = shouldShowAllLevels,
             onCollapseClick = { shouldShowAllLevels = false },
         )
         HorizontalDivider(
@@ -195,8 +194,8 @@ private fun PathPanelContent(
 
 @Composable
 private fun PathPanelHeader(
-    fullPath: String?,
-    canCollapseLevels: Boolean,
+    fullPath: String,
+    shouldShowAllLevels: Boolean,
     onCollapseClick: () -> Unit,
 ) {
     Row(
@@ -209,19 +208,17 @@ private fun PathPanelHeader(
                 style = MiuixTheme.textStyles.subtitle,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
-            if (fullPath != null) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = fullPath,
-                    style = MiuixTheme.textStyles.footnote2,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.testTag("text_path_panel_full_path"),
-                )
-            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = fullPath,
+                style = MiuixTheme.textStyles.footnote2,
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag("text_path_panel_full_path"),
+            )
         }
-        if (canCollapseLevels) {
+        if (shouldShowAllLevels) {
             Spacer(modifier = Modifier.width(IconSpacing))
             Surface(
                 onClick = onCollapseClick,
@@ -275,11 +272,12 @@ private fun IndentedLevelList(
     ) {
         nodes.forEachIndexed { index, node ->
             when (node) {
-                is PathLevelNode.Entry -> IndentedLevelRow(
+                is PathLevelNode.Entry -> PathLevelRow(
                     entry = node.entry,
-                    indentLevel = node.indentLevel,
                     isCurrent = index == nodes.lastIndex,
+                    rowHeight = RowHeight,
                     onClick = { onPathSelected(node.entry.path) },
+                    modifier = Modifier.padding(start = IndentStep * node.indentLevel),
                 )
                 is PathLevelNode.Collapsed -> CollapsedLevelsRow(
                     hiddenCount = node.hiddenCount,
@@ -298,107 +296,67 @@ private fun FlatLevelList(
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(Unit) {
-        listState.scrollToItem(CollapsedHeadLevels.coerceAtMost(entries.lastIndex))
+        listState.scrollToItem(COLLAPSED_HEAD_LEVELS)
     }
     LazyColumn(
         state = listState,
         modifier = Modifier
-            .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * ExpandedHeightRatio)
+            .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * EXPANDED_HEIGHT_RATIO)
             .padding(horizontal = PanelPadding),
     ) {
         itemsIndexed(entries, key = { _, entry -> entry.depth }) { index, entry ->
-            FlatLevelRow(
+            val isCurrent = index == entries.lastIndex
+            PathLevelRow(
                 entry = entry,
-                isCurrent = index == entries.lastIndex,
+                isCurrent = isCurrent,
+                rowHeight = FlatRowHeight,
                 onClick = { onPathSelected(entry.path) },
+                leadingContent = {
+                    Text(
+                        text = if (entry.depth == 0) "" else entry.depth.toString(),
+                        modifier = Modifier.width(LevelIndexWidth),
+                        color = if (isCurrent) {
+                            MiuixTheme.colorScheme.primary
+                        } else {
+                            MiuixTheme.colorScheme.onSurfaceVariantSummary
+                        },
+                        style = MiuixTheme.textStyles.footnote1,
+                        textAlign = TextAlign.End,
+                        maxLines = 1,
+                    )
+                    Spacer(modifier = Modifier.width(IconSpacing))
+                },
             )
         }
     }
 }
 
 @Composable
-private fun IndentedLevelRow(
+private fun PathLevelRow(
     entry: MediaPickerPathEntry,
-    indentLevel: Int,
     isCurrent: Boolean,
+    rowHeight: Dp,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingContent: @Composable () -> Unit = {},
 ) {
     val accentColor = MiuixTheme.colorScheme.primary
     Surface(
         onClick = onClick,
         shape = RowShape,
-        color = if (isCurrent) accentColor.copy(alpha = CurrentRowAlpha) else Color.Transparent,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = IndentStep * indentLevel)
-            .testTag("path_level_${entry.depth}"),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(RowHeight)
-                .padding(horizontal = RowPadding),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = if (entry.path == null) AppIcons.HomeLine else AppIcons.Folder,
-                contentDescription = null,
-                tint = if (isCurrent) accentColor else MiuixTheme.colorScheme.onSurfaceVariantActions,
-                modifier = Modifier.size(IconSize),
-            )
-            Spacer(modifier = Modifier.width(IconSpacing))
-            Text(
-                text = entry.label,
-                modifier = Modifier.weight(1f),
-                color = if (isCurrent) accentColor else MiuixTheme.colorScheme.onSurface,
-                style = MiuixTheme.textStyles.body1,
-                fontWeight = if (isCurrent) FontWeight.Medium else FontWeight.Normal,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            if (isCurrent) {
-                Icon(
-                    imageVector = AppIcons.Check,
-                    contentDescription = null,
-                    tint = accentColor,
-                    modifier = Modifier.size(CheckIconSize),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FlatLevelRow(
-    entry: MediaPickerPathEntry,
-    isCurrent: Boolean,
-    onClick: () -> Unit,
-) {
-    val accentColor = MiuixTheme.colorScheme.primary
-    Surface(
-        onClick = onClick,
-        shape = RowShape,
-        color = if (isCurrent) accentColor.copy(alpha = CurrentRowAlpha) else Color.Transparent,
-        modifier = Modifier
+        color = if (isCurrent) accentColor.copy(alpha = CURRENT_ROW_ALPHA) else Color.Transparent,
+        modifier = modifier
             .fillMaxWidth()
             .testTag("path_level_${entry.depth}"),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(FlatRowHeight)
+                .height(rowHeight)
                 .padding(horizontal = RowPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = if (entry.depth == 0) "" else entry.depth.toString(),
-                modifier = Modifier.width(LevelIndexWidth),
-                color = if (isCurrent) accentColor else MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                style = MiuixTheme.textStyles.footnote1,
-                textAlign = TextAlign.End,
-                maxLines = 1,
-            )
-            Spacer(modifier = Modifier.width(IconSpacing))
+            leadingContent()
             Icon(
                 imageVector = if (entry.path == null) AppIcons.HomeLine else AppIcons.Folder,
                 contentDescription = null,
@@ -489,13 +447,9 @@ private fun DrawScope.drawLevelConnectors(
         val endX = node.indentLevel * indentStep + iconCenterOffset - iconRadius - gap
         val connector = Path().apply {
             moveTo(startX, startY)
-            if (endX - startX < corner) {
-                lineTo(startX, centerY)
-            } else {
-                lineTo(startX, centerY - corner)
-                quadraticTo(startX, centerY, startX + corner, centerY)
-                lineTo(endX, centerY)
-            }
+            lineTo(startX, centerY - corner)
+            quadraticTo(startX, centerY, startX + corner, centerY)
+            lineTo(endX, centerY)
         }
         drawPath(path = connector, color = color, style = stroke)
     }
@@ -516,13 +470,13 @@ private sealed interface PathLevelNode {
 }
 
 private fun List<MediaPickerPathEntry>.toLevelNodes(): List<PathLevelNode> {
-    if (size <= MaxVisibleLevels) {
+    if (size <= MAX_VISIBLE_LEVELS) {
         return map { entry -> PathLevelNode.Entry(entry = entry, indentLevel = entry.depth) }
     }
-    val tailCount = MaxVisibleLevels - CollapsedHeadLevels - 1
-    val headEntries = take(CollapsedHeadLevels)
+    val tailCount = MAX_VISIBLE_LEVELS - COLLAPSED_HEAD_LEVELS - 1
+    val headEntries = take(COLLAPSED_HEAD_LEVELS)
     val tailEntries = takeLast(tailCount)
-    val hiddenCount = size - CollapsedHeadLevels - tailCount
+    val hiddenCount = size - COLLAPSED_HEAD_LEVELS - tailCount
     return buildList {
         headEntries.forEachIndexed { index, entry ->
             add(PathLevelNode.Entry(entry = entry, indentLevel = index))
@@ -530,26 +484,19 @@ private fun List<MediaPickerPathEntry>.toLevelNodes(): List<PathLevelNode> {
         add(
             PathLevelNode.Collapsed(
                 hiddenCount = hiddenCount,
-                indentLevel = CollapsedHeadLevels,
+                indentLevel = COLLAPSED_HEAD_LEVELS,
             ),
         )
         tailEntries.forEachIndexed { index, entry ->
-            add(PathLevelNode.Entry(entry = entry, indentLevel = CollapsedHeadLevels + 1 + index))
+            add(PathLevelNode.Entry(entry = entry, indentLevel = COLLAPSED_HEAD_LEVELS + 1 + index))
         }
     }
 }
 
 private fun normalizePath(path: String): String = path
     .canonicalPathOrSelf()
-    .replace('\\', '/')
     .trimEnd('/')
     .ifBlank { "/" }
-
-private fun parentPath(path: String): String? {
-    if (path == "/") return null
-    val parent = path.substringBeforeLast('/', missingDelimiterValue = "")
-    return parent.ifBlank { "/" }
-}
 
 private val PanelShape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
 private val RowShape = RoundedCornerShape(12.dp)
@@ -568,10 +515,10 @@ private val LevelIndexWidth = 20.dp
 private val ConnectorWidth = 1.5.dp
 private val ConnectorCorner = 7.dp
 private val ConnectorGap = 3.dp
-private const val CurrentRowAlpha = 0.14f
-private const val ExpandedHeightRatio = 0.6f
-private const val MaxVisibleLevels = 7
-private const val CollapsedHeadLevels = 2
-private const val ScrimDurationMillis = 160
-private const val PanelEnterMillis = 220
-private const val PanelExitMillis = 160
+private const val CURRENT_ROW_ALPHA = 0.14f
+private const val EXPANDED_HEIGHT_RATIO = 0.6f
+private const val MAX_VISIBLE_LEVELS = 7
+private const val COLLAPSED_HEAD_LEVELS = 2
+private const val SCRIM_DURATION_MILLIS = 160
+private const val PANEL_ENTER_MILLIS = 220
+private const val PANEL_EXIT_MILLIS = 160

@@ -111,20 +111,16 @@ private fun VideoListItem(
             )
         },
         supportingContent = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
             ) {
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    if (preferences.shouldShowSizeField) {
-                        InfoChip(text = video.formattedFileSize)
-                    }
-                    if (preferences.shouldShowResolutionField && video.height > 0) {
-                        InfoChip(text = "${video.height}p")
-                    }
+                if (preferences.shouldShowSizeField) {
+                    InfoChip(text = video.formattedFileSize)
+                }
+                if (preferences.shouldShowResolutionField && video.height > 0) {
+                    InfoChip(text = "${video.height}p")
                 }
             }
         },
