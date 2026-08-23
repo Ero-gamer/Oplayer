@@ -3,10 +3,10 @@ package one.only.player.feature.videopicker.composables
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -34,11 +34,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -61,6 +63,13 @@ import top.yukonga.miuix.kmp.basic.HorizontalDivider
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.Surface
 import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.BlendColorEntry
+import top.yukonga.miuix.kmp.blur.BlurDefaults
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.textureBlur
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Immutable
@@ -120,24 +129,39 @@ internal fun buildMediaPickerPathEntries(
 }
 
 @Composable
+internal fun rememberPathPanelBackdrop(): LayerBackdrop? {
+    if (!isRuntimeShaderSupported()) return null
+
+    val surfaceColor = MiuixTheme.colorScheme.surface
+    return rememberLayerBackdrop {
+        drawRect(surfaceColor)
+        drawContent()
+    }
+}
+
+@Composable
 internal fun MediaPickerPathPanel(
     isExpanded: Boolean,
     entries: List<MediaPickerPathEntry>,
+    backdrop: Backdrop?,
     onDismissRequest: () -> Unit,
     onPathSelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isVisible = isExpanded
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clipToBounds(),
+    ) {
         AnimatedVisibility(
-            visible = isVisible,
+            visible = isExpanded,
             enter = fadeIn(tween(SCRIM_DURATION_MILLIS)),
             exit = fadeOut(tween(SCRIM_DURATION_MILLIS)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MiuixTheme.colorScheme.windowDimming)
+                    .then(scrimBackgroundModifier(backdrop))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -147,15 +171,29 @@ internal fun MediaPickerPathPanel(
             )
         }
         AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(tween(PANEL_ENTER_MILLIS)) +
-                expandVertically(tween(PANEL_ENTER_MILLIS), expandFrom = Alignment.Top),
-            exit = fadeOut(tween(PANEL_EXIT_MILLIS)) +
-                shrinkVertically(tween(PANEL_EXIT_MILLIS), shrinkTowards = Alignment.Top),
+            visible = isExpanded,
+            enter = slideInVertically(tween(PANEL_ENTER_MILLIS)) { height -> -height },
+            exit = slideOutVertically(tween(PANEL_EXIT_MILLIS)) { height -> -height },
         ) {
             PathPanelContent(entries = entries, onPathSelected = onPathSelected)
         }
     }
+}
+
+@Composable
+private fun scrimBackgroundModifier(backdrop: Backdrop?): Modifier {
+    if (backdrop == null) return Modifier.background(MiuixTheme.colorScheme.windowDimming)
+
+    return Modifier.textureBlur(
+        backdrop = backdrop,
+        shape = RectangleShape,
+        blurRadius = SCRIM_BLUR_RADIUS,
+        colors = BlurDefaults.blurColors(
+            blendColors = listOf(
+                BlendColorEntry(color = MiuixTheme.colorScheme.surface.copy(alpha = SCRIM_BLEND_ALPHA)),
+            ),
+        ),
+    )
 }
 
 @Composable
@@ -516,6 +554,8 @@ private val ConnectorWidth = 1.5.dp
 private val ConnectorCorner = 7.dp
 private val ConnectorGap = 3.dp
 private const val CURRENT_ROW_ALPHA = 0.14f
+private const val SCRIM_BLUR_RADIUS = 25f
+private const val SCRIM_BLEND_ALPHA = 0.15f
 private const val EXPANDED_HEIGHT_RATIO = 0.6f
 private const val MAX_VISIBLE_LEVELS = 7
 private const val COLLAPSED_HEAD_LEVELS = 2

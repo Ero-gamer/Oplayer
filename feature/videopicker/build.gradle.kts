@@ -57,6 +57,8 @@ dependencies {
 
     implementation(libs.coil.compose)
 
+    implementation(libs.miuix.blur)
+
     // Hilt 依赖
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

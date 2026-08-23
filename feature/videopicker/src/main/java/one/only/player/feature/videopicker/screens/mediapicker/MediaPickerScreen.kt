@@ -87,6 +87,7 @@ import one.only.player.feature.videopicker.composables.QuickSettingsDialog
 import one.only.player.feature.videopicker.composables.RenameDialog
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.composables.buildMediaPickerPathEntries
+import one.only.player.feature.videopicker.composables.rememberPathPanelBackdrop
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
 import one.only.player.feature.videopicker.state.SelectedFolder
@@ -107,6 +108,7 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.basic.TopAppBarDefaults
+import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @Composable
@@ -223,6 +225,7 @@ internal fun MediaPickerScreen(
         !isMoveMode &&
         pathEntries.size > 1
     val isPathPanelExpanded = shouldShowPathPanel && canOpenPathPanel
+    val pathPanelBackdrop = rememberPathPanelBackdrop()
     val isTitleLongPressHomeNavigationEnabled = shouldEnableTitleLongPressHomeNavigation(
         isInSelectionMode = selectionManager.isInSelectionMode || isMoveMode,
         folderName = uiState.folderName,
@@ -509,97 +512,111 @@ internal fun MediaPickerScreen(
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
-                PermissionMissingView(
-                    isGranted = permissionState.isGranted,
-                    shouldShowRationale = permissionState.shouldShowRationale,
-                    permission = permissionState.permission,
-                    launchPermissionRequest = { permissionState.launchPermissionRequest() },
-                ) {
-                    val activeDataState = if (isMoveMode) uiState.moveTargetDataState else uiState.mediaDataState
-                    val shouldShowRefreshIndicator = uiState.isRefreshing
-                    val updatedScaffoldPadding = scaffoldPadding.copy(
-                        top = if (shouldUseLargeTopBar) PageContentTopPadding else 0.dp,
-                        start = 0.dp,
-                    ).withBottomFallback()
-                    val refreshTexts = rememberPullToRefreshTexts()
-                    PullToRefresh(
-                        modifier = Modifier.fillMaxSize(),
-                        isRefreshing = shouldShowRefreshIndicator,
-                        onRefresh = { onEvent(MediaPickerUiEvent.Refresh) },
-                        topAppBarScrollBehavior = scrollBehavior.takeIf { shouldUseLargeTopBar },
-                        refreshTexts = refreshTexts,
-                    ) {
-                        when (activeDataState) {
-                            DataState.Loading -> Box(modifier = Modifier.fillMaxSize()) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .testTag("media_picker_loading"),
-                                )
-                            }
-                            is DataState.Error -> Box(
-                                modifier = Modifier.fillMaxSize(),
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.unknown_error),
-                                    modifier = Modifier.padding(16.dp),
-                                )
-                            }
-                            is DataState.Success -> if (isMoveMode) {
-                                val moveTargetContent = (uiState.moveTargetDataState as DataState.Success).value
-                                MoveTargetView(
-                                    content = moveTargetContent,
-                                    spaceCheck = uiState.moveSpaceCheck,
-                                    canMoveHere = canMoveToCurrentFolder,
-                                    isMoving = uiState.isMovingSelection,
-                                    contentPadding = updatedScaffoldPadding,
-                                    onDirectoryClick = { directory ->
-                                        onFolderClick(directory.path, MediaPickerScreenMode.LIBRARY)
-                                    },
-                                    onMoveHere = {
-                                        uiState.folderPath?.let { folderPath ->
-                                            onEvent(MediaPickerUiEvent.MoveSelectionToFolder(folderPath))
-                                        }
-                                    },
-                                )
+                // 模糊源只含内容区，面板自身必须留在外层
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (pathPanelBackdrop != null) {
+                                Modifier.layerBackdrop(pathPanelBackdrop)
                             } else {
-                                val rootFolder = (uiState.mediaDataState as DataState.Success).value
-                                if (rootFolder == null || rootFolder.folderList.isEmpty() && rootFolder.mediaList.isEmpty()) {
-                                    NoVideosFound(contentPadding = updatedScaffoldPadding)
-                                } else {
-                                    MediaView(
-                                        rootFolder = rootFolder,
-                                        preferences = uiState.preferences,
-                                        onFolderClick = {
-                                            onEvent(MediaPickerUiEvent.CacheFolderSnapshot(it))
-                                            onFolderClick(it.path, uiState.screenMode)
-                                        },
-                                        onVideoClick = { video -> onPlayVideo(video, uiState.playerPreferences) },
-                                        selectionManager = selectionManager,
-                                        lazyGridState = lazyGridState,
-                                        contentPadding = updatedScaffoldPadding,
-                                        onVideoLoaded = { onEvent(MediaPickerUiEvent.AddToSync(it)) },
+                                Modifier
+                            },
+                        ),
+                ) {
+                    PermissionMissingView(
+                        isGranted = permissionState.isGranted,
+                        shouldShowRationale = permissionState.shouldShowRationale,
+                        permission = permissionState.permission,
+                        launchPermissionRequest = { permissionState.launchPermissionRequest() },
+                    ) {
+                        val activeDataState = if (isMoveMode) uiState.moveTargetDataState else uiState.mediaDataState
+                        val shouldShowRefreshIndicator = uiState.isRefreshing
+                        val updatedScaffoldPadding = scaffoldPadding.copy(
+                            top = if (shouldUseLargeTopBar) PageContentTopPadding else 0.dp,
+                            start = 0.dp,
+                        ).withBottomFallback()
+                        val refreshTexts = rememberPullToRefreshTexts()
+                        PullToRefresh(
+                            modifier = Modifier.fillMaxSize(),
+                            isRefreshing = shouldShowRefreshIndicator,
+                            onRefresh = { onEvent(MediaPickerUiEvent.Refresh) },
+                            topAppBarScrollBehavior = scrollBehavior.takeIf { shouldUseLargeTopBar },
+                            refreshTexts = refreshTexts,
+                        ) {
+                            when (activeDataState) {
+                                DataState.Loading -> Box(modifier = Modifier.fillMaxSize()) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .testTag("media_picker_loading"),
                                     )
+                                }
+                                is DataState.Error -> Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.unknown_error),
+                                        modifier = Modifier.padding(16.dp),
+                                    )
+                                }
+                                is DataState.Success -> if (isMoveMode) {
+                                    val moveTargetContent = (uiState.moveTargetDataState as DataState.Success).value
+                                    MoveTargetView(
+                                        content = moveTargetContent,
+                                        spaceCheck = uiState.moveSpaceCheck,
+                                        canMoveHere = canMoveToCurrentFolder,
+                                        isMoving = uiState.isMovingSelection,
+                                        contentPadding = updatedScaffoldPadding,
+                                        onDirectoryClick = { directory ->
+                                            onFolderClick(directory.path, MediaPickerScreenMode.LIBRARY)
+                                        },
+                                        onMoveHere = {
+                                            uiState.folderPath?.let { folderPath ->
+                                                onEvent(MediaPickerUiEvent.MoveSelectionToFolder(folderPath))
+                                            }
+                                        },
+                                    )
+                                } else {
+                                    val rootFolder = (uiState.mediaDataState as DataState.Success).value
+                                    if (rootFolder == null || rootFolder.folderList.isEmpty() && rootFolder.mediaList.isEmpty()) {
+                                        NoVideosFound(contentPadding = updatedScaffoldPadding)
+                                    } else {
+                                        MediaView(
+                                            rootFolder = rootFolder,
+                                            preferences = uiState.preferences,
+                                            onFolderClick = {
+                                                onEvent(MediaPickerUiEvent.CacheFolderSnapshot(it))
+                                                onFolderClick(it.path, uiState.screenMode)
+                                            },
+                                            onVideoClick = { video -> onPlayVideo(video, uiState.playerPreferences) },
+                                            selectionManager = selectionManager,
+                                            lazyGridState = lazyGridState,
+                                            contentPadding = updatedScaffoldPadding,
+                                            onVideoLoaded = { onEvent(MediaPickerUiEvent.AddToSync(it)) },
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                if (moveProgress != null) {
-                    MoveProgressButton(
-                        progress = moveProgress.completedCount.toFloat() / moveProgress.totalCount.coerceAtLeast(1),
-                        onClick = { shouldShowMoveProgressDialog = true },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(scaffoldPadding.withBottomFallback())
-                            .padding(end = 21.dp),
-                    )
+                    if (moveProgress != null) {
+                        MoveProgressButton(
+                            progress = moveProgress.completedCount.toFloat() / moveProgress.totalCount.coerceAtLeast(1),
+                            onClick = { shouldShowMoveProgressDialog = true },
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(scaffoldPadding.withBottomFallback())
+                                .padding(end = 21.dp),
+                        )
+                    }
                 }
 
                 MediaPickerPathPanel(
                     isExpanded = isPathPanelExpanded,
                     entries = pathEntries,
+                    backdrop = pathPanelBackdrop,
                     onDismissRequest = { shouldShowPathPanel = false },
                     onPathSelected = { path ->
                         shouldShowPathPanel = false
