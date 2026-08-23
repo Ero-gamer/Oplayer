@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.gestures.detectTapGestures as detectGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -300,7 +299,6 @@ internal fun MediaPickerScreen(
                 isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
                 onTitleLongPress = onNavigateHome,
                 canOpenPathPanel = canOpenPathPanel,
-                isPathPanelExpanded = isPathPanelExpanded,
                 onTitleClick = { shouldShowPathPanel = !shouldShowPathPanel },
                 navigationIcon = {
                     if (selectionManager.isInSelectionMode) {
@@ -817,7 +815,6 @@ private fun MediaPickerTopAppBar(
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
     canOpenPathPanel: Boolean,
-    isPathPanelExpanded: Boolean,
     onTitleClick: () -> Unit,
     navigationIcon: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit,
@@ -839,7 +836,6 @@ private fun MediaPickerTopAppBar(
         isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
         onTitleLongPress = onTitleLongPress,
         canOpenPathPanel = canOpenPathPanel,
-        isPathPanelExpanded = isPathPanelExpanded,
         onTitleClick = onTitleClick,
         navigationIcon = navigationIcon,
         actions = actions,
@@ -853,7 +849,6 @@ private fun MediaPickerSmallTitleTopAppBar(
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
     canOpenPathPanel: Boolean,
-    isPathPanelExpanded: Boolean,
     onTitleClick: () -> Unit,
     navigationIcon: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit,
@@ -909,21 +904,6 @@ private fun MediaPickerSmallTitleTopAppBar(
                     overflow = TextOverflow.Ellipsis,
                     softWrap = false,
                 )
-                if (canOpenPathPanel) {
-                    Crossfade(
-                        targetState = isPathPanelExpanded,
-                        label = "pathPanelIndicator",
-                    ) { isExpanded ->
-                        Icon(
-                            imageVector = if (isExpanded) AppIcons.UpSmall else AppIcons.DownSmall,
-                            contentDescription = null,
-                            tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                            modifier = Modifier
-                                .padding(start = 2.dp, end = 4.dp)
-                                .size(24.dp),
-                        )
-                    }
-                }
             }
             Row(
                 modifier = Modifier.padding(end = TopAppBarDefaults.ActionIconPadding),
