@@ -116,6 +116,7 @@ fun MediaPickerRoute(
     onPlayVideo: (video: Video, playerPreferences: PlayerPreferences) -> Unit,
     onPlayUri: (uri: Uri) -> Unit,
     onFolderClick: (folderPath: String, screenMode: MediaPickerScreenMode) -> Unit,
+    onAncestorFolderClick: (folderPath: String, screenMode: MediaPickerScreenMode) -> Unit,
     onRecycleBinClick: () -> Unit,
     onSearchClick: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -138,6 +139,7 @@ fun MediaPickerRoute(
         onNavigateUp = onNavigateUp,
         onNavigateHome = onNavigateHome,
         onFolderClick = onFolderClick,
+        onAncestorFolderClick = onAncestorFolderClick,
         onRecycleBinClick = onRecycleBinClick,
         onSearchClick = onSearchClick,
         onHistoryClick = onHistoryClick,
@@ -170,6 +172,7 @@ internal fun MediaPickerScreen(
     onPlayVideo: (Video, PlayerPreferences) -> Unit = { _, _ -> },
     onPlayUri: (Uri) -> Unit = {},
     onFolderClick: (String, MediaPickerScreenMode) -> Unit = { _, _ -> },
+    onAncestorFolderClick: (String, MediaPickerScreenMode) -> Unit = { _, _ -> },
     onRecycleBinClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
@@ -294,7 +297,7 @@ internal fun MediaPickerScreen(
                 scrollBehavior = scrollBehavior,
                 isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
                 onTitleLongPress = onNavigateHome,
-                isTitleClickEnabled = canOpenPathPanel,
+                canOpenPathPanel = canOpenPathPanel,
                 isPathPanelExpanded = isPathPanelExpanded,
                 onTitleClick = { shouldShowPathPanel = !shouldShowPathPanel },
                 navigationIcon = {
@@ -603,8 +606,8 @@ internal fun MediaPickerScreen(
                         shouldShowPathPanel = false
                         if (path == null) {
                             onNavigateHome()
-                        } else if (path.canonicalPathOrSelf() != uiState.folderPath?.canonicalPathOrSelf()) {
-                            onFolderClick(path, uiState.screenMode)
+                        } else if (path != uiState.folderPath?.canonicalPathOrSelf()) {
+                            onAncestorFolderClick(path, uiState.screenMode)
                         }
                     },
                 )
@@ -797,7 +800,7 @@ private fun MediaPickerTopAppBar(
     scrollBehavior: ScrollBehavior,
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
-    isTitleClickEnabled: Boolean,
+    canOpenPathPanel: Boolean,
     isPathPanelExpanded: Boolean,
     onTitleClick: () -> Unit,
     navigationIcon: @Composable () -> Unit,
@@ -819,7 +822,7 @@ private fun MediaPickerTopAppBar(
         titlePadding = smallTitlePadding,
         isTitleLongPressHomeNavigationEnabled = isTitleLongPressHomeNavigationEnabled,
         onTitleLongPress = onTitleLongPress,
-        isTitleClickEnabled = isTitleClickEnabled,
+        canOpenPathPanel = canOpenPathPanel,
         isPathPanelExpanded = isPathPanelExpanded,
         onTitleClick = onTitleClick,
         navigationIcon = navigationIcon,
@@ -833,21 +836,21 @@ private fun MediaPickerSmallTitleTopAppBar(
     titlePadding: Dp,
     isTitleLongPressHomeNavigationEnabled: Boolean,
     onTitleLongPress: () -> Unit,
-    isTitleClickEnabled: Boolean,
+    canOpenPathPanel: Boolean,
     isPathPanelExpanded: Boolean,
     onTitleClick: () -> Unit,
     navigationIcon: @Composable () -> Unit,
     actions: @Composable RowScope.() -> Unit,
 ) {
-    val titleGestureModifier = if (isTitleLongPressHomeNavigationEnabled || isTitleClickEnabled) {
+    val titleGestureModifier = if (isTitleLongPressHomeNavigationEnabled || canOpenPathPanel) {
         Modifier.pointerInput(
             isTitleLongPressHomeNavigationEnabled,
-            isTitleClickEnabled,
+            canOpenPathPanel,
             onTitleLongPress,
             onTitleClick,
         ) {
             detectGestures(
-                onTap = { if (isTitleClickEnabled) onTitleClick() },
+                onTap = { if (canOpenPathPanel) onTitleClick() },
                 onLongPress = { if (isTitleLongPressHomeNavigationEnabled) onTitleLongPress() },
             )
         }
@@ -876,14 +879,13 @@ private fun MediaPickerSmallTitleTopAppBar(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = titlePadding)
-                    .then(titleGestureModifier),
+                    .then(titleGestureModifier)
+                    .testTag("title_media_picker"),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = title,
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .testTag("title_media_picker"),
+                    modifier = Modifier.weight(1f, fill = false),
                     color = MiuixTheme.colorScheme.onSurface,
                     fontSize = MiuixTheme.textStyles.title3.fontSize,
                     fontWeight = FontWeight.Medium,
@@ -891,7 +893,7 @@ private fun MediaPickerSmallTitleTopAppBar(
                     overflow = TextOverflow.Ellipsis,
                     softWrap = false,
                 )
-                if (isTitleClickEnabled) {
+                if (canOpenPathPanel) {
                     val pathPanelArrowRotation by animateFloatAsState(
                         targetValue = if (isPathPanelExpanded) 180f else 0f,
                         label = "pathPanelArrowRotation",

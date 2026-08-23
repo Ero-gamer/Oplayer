@@ -54,6 +54,7 @@ fun MediaRootPage(
                 screenMode = screenMode,
             )
         },
+        onAncestorFolderClick = { _, _ -> },
         onRecycleBinClick = navController::navigateToRecycleBinScreen,
         onSearchClick = navController::navigateToSearch,
         onHistoryClick = navController::navigateToHistory,
@@ -83,6 +84,13 @@ fun NavGraphBuilder.mediaDetailNavGraph(
         },
         onPlayUri = context::startPlayerActivity,
         onFolderClick = { folderPath, screenMode ->
+            navController.navigateToMediaPickerScreen(
+                folderId = folderPath,
+                screenMode = screenMode,
+            )
+        },
+        onAncestorFolderClick = { folderPath, screenMode ->
+            navController.popBackStack(RootPagerRoute, inclusive = false)
             navController.navigateToMediaPickerScreen(
                 folderId = folderPath,
                 screenMode = screenMode,
