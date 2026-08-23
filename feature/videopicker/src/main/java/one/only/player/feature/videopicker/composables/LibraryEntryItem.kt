@@ -1,15 +1,9 @@
 package one.only.player.feature.videopicker.composables
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,7 +20,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,7 +32,6 @@ import top.yukonga.miuix.kmp.basic.IconButton
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LibraryEntryItem(
     title: String,
@@ -84,24 +76,14 @@ fun LibraryEntryItem(
         content = {
             Text(
                 text = title,
-                maxLines = 3,
+                maxLines = 2,
                 style = MiuixTheme.textStyles.title4,
                 overflow = TextOverflow.Ellipsis,
             )
         },
         supportingContent = chips.takeIf { it.isNotEmpty() }?.let {
             {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                    ) {
-                        chips.forEach { chip ->
-                            InfoChip(text = chip)
-                        }
-                    }
-                }
+                MediaMetaText(parts = chips)
             }
         },
     )
@@ -109,22 +91,6 @@ fun LibraryEntryItem(
 
 @Composable
 fun libraryListThumbWidth(): Dp = min(150.dp, LocalConfiguration.current.screenWidthDp.dp * 0.35f)
-
-@Composable
-fun FolderThumbnail(
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier.padding(horizontal = 8.dp)) {
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
-            contentDescription = null,
-            tint = MiuixTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier
-                .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
-                .aspectRatio(20 / 17f),
-        )
-    }
-}
 
 @Composable
 fun LibraryIconThumb(

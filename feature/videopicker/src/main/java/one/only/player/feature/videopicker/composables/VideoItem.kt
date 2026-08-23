@@ -4,8 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -74,7 +72,6 @@ fun VideoItem(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun VideoListItem(
     video: Video,
@@ -105,24 +102,14 @@ private fun VideoListItem(
         content = {
             Text(
                 text = if (preferences.shouldShowExtensionField) video.nameWithExtension else video.displayName,
-                maxLines = 3,
+                maxLines = 2,
                 style = MiuixTheme.textStyles.title4,
                 overflow = TextOverflow.Ellipsis,
+                color = videoTitleColor(isRecentlyPlayedVideo, preferences),
             )
         },
         supportingContent = {
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-            ) {
-                if (preferences.shouldShowSizeField) {
-                    InfoChip(text = video.formattedFileSize)
-                }
-                if (preferences.shouldShowResolutionField && video.height > 0) {
-                    InfoChip(text = "${video.height}p")
-                }
-            }
+            MediaMetaText(parts = video.metaParts(preferences))
         },
     )
 }
@@ -158,21 +145,38 @@ private fun VideoGridItem(
                     video = video,
                     preferences = preferences,
                 )
-                Text(
-                    text = if (preferences.shouldShowExtensionField) video.nameWithExtension else video.displayName,
-                    maxLines = 3,
-                    style = MiuixTheme.textStyles.title4,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    color = if (isRecentlyPlayedVideo && preferences.shouldMarkLastPlayedMedia) {
-                        MiuixTheme.colorScheme.primary
-                    } else {
-                        MiuixTheme.colorScheme.onSurface
-                    },
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = if (preferences.shouldShowExtensionField) video.nameWithExtension else video.displayName,
+                        maxLines = 2,
+                        style = MiuixTheme.textStyles.title4,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        color = videoTitleColor(isRecentlyPlayedVideo, preferences),
+                    )
+                    MediaMetaText(
+                        parts = video.metaParts(preferences),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         },
     )
+}
+
+@Composable
+private fun videoTitleColor(
+    isRecentlyPlayedVideo: Boolean,
+    preferences: ApplicationPreferences,
+): Color = if (isRecentlyPlayedVideo && preferences.shouldMarkLastPlayedMedia) {
+    MiuixTheme.colorScheme.primary
+} else {
+    MiuixTheme.colorScheme.onSurface
 }
 
 @Composable
@@ -209,14 +213,11 @@ internal fun VideoThumbnail(
             )
         }
         if (preferences.shouldShowDurationField) {
-            InfoChip(
+            ThumbnailBadge(
                 text = video.formattedDuration,
                 modifier = Modifier
                     .padding(5.dp)
                     .align(Alignment.BottomEnd),
-                backgroundColor = Color.Black.copy(alpha = 0.6f),
-                contentColor = Color.White,
-                shape = RoundedCornerShape(4.dp),
             )
         }
 

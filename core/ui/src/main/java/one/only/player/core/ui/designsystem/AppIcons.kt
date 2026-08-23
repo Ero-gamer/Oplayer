@@ -37,6 +37,7 @@ object AppIcons {
     val FileOpen: ImageVector get() = MingCuteFileOpen
     val Focus: ImageVector get() = MingCuteFocus
     val Folder: ImageVector get() = MingCuteFolder
+    val FolderFill: ImageVector get() = MingCuteFolderFill
     val FolderOff: ImageVector get() = MingCuteFolderOff
     val Font: ImageVector get() = MingCuteFont
     val FontSize: ImageVector get() = MingCuteFontSize

@@ -52,6 +52,7 @@ import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.VideoThumbnail
 import one.only.player.feature.videopicker.composables.libraryListThumbWidth
+import one.only.player.feature.videopicker.composables.metaParts
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -354,14 +355,7 @@ private fun PlaylistMediaItem(
     val title = video?.let { current ->
         if (preferences.shouldShowExtensionField) current.nameWithExtension else current.displayName
     } ?: item.title.substringBeforeLast('.')
-    val chips = buildList {
-        if (video != null && preferences.shouldShowSizeField) {
-            add(video.formattedFileSize)
-        }
-        if (video != null && preferences.shouldShowResolutionField && video.height > 0) {
-            add("${video.height}p")
-        }
-    }
+    val chips = video?.metaParts(preferences).orEmpty()
 
     LibraryEntryItem(
         title = title,

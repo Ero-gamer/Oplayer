@@ -57,6 +57,7 @@ import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.VideoThumbnail
 import one.only.player.feature.videopicker.composables.libraryListThumbWidth
+import one.only.player.feature.videopicker.composables.metaParts
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -498,13 +499,7 @@ private fun FavoriteItem.libraryChips(
     }
 
     return buildList {
-        val resolved = video
-        if (resolved != null && preferences.shouldShowSizeField) {
-            add(resolved.formattedFileSize)
-        }
-        if (resolved != null && preferences.shouldShowResolutionField && resolved.height > 0) {
-            add("${resolved.height}p")
-        }
+        addAll(video?.metaParts(preferences).orEmpty())
         locationLabel()?.let(::add)
     }
 }

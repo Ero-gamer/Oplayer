@@ -8,9 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,17 +39,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,10 +73,12 @@ import one.only.player.core.ui.extensions.copy
 import one.only.player.core.ui.extensions.plus
 import one.only.player.core.ui.extensions.subtractBottomPadding
 import one.only.player.core.ui.extensions.withBottomFallback
-import one.only.player.feature.videopicker.composables.InfoChip
+import one.only.player.feature.videopicker.composables.FolderGridThumbnail
+import one.only.player.feature.videopicker.composables.FolderThumbnail
 import one.only.player.feature.videopicker.composables.LocalNetworkPermissionMissingScreen
 import one.only.player.feature.videopicker.composables.MediaItemContentPadding
 import one.only.player.feature.videopicker.composables.MediaMessageState
+import one.only.player.feature.videopicker.composables.MediaMetaText
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
@@ -87,6 +86,7 @@ import one.only.player.feature.videopicker.composables.QuickSettingsTarget
 import one.only.player.feature.videopicker.composables.RequestLocalNetworkPermissionIfNeeded
 import one.only.player.feature.videopicker.composables.SelectionCheckIndicator
 import one.only.player.feature.videopicker.composables.VideoInfoDialog
+import one.only.player.feature.videopicker.composables.libraryListThumbWidth
 import one.only.player.feature.videopicker.composables.rememberLocalNetworkPermissionState
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
 import top.yukonga.miuix.kmp.basic.CircularProgressIndicator
@@ -641,7 +641,6 @@ private fun RemoteFileItem(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RemoteFileListItem(
     file: RemoteFile,
@@ -656,6 +655,8 @@ private fun RemoteFileListItem(
 ) {
     val shouldHighlight = isRecentlyPlayed && shouldMarkLastPlayedMedia
     val highlightColor = MiuixTheme.colorScheme.primary
+    val shouldShowSize = !file.isDirectory && settings.shouldShowSizeField && file.size > 0
+    val shouldShowPlayedDot = !file.isDirectory && settings.shouldShowPlayedProgress && hasBeenPlayed
     CardListItem(
         modifier = Modifier.testTag("remote_file_${file.name}"),
         isSelected = false,
@@ -665,15 +666,13 @@ private fun RemoteFileListItem(
         onLongClick = onLongClick,
         leadingContent = {
             if (file.isDirectory) {
-                RemoteFolderThumbnail(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                )
+                FolderThumbnail()
             } else {
                 RemoteThumbnailView(
                     file = file,
                     thumbnailUri = thumbnailUri,
                     shouldShowThumbnail = settings.shouldShowThumbnailField,
-                    modifier = Modifier.width(min(150.dp, LocalConfiguration.current.screenWidthDp.dp * 0.35f)),
+                    modifier = Modifier.width(libraryListThumbWidth()),
                 )
             }
         },
@@ -691,31 +690,32 @@ private fun RemoteFileListItem(
         },
         supportingContent = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 if (file.isDirectory && settings.shouldShowPathField) {
                     Text(
                         text = file.parentDirectoryPath(),
-                        maxLines = 2,
-                        style = MiuixTheme.textStyles.body2,
+                        maxLines = 1,
+                        style = MiuixTheme.textStyles.footnote1.copy(fontWeight = FontWeight.Normal),
                         color = if (shouldHighlight) highlightColor else MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.MiddleEllipsis,
                     )
                 }
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
-                ) {
-                    if (!file.isDirectory && settings.shouldShowSizeField && file.size > 0) {
-                        InfoChip(text = formatFileSize(file.size))
-                    }
-                    if (!file.isDirectory && settings.shouldShowPlayedProgress && hasBeenPlayed) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .background(highlightColor, CircleShape),
-                        )
+                if (shouldShowSize || shouldShowPlayedDot) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (shouldShowSize) {
+                            MediaMetaText(parts = listOf(formatFileSize(file.size)))
+                        }
+                        if (shouldShowPlayedDot) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .background(highlightColor, CircleShape),
+                            )
+                        }
                     }
                 }
             }
@@ -755,7 +755,7 @@ private fun RemoteFileGridItem(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (file.isDirectory) {
-                    RemoteFolderThumbnail()
+                    FolderGridThumbnail()
                 } else {
                     RemoteThumbnailView(
                         file = file,
@@ -843,20 +843,6 @@ private fun RemoteServer.remoteThumbnailCacheIdentity(): String {
     ).joinToString(separator = "\u0000")
     val bytes = MessageDigest.getInstance("SHA-256").digest(value.toByteArray(Charsets.UTF_8))
     return bytes.joinToString(separator = "") { byte -> "%02x".format(byte) }
-}
-
-@Composable
-private fun RemoteFolderThumbnail(
-    modifier: Modifier = Modifier,
-) {
-    MiuixIcon(
-        imageVector = ImageVector.vectorResource(id = R.drawable.folder_thumb),
-        contentDescription = null,
-        tint = MiuixTheme.colorScheme.surfaceContainerHigh,
-        modifier = modifier
-            .width(min(90.dp, LocalConfiguration.current.screenWidthDp.dp * 0.3f))
-            .aspectRatio(20 / 17f),
-    )
 }
 
 @Composable
