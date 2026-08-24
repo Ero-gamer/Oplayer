@@ -206,6 +206,36 @@ fun process(data: Data?) {
 
 ---
 
+## Path Handling
+
+`/storage/emulated/0` 走 FUSE，大小写不敏感且保留写法，同一文件可能以不同写法进入应用。路径语义由类型承载：比较按大小写归一，取值保留真实写法。
+
+### Rules
+
+1. 外部存储上的媒体路径用 `StoragePath`（`core/model`）表示，相等、前缀和去重都交给它
+2. 路径在进入应用的边界（Intent、MediaStore、文件系统遍历、DataStore 反序列化）先 `canonicalPathOrSelf()` 解析 `.`、`..` 与符号链接，再 `StoragePath.of()` 归一大小写与分隔符，之后一路传 `StoragePath`
+3. 包含关系用 `isInside()`，名称用 `name`，单级目录项按名匹配用 `StoragePath.namesEqual()`
+4. 访问文件、写入数据库、展示给用户都用 `value`，它是真实写法
+5. 持久化的路径字段直接声明为 `StoragePath`，序列化结果是裸字符串
+6. Room 里的路径列声明 `collate = ColumnInfo.NOCASE`，让主键和索引的比较跟外部存储一致
+7. 未声明 collation 的表按路径查询时在 SQL 里写 `COLLATE NOCASE`；一批路径用 `getAllByPaths` 一次取回，在内存里按 `StoragePath` 建映射
+8. `StoragePath` 表示外部存储上的路径；`/data` 这类大小写敏感的挂载点用 `String` 表示
+
+### Usage
+
+```kotlin
+// 边界：解析真实位置后定型
+val path = StoragePath.of(intentPath.canonicalPathOrSelf())
+
+// 比较：交给类型
+if (path.isInside(excludedFolder)) return
+
+// 取值：真实写法用于访问与展示
+File(path.value).delete()
+```
+
+---
+
 ## Code Formatting
 
 ### EditorConfig
