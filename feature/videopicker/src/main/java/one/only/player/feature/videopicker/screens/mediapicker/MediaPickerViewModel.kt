@@ -57,6 +57,7 @@ class MediaPickerViewModel @Inject constructor(
     private val mediaSynchronizer: MediaSynchronizer,
     private val snapshotCache: MediaPickerSnapshotCache,
     private val moveSelectionStore: MediaPickerMoveSelectionStore,
+    private val homeStore: MediaPickerHomeStore,
     @ApplicationScope private val applicationScope: CoroutineScope,
 ) : ViewModel() {
 
@@ -118,11 +119,32 @@ class MediaPickerViewModel @Inject constructor(
                         preferences = uiStateInternal.value.preferences,
                         hasAllFilesAccess = hasManageExternalStorageAccess(),
                     )
+                    // 主页会下钻到首个有内容的目录，落点供子目录页的路径面板去重
+                    if (folderPath == null) folder?.let { homeStore.set(StoragePath.of(it.path)) }
                 }
                 uiStateInternal.update { currentState ->
                     currentState.copy(
                         mediaDataState = DataState.Success(folder),
                     )
+                }
+            }
+        }
+
+        // 只有子目录页会展示路径面板，主页自身不需要落点
+        if (folderPath != null) {
+            viewModelScope.launch {
+                // 进程被回收后主页可能没有重建过，用它留下的快照补上落点
+                if (homeStore.landingPath.value == null) {
+                    snapshotCache.awaitGet(
+                        folderPath = null,
+                        preferences = initialPreferences,
+                        hasAllFilesAccess = initialHasAllFilesAccess,
+                    )?.let { homeFolder -> homeStore.set(StoragePath.of(homeFolder.path)) }
+                }
+                homeStore.landingPath.collect { landingPath ->
+                    uiStateInternal.update { currentState ->
+                        currentState.copy(homeLandingPath = landingPath)
+                    }
                 }
             }
         }
@@ -537,6 +559,7 @@ data class MediaPickerUiState(
     val folderPath: String?,
     val folderName: String?,
     val mediaDataState: DataState<Folder?> = DataState.Loading,
+    val homeLandingPath: StoragePath? = null,
     val isRefreshing: Boolean = false,
     val preferences: ApplicationPreferences = ApplicationPreferences(),
     val playerPreferences: PlayerPreferences = PlayerPreferences(),
@@ -621,6 +644,17 @@ data class MediaPickerMoveSelection(
 }
 
 private fun String.normalizedMovePath(): String = canonicalPathOrSelf().replace(File.separatorChar, '/')
+
+// 主页在文件夹树视图下会下钻到首个有内容的目录，落点由主页写入，子目录页据此裁剪路径层级
+@Singleton
+class MediaPickerHomeStore @Inject constructor() {
+    private val landingPathInternal = MutableStateFlow<StoragePath?>(null)
+    val landingPath = landingPathInternal.asStateFlow()
+
+    fun set(path: StoragePath) {
+        landingPathInternal.value = path
+    }
+}
 
 @Singleton
 class MediaPickerMoveSelectionStore @Inject constructor() {

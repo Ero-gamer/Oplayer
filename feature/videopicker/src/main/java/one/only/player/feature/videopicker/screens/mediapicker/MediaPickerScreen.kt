@@ -214,11 +214,12 @@ internal fun MediaPickerScreen(
     val isMoveMode = uiState.moveSelection != null && isLibraryMode
     val pathRootLabel = stringResource(R.string.tab_home)
     val storageRootLabels = rememberStorageRootLabels()
-    val pathEntries = remember(uiState.folderPath, pathRootLabel, storageRootLabels) {
+    val pathEntries = remember(uiState.folderPath, pathRootLabel, storageRootLabels, uiState.homeLandingPath) {
         buildMediaPickerPathEntries(
             folderPath = uiState.folderPath,
             rootLabel = pathRootLabel,
             storageRootLabels = storageRootLabels,
+            homeLandingPath = uiState.homeLandingPath,
         )
     }
     val canOpenPathPanel = isLibraryMode &&

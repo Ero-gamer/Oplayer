@@ -81,6 +81,7 @@ internal fun buildMediaPickerPathEntries(
     folderPath: String?,
     rootLabel: String,
     storageRootLabels: Map<StoragePath, String>,
+    homeLandingPath: StoragePath?,
 ): List<MediaPickerPathEntry> {
     val normalizedPath = folderPath
         ?.takeIf(String::isNotBlank)
@@ -90,7 +91,11 @@ internal fun buildMediaPickerPathEntries(
     val paths = buildList {
         var path = normalizedPath
         while (path != "/") {
-            val isStorageRoot = StoragePath.of(path) in storageRootLabels
+            val currentPath = StoragePath.of(path)
+            // 主页已经展示了落点目录，它连同祖先都不再单独占一层
+            if (currentPath == homeLandingPath) break
+
+            val isStorageRoot = currentPath in storageRootLabels
             if (!isStorageRoot || shouldShowStorageRoot) add(path)
             if (isStorageRoot) break
             path = path.substringBeforeLast('/').ifBlank { "/" }
