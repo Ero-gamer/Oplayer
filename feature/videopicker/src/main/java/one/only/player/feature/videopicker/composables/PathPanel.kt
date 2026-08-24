@@ -57,6 +57,7 @@ import java.io.File
 import one.only.player.core.common.extensions.canonicalPathOrSelf
 import one.only.player.core.common.extensions.getStorageVolumes
 import one.only.player.core.common.extensions.prettyName
+import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.AppIcons
 import top.yukonga.miuix.kmp.basic.HorizontalDivider
@@ -89,16 +90,18 @@ internal fun buildMediaPickerPathEntries(
         ?.takeIf(String::isNotBlank)
         ?.let(::normalizePath)
         ?: return emptyList()
-    val storageRoot = context.getStorageVolumes()
-        .map { volume -> normalizePath(volume.path) }
-        .firstOrNull { root ->
-            normalizedPath == root || normalizedPath.startsWith("$root/")
-        }
+    val storageRoots = context.getStorageVolumes()
+        .map { volume -> StoragePath.of(normalizePath(volume.path)) }
+        .distinct()
+    val currentPath = StoragePath.of(normalizedPath)
+    val storageRoot = storageRoots.firstOrNull(currentPath::isInside)
+    val shouldShowStorageRoot = storageRoots.size > 1
     val paths = buildList {
         var path = normalizedPath
         while (path != "/") {
-            add(path)
-            if (path == storageRoot) break
+            val isStorageRoot = storageRoot != null && StoragePath.of(path) == storageRoot
+            if (!isStorageRoot || shouldShowStorageRoot) add(path)
+            if (isStorageRoot) break
             path = path.substringBeforeLast('/').ifBlank { "/" }
         }
     }.asReversed()
