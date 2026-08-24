@@ -280,10 +280,9 @@ class MediaPickerViewModel @Inject constructor(
                     ?.map(Video::parentPath)
                     .orEmpty(),
                 folderPaths = folderPaths,
-                folderParentPaths = rootFolder?.folderList
-                    ?.filter { folder -> folder.path in folderPaths }
-                    ?.mapNotNull(Folder::parentPath)
-                    .orEmpty(),
+                folderParentPaths = folderPaths.mapNotNull { folderPath ->
+                    File(folderPath).parent?.let(String::normalizedMovePath)
+                },
             ),
         )
     }

@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import one.only.player.core.common.extensions.canonicalPathOrSelf
 import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaRepository
@@ -202,9 +204,9 @@ class SearchViewModel @Inject constructor(
                     .filter { video -> video.uriString in videoUris }
                     .map(Video::parentPath),
                 folderPaths = folderPaths,
-                folderParentPaths = rootFolder.folderList
-                    .filter { folder -> folder.path in folderPaths }
-                    .mapNotNull(Folder::parentPath),
+                folderParentPaths = folderPaths.mapNotNull { folderPath ->
+                    File(folderPath).parent?.canonicalPathOrSelf()?.replace(File.separatorChar, '/')
+                },
             ),
         )
     }
