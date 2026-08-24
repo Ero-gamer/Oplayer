@@ -11,6 +11,7 @@ import one.only.player.core.database.entities.PlaylistItemEntity
 import one.only.player.core.database.relations.PlaylistWithCount
 import one.only.player.core.model.Playlist
 import one.only.player.core.model.PlaylistItem
+import one.only.player.core.model.StoragePath
 import one.only.player.core.model.Video
 
 class LocalPlaylistRepository @Inject constructor(
@@ -139,10 +140,9 @@ class LocalPlaylistRepository @Inject constructor(
         oldPath: String,
         newPath: String,
     ) {
-        val oldCanonicalPath = oldPath.canonicalPathOrSelf()
+        val oldStoragePath = StoragePath.of(oldPath.canonicalPathOrSelf())
         dao.getAllItems().forEach { current ->
-            val currentPath = current.mediaPath.canonicalPathOrSelf()
-            if (currentPath != oldCanonicalPath && !currentPath.startsWith(oldCanonicalPath + File.separator)) {
+            if (!StoragePath.of(current.mediaPath.canonicalPathOrSelf()).isInside(oldStoragePath)) {
                 return@forEach
             }
             dao.updateItem(
@@ -160,9 +160,10 @@ class LocalPlaylistRepository @Inject constructor(
         oldPath: String,
         newPath: String,
     ): String {
-        val canonicalPath = canonicalPathOrSelf()
-        val oldCanonicalPath = oldPath.canonicalPathOrSelf()
-        val relativePath = canonicalPath.removePrefix(oldCanonicalPath).trimStart(File.separatorChar)
+        // 大小写归一不改变长度，按前缀长度截取即可保留原路径的真实写法
+        val canonicalPath = StoragePath.of(canonicalPathOrSelf())
+        val oldPrefixLength = StoragePath.of(oldPath.canonicalPathOrSelf()).value.length
+        val relativePath = canonicalPath.value.drop(oldPrefixLength).trimStart(StoragePath.SEPARATOR)
         if (relativePath.isBlank()) return newPath
         return File(newPath, relativePath).path
     }

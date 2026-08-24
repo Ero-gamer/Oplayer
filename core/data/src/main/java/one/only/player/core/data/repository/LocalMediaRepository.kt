@@ -27,6 +27,7 @@ import one.only.player.core.media.services.MediaMoveResult
 import one.only.player.core.media.services.MediaService
 import one.only.player.core.media.sync.MediaSynchronizer
 import one.only.player.core.model.Folder
+import one.only.player.core.model.StoragePath
 import one.only.player.core.model.Video
 
 class LocalMediaRepository @Inject constructor(
@@ -423,8 +424,15 @@ class LocalMediaRepository @Inject constructor(
             val result = mediaService.moveFolderToFolder(folderPath, targetFolderPath)
 
             val movedFolderPath = File(targetFolderPath, folder.name).path
+            val uriStringByOriginalPath = result.movedMedia
+                .mapNotNull(MediaMoveResult::originalPath)
+                .chunked(SQLITE_VARIABLE_LIMIT)
+                .flatMap { paths -> mediumDao.getAllByPaths(paths) }
+                .associate { medium -> StoragePath.of(medium.path) to medium.uriString }
+
             result.movedMedia.forEach { moved ->
-                val uriString = moved.originalPath?.let { originalPath -> mediumDao.getByPath(originalPath)?.uriString } ?: return@forEach
+                val originalPath = moved.originalPath ?: return@forEach
+                val uriString = uriStringByOriginalPath[StoragePath.of(originalPath)] ?: return@forEach
                 updateMovedMedium(uriString, moved)
                 mediaSynchronizer.registerManualVideoPath(moved.path)
             }
@@ -606,5 +614,8 @@ class LocalMediaRepository @Inject constructor(
     companion object {
         // 与 Media3 C.TIME_UNSET 数值一致；负位置在 Video.playedPercentage 中按已播完处理。
         private const val PLAYED_PLAYBACK_POSITION = Long.MIN_VALUE + 1
+
+        // SQLite 单条语句的绑定变量上限是 999，留出余量
+        private const val SQLITE_VARIABLE_LIMIT = 900
     }
 }

@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import one.only.player.core.common.di.ApplicationScope
-import one.only.player.core.common.extensions.excludeNoMediaPaths
 import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.datastore.datasource.AppPreferencesDataSource
 import one.only.player.core.datastore.datasource.PlayerPreferencesDataSource
+import one.only.player.core.media.extensions.excludeNoMediaPaths
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.SettingsBackup

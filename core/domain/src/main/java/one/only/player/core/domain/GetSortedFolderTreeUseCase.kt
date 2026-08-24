@@ -12,6 +12,7 @@ import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.Sort
+import one.only.player.core.model.StoragePath
 
 class GetSortedFolderTreeUseCase @Inject constructor(
     private val mediaRepository: MediaRepository,
@@ -53,7 +54,7 @@ class GetSortedFolderTreeUseCase @Inject constructor(
         path: String,
         preferences: ApplicationPreferences,
     ): List<Folder> = mapNotNull { directory ->
-        if (directory.parentPath != path || preferences.isPathExcluded(directory.path)) {
+        if (directory.parentPath != path || preferences.isPathExcluded(StoragePath.of(directory.path))) {
             return@mapNotNull null
         }
 

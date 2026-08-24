@@ -15,6 +15,7 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaViewMode
 import one.only.player.core.model.Sort
+import one.only.player.core.model.StoragePath
 
 // 文件夹快照缓存，兼顾内存与磁盘持久化，冷启动后仍可命中
 class MediaPickerSnapshotCache(
@@ -152,7 +153,7 @@ class MediaPickerSnapshotCache(
         sortOrder = prefs.sortOrder,
         shouldIgnoreNoMediaFiles = prefs.shouldIgnoreNoMediaFiles,
         isRecycleBinEnabled = prefs.isRecycleBinEnabled,
-        excludeFolders = prefs.excludeFolders,
+        excludeFolders = prefs.excludeFolders.map(StoragePath::value),
         hasAllFilesAccess = hasAllFilesAccess,
     )
 

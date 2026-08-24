@@ -11,6 +11,7 @@ import one.only.player.core.common.DispatcherType
 import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.Sort
+import one.only.player.core.model.StoragePath
 import one.only.player.core.model.Video
 
 class GetSortedVideosUseCase @Inject constructor(
@@ -36,7 +37,7 @@ class GetSortedVideosUseCase @Inject constructor(
             preferencesRepository.applicationPreferences,
         ) { videoItems, preferences ->
             val visibleVideos = videoItems.filterNot { video ->
-                (!isRecycleBinOnly && preferences.isPathExcluded(video.parentPath)) ||
+                (!isRecycleBinOnly && preferences.isPathExcluded(StoragePath.of(video.parentPath))) ||
                     (!isRecycleBinOnly && preferences.isRecycleBinEnabled && video.isInRecycleBin)
             }
 

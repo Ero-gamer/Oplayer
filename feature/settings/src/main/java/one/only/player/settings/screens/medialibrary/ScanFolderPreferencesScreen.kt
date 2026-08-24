@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.model.ApplicationPreferences
+import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
 import one.only.player.core.ui.components.CardItemGap
 import one.only.player.core.ui.components.ClickablePreferenceItem
@@ -99,8 +100,8 @@ private fun ScanFolderPreferencesContent(
             itemsIndexed(scanFolders) { index, folderPath ->
                 PreferenceItem(
                     modifier = Modifier.testTag("item_settings_scan_folder_$index"),
-                    title = folderPath.substringAfterLast('/'),
-                    description = folderPath,
+                    title = folderPath.name,
+                    description = folderPath.value,
                     icon = AppIcons.Folder,
                     isEnabled = true,
                     trailingContent = {
@@ -141,8 +142,8 @@ private fun ScanFolderPreferencesScreenPreview() {
             uiState = ScanFolderPreferencesUiState(
                 preferences = ApplicationPreferences(
                     scanFolders = listOf(
-                        "/storage/emulated/0/Movies",
-                        "/storage/emulated/0/DCIM/Camera",
+                        StoragePath.of("/storage/emulated/0/Movies"),
+                        StoragePath.of("/storage/emulated/0/DCIM/Camera"),
                     ),
                 ),
             ),

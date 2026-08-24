@@ -17,6 +17,7 @@ import one.only.player.core.common.Logger
 import one.only.player.core.common.extensions.toPrivateLogSummary
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ApplicationPreferences
+import one.only.player.core.model.StoragePath
 
 @HiltViewModel
 class ScanFolderPreferencesViewModel @Inject constructor(
@@ -63,7 +64,7 @@ class ScanFolderPreferencesViewModel @Inject constructor(
         }
     }
 
-    private fun removeScanFolder(path: String) {
+    private fun removeScanFolder(path: StoragePath) {
         viewModelScope.launch {
             preferencesRepository.updateApplicationPreferences {
                 it.copy(scanFolders = it.scanFolders - path)
@@ -72,7 +73,7 @@ class ScanFolderPreferencesViewModel @Inject constructor(
     }
 
     // 仅支持系统外部存储 DocumentsProvider 的目录，其余来源无法映射到文件路径
-    private fun Uri.toFolderPathOrNull(): String? {
+    private fun Uri.toFolderPathOrNull(): StoragePath? {
         if (authority != EXTERNAL_STORAGE_DOCUMENTS_AUTHORITY) return null
 
         val documentId = runCatching { DocumentsContract.getTreeDocumentId(this) }.getOrNull() ?: return null
@@ -84,7 +85,7 @@ class ScanFolderPreferencesViewModel @Inject constructor(
             "/storage/$volumeId"
         }
         val folderPath = if (relativePath.isBlank()) rootPath else "$rootPath/$relativePath"
-        return folderPath.takeIf { File(it).isDirectory }
+        return folderPath.takeIf { File(it).isDirectory }?.let(StoragePath::of)
     }
 
     companion object {
@@ -100,5 +101,5 @@ data class ScanFolderPreferencesUiState(
 
 sealed interface ScanFolderPreferencesUiEvent {
     data class AddFolder(val treeUri: Uri) : ScanFolderPreferencesUiEvent
-    data class RemoveFolder(val path: String) : ScanFolderPreferencesUiEvent
+    data class RemoveFolder(val path: StoragePath) : ScanFolderPreferencesUiEvent
 }

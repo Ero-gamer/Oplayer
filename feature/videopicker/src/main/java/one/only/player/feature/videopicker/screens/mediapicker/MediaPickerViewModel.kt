@@ -38,6 +38,7 @@ import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Playlist
+import one.only.player.core.model.StoragePath
 import one.only.player.core.model.Video
 import one.only.player.core.ui.base.DataState
 import one.only.player.feature.videopicker.navigation.FolderArgs
@@ -500,9 +501,10 @@ class MediaPickerViewModel @Inject constructor(
     }
 
     private fun excludeFolders(paths: List<String>) {
+        val excludedPaths = paths.map(StoragePath::of)
         viewModelScope.launch {
             preferencesRepository.updateApplicationPreferences {
-                it.copy(excludeFolders = it.excludeFolders + paths.filter { path -> path !in it.excludeFolders })
+                it.copy(excludeFolders = it.excludeFolders + excludedPaths.filterNot { path -> path in it.excludeFolders })
             }
         }
     }

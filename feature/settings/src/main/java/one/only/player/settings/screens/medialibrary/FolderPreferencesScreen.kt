@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
 import one.only.player.core.ui.base.DataState
 import one.only.player.core.ui.components.CardItemGap
@@ -106,7 +107,7 @@ private fun FolderPreferencesContent(
                             modifier = Modifier.testTag("item_settings_folder_$index"),
                             title = folder.name,
                             description = folder.path,
-                            isSelected = folder.path in uiState.preferences.excludeFolders,
+                            isSelected = StoragePath.of(folder.path) in uiState.preferences.excludeFolders,
                             onClick = { onEvent(FolderPreferencesUiEvent.UpdateExcludeList(folder.path)) },
                         )
                     }

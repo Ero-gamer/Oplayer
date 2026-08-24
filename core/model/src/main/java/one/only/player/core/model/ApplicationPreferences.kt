@@ -20,8 +20,8 @@ data class ApplicationPreferences(
     val shouldRestoreLastPlayedMediaInFolders: Boolean = false,
     val shouldIgnoreNoMediaFiles: Boolean = false,
     val isRecycleBinEnabled: Boolean = false,
-    val excludeFolders: List<String> = emptyList(),
-    val scanFolders: List<String> = emptyList(),
+    val excludeFolders: List<StoragePath> = emptyList(),
+    val scanFolders: List<StoragePath> = emptyList(),
     val localFolderLastPlayedMediaUris: Map<String, String> = emptyMap(),
     val remoteFolderLastPlayedMediaPaths: Map<String, String> = emptyMap(),
     val mediaViewMode: MediaViewMode = MediaViewMode.FOLDERS,
@@ -42,27 +42,14 @@ data class ApplicationPreferences(
     val thumbnailGenerationStrategy: ThumbnailGenerationStrategy = ThumbnailGenerationStrategy.FRAME_AT_PERCENTAGE,
     val thumbnailFramePosition: Float = DEFAULT_THUMBNAIL_FRAME_POSITION,
     val shouldCheckForUpdatesOnStartup: Boolean = false,
-    val manualVideoPaths: List<String> = emptyList(),
-    val pendingExternalVideoPaths: List<String> = emptyList(),
+    val manualVideoPaths: List<StoragePath> = emptyList(),
+    val pendingExternalVideoPaths: List<StoragePath> = emptyList(),
 ) {
 
-    fun isPathExcluded(path: String): Boolean {
-        if (path.isBlank()) return false
-
-        return excludeFolders.any { excludedPath ->
-            path == excludedPath || path.startsWith("$excludedPath/")
-        }
-    }
+    fun isPathExcluded(path: StoragePath): Boolean = excludeFolders.any(path::isInside)
 
     // 扫描目录白名单为空时表示扫描全部存储
-    fun isPathInsideScanFolders(path: String): Boolean {
-        if (scanFolders.isEmpty()) return true
-        if (path.isBlank()) return false
-
-        return scanFolders.any { scanFolder ->
-            path == scanFolder || path.startsWith("$scanFolder/")
-        }
-    }
+    fun isPathInsideScanFolders(path: StoragePath): Boolean = scanFolders.isEmpty() || scanFolders.any(path::isInside)
 
     fun normalizedMediaLayoutScale(): Float = mediaLayoutScale
         .coerceIn(MIN_MEDIA_LAYOUT_SCALE, MAX_MEDIA_LAYOUT_SCALE)

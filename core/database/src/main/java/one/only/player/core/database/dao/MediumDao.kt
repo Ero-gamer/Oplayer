@@ -23,17 +23,18 @@ interface MediumDao {
     @Query("SELECT * FROM media WHERE uri = :uri")
     suspend fun get(uri: String): MediumEntity?
 
-    @Query("SELECT * FROM media WHERE path = :path LIMIT 1")
+    // 外部存储大小写不敏感，同一文件的不同写法必须命中同一行
+    @Query("SELECT * FROM media WHERE path = :path COLLATE NOCASE LIMIT 1")
     suspend fun getByPath(path: String): MediumEntity?
+
+    @Query("SELECT * FROM media WHERE path COLLATE NOCASE IN (:paths)")
+    suspend fun getAllByPaths(paths: List<String>): List<MediumEntity>
 
     @Query("SELECT * FROM media WHERE uri = :uri")
     fun getAsFlow(uri: String): Flow<MediumEntity?>
 
     @Query("SELECT * FROM media")
     fun getAll(): Flow<List<MediumEntity>>
-
-    @Query("SELECT * FROM media WHERE parent_path = :directoryPath")
-    fun getAllFromDirectory(directoryPath: String): Flow<List<MediumEntity>>
 
     @Transaction
     @Query("SELECT * FROM media WHERE uri = :uri")

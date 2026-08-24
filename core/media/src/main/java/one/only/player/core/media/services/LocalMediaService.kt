@@ -37,6 +37,7 @@ import one.only.player.core.common.extensions.getMediaFileContentUri
 import one.only.player.core.common.extensions.getPath
 import one.only.player.core.common.extensions.updateMedia
 import one.only.player.core.common.hasManageExternalStorageAccess
+import one.only.player.core.model.StoragePath
 
 @Singleton
 class LocalMediaService @Inject constructor(
@@ -208,10 +209,12 @@ class LocalMediaService @Inject constructor(
         val targetFolder = File(targetFolderPath)
         if (!folder.exists() || !folder.isDirectory) return@withContext MediaFolderMoveResult()
         if (!targetFolder.exists() || !targetFolder.isDirectory) return@withContext MediaFolderMoveResult()
-        if (folder.parentFile?.canonicalPath == targetFolder.canonicalPath) return@withContext MediaFolderMoveResult()
-        if (targetFolder.canonicalPath.startsWith(folder.canonicalPath + File.separator)) {
-            return@withContext MediaFolderMoveResult()
-        }
+
+        val folderStoragePath = StoragePath.of(folder.canonicalPath)
+        val targetStoragePath = StoragePath.of(targetFolder.canonicalPath)
+        if (folder.parentFile?.canonicalPath?.let(StoragePath::of) == targetStoragePath) return@withContext MediaFolderMoveResult()
+        // 目标是自身或自身子目录时移动会自我嵌套
+        if (targetStoragePath.isInside(folderStoragePath)) return@withContext MediaFolderMoveResult()
 
         val originalFiles = folder.walkTopDown()
             .filter(File::isFile)

@@ -11,6 +11,7 @@ import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.Folder
 import one.only.player.core.model.Sort
+import one.only.player.core.model.StoragePath
 
 class GetSortedFoldersUseCase @Inject constructor(
     private val mediaRepository: MediaRepository,
@@ -23,7 +24,7 @@ class GetSortedFoldersUseCase @Inject constructor(
         preferencesRepository.applicationPreferences,
     ) { folders, preferences ->
         val visibleDirectories = folders.mapNotNull { folder ->
-            if (preferences.isPathExcluded(folder.path)) {
+            if (preferences.isPathExcluded(StoragePath.of(folder.path))) {
                 return@mapNotNull null
             }
 

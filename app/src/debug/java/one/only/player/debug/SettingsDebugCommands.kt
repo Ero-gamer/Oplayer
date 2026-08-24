@@ -19,6 +19,7 @@ import one.only.player.core.model.PlayerControlsArrangement
 import one.only.player.core.model.PlayerPreferences
 import one.only.player.core.model.Resume
 import one.only.player.core.model.ScreenOrientation
+import one.only.player.core.model.StoragePath
 import one.only.player.core.model.SubtitleColor
 import one.only.player.core.model.SubtitleEdgeStyle
 import one.only.player.core.model.ThemeConfig
@@ -110,7 +111,7 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
             preferences.copy(isRecycleBinEnabled = isEnabled)
         }
         "media.exclude_folder" -> {
-            val path = value.requiredString(EXTRA_VALUE)
+            val path = StoragePath.of(value.requiredString(EXTRA_VALUE))
             val isEnabled = value.getBoolean(EXTRA_ENABLED, true)
             preferencesRepository().updateApplicationPreferences {
                 val updatedFolders = if (isEnabled) {

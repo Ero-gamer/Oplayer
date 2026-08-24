@@ -13,6 +13,7 @@ import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
+import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.base.DataState
 
 @HiltViewModel
@@ -53,13 +54,14 @@ class FolderPreferencesViewModel @Inject constructor(
     }
 
     private fun updateExcludeList(path: String) {
+        val excludedPath = StoragePath.of(path)
         viewModelScope.launch {
             preferencesRepository.updateApplicationPreferences {
                 it.copy(
-                    excludeFolders = if (path in it.excludeFolders) {
-                        it.excludeFolders - path
+                    excludeFolders = if (excludedPath in it.excludeFolders) {
+                        it.excludeFolders - excludedPath
                     } else {
-                        it.excludeFolders + path
+                        it.excludeFolders + excludedPath
                     },
                 )
             }

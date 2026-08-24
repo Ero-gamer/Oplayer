@@ -41,7 +41,6 @@ import one.only.player.core.common.Logger
 import one.only.player.core.common.di.ApplicationScope
 import one.only.player.core.common.extensions.VIDEO_COLLECTION_URI
 import one.only.player.core.common.extensions.canonicalPathOrSelf
-import one.only.player.core.common.extensions.excludeNoMediaPaths
 import one.only.player.core.common.extensions.getMediaFileContentUri
 import one.only.player.core.common.extensions.getStorageVolumes
 import one.only.player.core.common.extensions.isInsideNoMediaDirectory
@@ -57,26 +56,26 @@ import one.only.player.core.database.entities.DirectoryEntity
 import one.only.player.core.database.entities.MediumEntity
 import one.only.player.core.database.entities.MediumStateEntity
 import one.only.player.core.datastore.datasource.AppPreferencesDataSource
+import one.only.player.core.media.extensions.excludeNoMediaPaths
 import one.only.player.core.media.model.MediaVideo
+import one.only.player.core.model.StoragePath
 
 private val EXCLUDED_DIRECTORY_NAMES = setOf(".globalTrash", "MIUI")
 private const val TARGETED_REFRESH_AUTOMATIC_SYNC_SUPPRESS_MILLIS = 8_000L
 
-private fun String.isInsideExcludedSystemDirectory(): Boolean = replace('\\', '/').split('/').any { it in EXCLUDED_DIRECTORY_NAMES }
+private val MediaVideo.storagePath: StoragePath get() = StoragePath.of(data.canonicalPathOrSelf())
+
+private val MediumEntity.storagePath: StoragePath get() = StoragePath.of(path.canonicalPathOrSelf())
+
+private fun StoragePath.isInsideExcludedSystemDirectory(): Boolean = value.split(StoragePath.SEPARATOR).any { it in EXCLUDED_DIRECTORY_NAMES }
 
 // 扫描目录白名单为空时表示扫描全部存储
-private fun String.isInsideScanFolders(scanFolderPaths: List<String>): Boolean {
-    if (scanFolderPaths.isEmpty()) return true
-
-    return scanFolderPaths.any { scanFolder ->
-        this == scanFolder || startsWith("$scanFolder/")
-    }
-}
+private fun StoragePath.isInsideScanFolders(scanFolderPaths: List<StoragePath>): Boolean = scanFolderPaths.isEmpty() || scanFolderPaths.any { scanFolder -> isInside(scanFolder) }
 
 private data class AutomaticMediaSyncSettings(
-    val manualVideoPaths: Set<String>,
+    val manualVideoPaths: Set<StoragePath>,
     val shouldIgnoreNoMediaFiles: Boolean,
-    val scanFolderPaths: List<String>,
+    val scanFolderPaths: List<StoragePath>,
 )
 
 class LocalMediaSynchronizer @Inject constructor(
@@ -108,12 +107,11 @@ class LocalMediaSynchronizer @Inject constructor(
                 context.scanPaths(listOf(path))
             } else {
                 mergePendingManualVideoPaths()
-                pruneHiddenManualVideoPaths()
-                normalizeManualVideoPaths()
+                pruneStaleManualVideoPaths()
                 val additionalScanTargets = buildRefreshScanTargets()
                 if (additionalScanTargets.isNotEmpty()) {
                     registerUnindexedPaths(additionalScanTargets)
-                    scanPathsAsync(additionalScanTargets)
+                    scanPathsAsync(additionalScanTargets.map(StoragePath::value))
                 }
                 true
             }
@@ -144,16 +142,16 @@ class LocalMediaSynchronizer @Inject constructor(
     override suspend fun registerManualVideoPath(path: String) {
         if (path.isBlank()) return
 
-        val canonicalPath = path.canonicalPathOrSelf().toRealCasePath()
+        val storagePath = StoragePath.of(path.canonicalPathOrSelf().toRealCasePath())
         val preferences = appPreferencesDataSource.preferences.first()
-        if (!preferences.shouldIgnoreNoMediaFiles && File(canonicalPath).isInsideNoMediaDirectory()) {
-            Logger.info(TAG, "registerManualVideoPath skippedHiddenPath=${canonicalPath.toPrivateLogSummary()}")
+        if (!preferences.shouldIgnoreNoMediaFiles && storagePath.value.isInsideNoMediaDirectory()) {
+            Logger.info(TAG, "registerManualVideoPath skippedHiddenPath=${storagePath.value.toPrivateLogSummary()}")
             return
         }
 
-        Logger.info(TAG, "registerManualVideoPath path=${canonicalPath.toPrivateLogSummary()}")
+        Logger.info(TAG, "registerManualVideoPath path=${storagePath.value.toPrivateLogSummary()}")
         appPreferencesDataSource.update { currentPreferences ->
-            val pendingPaths = currentPreferences.pendingExternalVideoPaths + canonicalPath
+            val pendingPaths = listOf(storagePath) + currentPreferences.pendingExternalVideoPaths
             currentPreferences.copy(
                 pendingExternalVideoPaths = pendingPaths.distinct(),
             )
@@ -161,11 +159,12 @@ class LocalMediaSynchronizer @Inject constructor(
     }
 
     // 将文件系统发现但 MediaStore 未收录的路径持久化，确保同步时能兜底
-    private suspend fun registerUnindexedPaths(paths: List<String>) {
+    private suspend fun registerUnindexedPaths(paths: List<StoragePath>) {
         if (paths.isEmpty()) return
         Logger.info(TAG, "registerUnindexedPaths count=${paths.size}")
         appPreferencesDataSource.update {
-            it.copy(manualVideoPaths = (it.manualVideoPaths + paths).distinct())
+            // 可信写法放前面，distinct 保留首个即可替换历史脏写法
+            it.copy(manualVideoPaths = (paths + it.manualVideoPaths).distinct())
         }
     }
 
@@ -184,42 +183,33 @@ class LocalMediaSynchronizer @Inject constructor(
                 it.pendingExternalVideoPaths.excludeNoMediaPaths()
             }
             it.copy(
-                manualVideoPaths = (it.manualVideoPaths + pendingManualPaths).distinct(),
+                manualVideoPaths = (pendingManualPaths + it.manualVideoPaths).distinct(),
                 pendingExternalVideoPaths = emptyList(),
             )
         }
     }
 
-    // 历史数据可能存了非真实大小写的路径，按 MediaStore 的权威写法规范化，避免同一文件重复入库
-    private suspend fun normalizeManualVideoPaths() {
-        val manualVideoPaths = appPreferencesDataSource.preferences.first().manualVideoPaths
+    private suspend fun pruneStaleManualVideoPaths() {
+        val preferences = appPreferencesDataSource.preferences.first()
+        val manualVideoPaths = preferences.manualVideoPaths
         if (manualVideoPaths.isEmpty()) return
 
-        val realCaseByKey = getMediaVideo(selection = null, selectionArgs = null, sortOrder = null)
-            .associate { mediaVideo -> mediaVideo.data.lowercase() to mediaVideo.data }
-        val normalizedPaths = manualVideoPaths
-            .map { path -> realCaseByKey[path.lowercase()] ?: path }
-            .distinct()
-        if (normalizedPaths == manualVideoPaths) return
-
-        Logger.info(TAG, "normalizeManualVideoPaths before=${manualVideoPaths.size} after=${normalizedPaths.size}")
-        appPreferencesDataSource.update { it.copy(manualVideoPaths = normalizedPaths) }
-    }
-
-    private suspend fun pruneHiddenManualVideoPaths() {
-        val preferences = appPreferencesDataSource.preferences.first()
-        if (preferences.shouldIgnoreNoMediaFiles) return
-
-        val visibleManualPaths = preferences.manualVideoPaths.excludeNoMediaPaths()
-        if (visibleManualPaths.size == preferences.manualVideoPaths.size) return
-
-        Logger.info(
-            TAG,
-            "pruneHiddenManualVideoPaths removed=${preferences.manualVideoPaths.size - visibleManualPaths.size}",
-        )
-        appPreferencesDataSource.update {
-            it.copy(manualVideoPaths = visibleManualPaths)
+        // 存储卷不可用时路径会整批读不到，只在根目录仍在的卷上判断存在性
+        val availableRoots = if (hasManageExternalStorageAccess()) {
+            context.getStorageVolumes().filter(File::exists).map { StoragePath.of(it.path) }
+        } else {
+            emptyList()
         }
+
+        val survivingPaths = manualVideoPaths.filter { path ->
+            val isHidden = !preferences.shouldIgnoreNoMediaFiles && path.value.isInsideNoMediaDirectory()
+            val isMissing = availableRoots.any { root -> path.isInside(root) } && !File(path.value).exists()
+            !isHidden && !isMissing
+        }
+        if (survivingPaths.size == manualVideoPaths.size) return
+
+        Logger.info(TAG, "pruneStaleManualVideoPaths removed=${manualVideoPaths.size - survivingPaths.size}")
+        appPreferencesDataSource.update { it.copy(manualVideoPaths = survivingPaths) }
     }
 
     override fun startSync() {
@@ -368,8 +358,8 @@ class LocalMediaSynchronizer @Inject constructor(
             return@withContext
         }
 
-        val scanFolderPaths = appPreferencesDataSource.preferences.first().scanFolders
-        if (!canonicalPath.isInsideScanFolders(scanFolderPaths)) {
+        val preferences = appPreferencesDataSource.preferences.first()
+        if (!preferences.isPathInsideScanFolders(StoragePath.of(canonicalPath))) {
             val didDelete = deletePathMedia(canonicalPath)
             Logger.debug(
                 TAG,
@@ -417,11 +407,11 @@ class LocalMediaSynchronizer @Inject constructor(
             selectionArgs = arrayOf("$directoryPrefix%"),
             sortOrder = null,
         )
-        val scanFolderPaths = appPreferencesDataSource.preferences.first().scanFolders
-        val indexedPaths = mediaStoreVideos.map { mediaVideo -> mediaVideo.data.canonicalPathOrSelf() }.toSet()
+        val preferences = appPreferencesDataSource.preferences.first()
+        val indexedPaths = mediaStoreVideos.map(MediaVideo::storagePath).toSet()
         val unindexedPaths = if (hasManageExternalStorageAccess()) {
             directory.collectVisibleUnindexedVideoPaths(indexedPaths)
-                .filter { path -> path.canonicalPathOrSelf().isInsideScanFolders(scanFolderPaths) }
+                .filter { path -> preferences.isPathInsideScanFolders(path) }
         } else {
             emptyList()
         }
@@ -429,21 +419,22 @@ class LocalMediaSynchronizer @Inject constructor(
 
         val manualVideos = unindexedPaths
             .asSequence()
-            .map(::File)
+            .map { path -> File(path.value) }
             .filter(File::exists)
             .filter { it.isVisibleVideoFile() }
             .map { it.toBasicMediaVideo() }
             .toList()
         val media = (mediaStoreVideos + manualVideos)
-            .distinctBy { mediaVideo -> mediaVideo.data.canonicalPathOrSelf() }
-            .filter { mediaVideo -> mediaVideo.data.canonicalPathOrSelf().isInsideScanFolders(scanFolderPaths) }
+            .distinctBy(MediaVideo::storagePath)
+            .filter { mediaVideo -> preferences.isPathInsideScanFolders(mediaVideo.storagePath) }
 
         val existingMedia = mediumDao.getAll().first()
         val existingMediaByUri = existingMedia.associateBy(MediumEntity::uriString)
-        val mediaPaths = media.map { mediaVideo -> mediaVideo.data.canonicalPathOrSelf() }.toSet()
+        val mediaPaths = media.map(MediaVideo::storagePath).toSet()
+        val directoryStoragePath = StoragePath.of(directoryPath)
         val removableUris = existingMedia
-            .filter { medium -> medium.path.canonicalPathOrSelf().startsWith(directoryPrefix) }
-            .filter { medium -> medium.path.canonicalPathOrSelf() !in mediaPaths }
+            .filter { medium -> medium.storagePath.isInside(directoryStoragePath) }
+            .filter { medium -> medium.storagePath !in mediaPaths }
             .filterNot { medium -> mediumStateDao.get(medium.uriString)?.isInRecycleBin == true }
             .map(MediumEntity::uriString)
 
@@ -502,7 +493,7 @@ class LocalMediaSynchronizer @Inject constructor(
         var currentDirectory = File(File.separator)
         val realSegments = split(File.separatorChar).filter(String::isNotEmpty).map { segment ->
             val realSegment = runCatching { currentDirectory.list() }.getOrNull()
-                ?.firstOrNull { it.equals(segment, ignoreCase = true) }
+                ?.firstOrNull { entry -> StoragePath.namesEqual(entry, segment) }
                 ?: segment
             currentDirectory = File(currentDirectory, realSegment)
             realSegment
@@ -551,8 +542,8 @@ class LocalMediaSynchronizer @Inject constructor(
             return
         }
 
-        val scanFolderPaths = appPreferencesDataSource.preferences.first().scanFolders
-        if (!mediaVideo.data.canonicalPathOrSelf().isInsideScanFolders(scanFolderPaths)) {
+        val preferences = appPreferencesDataSource.preferences.first()
+        if (!preferences.isPathInsideScanFolders(mediaVideo.storagePath)) {
             val didDelete = deleteMediaStoreItem(mediaVideo.uri)
             if (didDelete) {
                 pruneEmptyDirectories()
@@ -591,13 +582,13 @@ class LocalMediaSynchronizer @Inject constructor(
 
     private suspend fun mergeVisibleMedia(
         mediaStoreVideos: List<MediaVideo>,
-        manuallyDiscoveredPaths: Set<String>,
+        manuallyDiscoveredPaths: Set<StoragePath>,
         shouldIgnoreNoMediaFiles: Boolean,
-        scanFolderPaths: List<String>,
+        scanFolderPaths: List<StoragePath>,
     ): List<MediaVideo> = withContext(dispatcher) {
         val hasAllFilesAccess = hasManageExternalStorageAccess()
         val scopedMediaStoreVideos = mediaStoreVideos.filter { mediaVideo ->
-            mediaVideo.data.canonicalPathOrSelf().isInsideScanFolders(scanFolderPaths)
+            mediaVideo.storagePath.isInsideScanFolders(scanFolderPaths)
         }
         val baseManualPaths = if (shouldIgnoreNoMediaFiles) {
             manuallyDiscoveredPaths
@@ -605,8 +596,8 @@ class LocalMediaSynchronizer @Inject constructor(
             manuallyDiscoveredPaths.excludeNoMediaPaths().toSet()
         }
         val effectiveManualPaths = baseManualPaths
-            .filterNot(String::isInsideExcludedSystemDirectory)
-            .filter { path -> path.canonicalPathOrSelf().isInsideScanFolders(scanFolderPaths) }
+            .filterNot(StoragePath::isInsideExcludedSystemDirectory)
+            .filter { path -> path.isInsideScanFolders(scanFolderPaths) }
             .toSet()
         if (effectiveManualPaths.isNotEmpty()) {
             Logger.info(TAG, "mergeVisibleMedia manualPaths=${effectiveManualPaths.size}")
@@ -614,7 +605,7 @@ class LocalMediaSynchronizer @Inject constructor(
         val manuallyDiscoveredVideos = if (hasAllFilesAccess) {
             effectiveManualPaths
                 .asSequence()
-                .map(::File)
+                .map { path -> File(path.value) }
                 .filter(File::exists)
                 .filter { it.isVisibleVideoFile() }
                 .map { it.toBasicMediaVideo() }
@@ -633,7 +624,7 @@ class LocalMediaSynchronizer @Inject constructor(
         )
         if (!shouldIgnoreNoMediaFiles || !hasAllFilesAccess) {
             return@withContext combinedVisibleMedia
-                .distinctBy { mediaVideo -> mediaVideo.data.canonicalPathOrSelf() }
+                .distinctBy(MediaVideo::storagePath)
                 .sortedBy(MediaVideo::data)
         }
 
@@ -642,34 +633,32 @@ class LocalMediaSynchronizer @Inject constructor(
         }
         if (noMediaVideos.isEmpty()) {
             return@withContext combinedVisibleMedia
-                .distinctBy(MediaVideo::data)
+                .distinctBy(MediaVideo::storagePath)
                 .sortedBy(MediaVideo::data)
         }
 
         Logger.info(TAG, "Found ${noMediaVideos.size} videos inside .nomedia directories")
         return@withContext (combinedVisibleMedia + noMediaVideos)
-            .distinctBy { mediaVideo -> mediaVideo.data.canonicalPathOrSelf() }
+            .distinctBy(MediaVideo::storagePath)
             .sortedBy(MediaVideo::data)
     }
 
     // 白名单为空时扫描全部存储卷，否则仅扫描白名单目录
-    private fun collectScanRoots(scanFolderPaths: List<String>): List<File> = if (scanFolderPaths.isEmpty()) {
+    private fun collectScanRoots(scanFolderPaths: List<StoragePath>): List<File> = if (scanFolderPaths.isEmpty()) {
         context.getStorageVolumes()
     } else {
-        scanFolderPaths.map(::File).filter(File::exists)
+        scanFolderPaths.map { path -> File(path.value) }.filter(File::exists)
     }
 
-    private suspend fun buildRefreshScanTargets(): List<String> {
+    private suspend fun buildRefreshScanTargets(): List<StoragePath> {
         if (!hasManageExternalStorageAccess()) return emptyList()
 
-        // MediaStore 的 DATA 是 COLLATE NOCASE，判断是否已收录必须与之一致，否则同一文件会按两种大小写重复入库
-        val indexedPathKeys = getMediaVideo(selection = null, selectionArgs = null, sortOrder = null)
-            .map { it.data.lowercase() }
-            .toHashSet()
-
+        val indexedPaths = getMediaVideo(selection = null, selectionArgs = null, sortOrder = null)
+            .map(MediaVideo::storagePath)
+            .toSet()
         val scanFolderPaths = appPreferencesDataSource.preferences.first().scanFolders
         val targets = collectScanRoots(scanFolderPaths).flatMap { root ->
-            root.collectVisibleUnindexedVideoPaths(indexedPathKeys)
+            root.collectVisibleUnindexedVideoPaths(indexedPaths)
         }.distinct()
 
         if (targets.isNotEmpty()) {
@@ -683,12 +672,12 @@ class LocalMediaSynchronizer @Inject constructor(
         val directories = buildDirectoryEntities(media)
         directoryDao.upsertAll(directories)
 
-        val currentDirectoryPaths = directories.map { it.path }.toSet()
-        val unwantedDirectories = directoryDao.getAll().first()
-            .filterNot { it.path in currentDirectoryPaths }
-        val unwantedDirectoriesPaths = unwantedDirectories.map { it.path }
+        val currentDirectoryPaths = directories.map { directory -> StoragePath.of(directory.path) }.toSet()
+        val unwantedPaths = directoryDao.getAll().first()
+            .filterNot { directory -> StoragePath.of(directory.path) in currentDirectoryPaths }
+            .map(DirectoryEntity::path)
 
-        directoryDao.delete(unwantedDirectoriesPaths)
+        directoryDao.delete(unwantedPaths)
         Logger.debug(TAG, "updateDirectories media=${media.size} directories=${directories.size} elapsed=${System.currentTimeMillis() - startTime}ms")
     }
 
@@ -696,22 +685,26 @@ class LocalMediaSynchronizer @Inject constructor(
         if (media.isEmpty()) return emptyList()
 
         val storageVolumes = context.getStorageVolumes()
-        val volumePaths = storageVolumes.map { it.path }.toSet()
-        val directoryPaths = linkedSetOf<String>()
+        val volumePaths = storageVolumes.map { StoragePath.of(it.path) }.toSet()
+
+        // 键按大小写归一去重，值保留首次出现的真实写法
+        val directoryPaths = LinkedHashMap<StoragePath, String>()
 
         media.forEach { mediaVideo ->
             var currentPath = File(mediaVideo.data).parent ?: return@forEach
-            while (currentPath != File.separator && directoryPaths.add(currentPath)) {
-                if (currentPath in volumePaths) break
+            while (currentPath != File.separator) {
+                val directoryPath = StoragePath.of(currentPath)
+                if (directoryPaths.putIfAbsent(directoryPath, currentPath) != null) break
+                if (directoryPath in volumePaths) break
                 currentPath = File(currentPath).parent ?: break
             }
         }
 
-        return directoryPaths.map { path ->
-            val directory = File(path)
-            val parentPath = directory.parent?.takeIf { it in directoryPaths } ?: "/"
+        return directoryPaths.map { (_, realPath) ->
+            val directory = File(realPath)
+            val parentPath = directory.parent?.let { parent -> directoryPaths[StoragePath.of(parent)] } ?: "/"
             DirectoryEntity(
-                path = path,
+                path = realPath,
                 name = directory.prettyName,
                 modified = directory.lastModified(),
                 parentPath = parentPath,
@@ -720,21 +713,17 @@ class LocalMediaSynchronizer @Inject constructor(
     }
 
     private suspend fun pruneEmptyDirectories() {
-        val parentPaths = mediumDao.getAll().first().map(MediumEntity::parentPath)
+        val parentPaths = mediumDao.getAll().first().map { medium -> StoragePath.of(medium.parentPath) }.toSet()
         val unusedPaths = directoryDao.getAll().first()
             .filter { directory ->
-                parentPaths.none { parentPath -> parentPath.isInsideDirectory(directory.path) }
+                val directoryPath = StoragePath.of(directory.path)
+                parentPaths.none { parentPath -> parentPath.isInside(directoryPath) }
             }
             .map(DirectoryEntity::path)
         if (unusedPaths.isEmpty()) return
 
         directoryDao.delete(unusedPaths)
         Logger.debug(TAG, "pruneEmptyDirectories removed=${unusedPaths.size}")
-    }
-
-    private fun String.isInsideDirectory(directoryPath: String): Boolean {
-        val normalizedDirectoryPath = directoryPath.trimEnd(File.separatorChar)
-        return this == normalizedDirectoryPath || startsWith("$normalizedDirectoryPath${File.separator}")
     }
 
     private fun buildMediumEntity(
@@ -962,7 +951,7 @@ class LocalMediaSynchronizer @Inject constructor(
         return currentDirectoryVideos + nestedVideos
     }
 
-    private fun File.collectVisibleUnindexedVideoPaths(indexedPathKeys: Set<String>): List<String> {
+    private fun File.collectVisibleUnindexedVideoPaths(indexedPaths: Set<StoragePath>): List<StoragePath> {
         if (!exists() || !isDirectory) return emptyList()
         if (name.equals("Android", ignoreCase = true)) return emptyList()
         if (name in EXCLUDED_DIRECTORY_NAMES) return emptyList()
@@ -975,11 +964,12 @@ class LocalMediaSynchronizer @Inject constructor(
         if (hasNoMedia) return emptyList()
 
         val currentPaths = children
-            .filter { it.isVisibleVideoFile() && it.path.lowercase() !in indexedPathKeys }
-            .map { it.path }
+            .filter { it.isVisibleVideoFile() }
+            .map { child -> StoragePath.of(child.path) }
+            .filterNot { path -> path in indexedPaths }
         val nestedPaths = children
             .filter(File::isDirectory)
-            .flatMap { directory -> directory.collectVisibleUnindexedVideoPaths(indexedPathKeys) }
+            .flatMap { directory -> directory.collectVisibleUnindexedVideoPaths(indexedPaths) }
 
         return currentPaths + nestedPaths
     }

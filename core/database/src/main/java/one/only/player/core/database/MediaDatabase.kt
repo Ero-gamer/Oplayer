@@ -37,7 +37,7 @@ import one.only.player.core.database.entities.VideoStreamInfoEntity
         PlaylistEntity::class,
         PlaylistItemEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = true,
 )
 abstract class MediaDatabase : RoomDatabase() {
@@ -332,6 +332,38 @@ abstract class MediaDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_playlist_item_playlist_id` ON `playlist_item` (`playlist_id`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_playlist_item_media_uri` ON `playlist_item` (`media_uri`)")
+            }
+        }
+
+        // 目录路径列改用 NOCASE 比较，主键唯一性随之对大小写不敏感
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 仅大小写不同的旧目录行在新主键下会冲突，保留最早的一条；目录是派生数据，刷新会补全
+                db.execSQL(
+                    """
+                    DELETE FROM `directories` WHERE rowid NOT IN (
+                        SELECT MIN(rowid) FROM `directories` GROUP BY `path` COLLATE NOCASE
+                    )
+                    """,
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `directories_new` (
+                        `path` TEXT NOT NULL COLLATE NOCASE,
+                        `filename` TEXT NOT NULL,
+                        `last_modified` INTEGER NOT NULL,
+                        `parent_path` TEXT COLLATE NOCASE,
+                        PRIMARY KEY(`path`)
+                    )
+                    """,
+                )
+                db.execSQL(
+                    "INSERT INTO `directories_new` (`path`, `filename`, `last_modified`, `parent_path`) " +
+                        "SELECT `path`, `filename`, `last_modified`, `parent_path` FROM `directories`",
+                )
+                db.execSQL("DROP TABLE `directories`")
+                db.execSQL("ALTER TABLE `directories_new` RENAME TO `directories`")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_directories_parent_path` ON `directories` (`parent_path`)")
             }
         }
     }

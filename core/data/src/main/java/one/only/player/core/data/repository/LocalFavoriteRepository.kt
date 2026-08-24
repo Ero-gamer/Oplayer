@@ -12,6 +12,7 @@ import one.only.player.core.database.entities.FavoriteItemEntity
 import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
 import one.only.player.core.model.ServerProtocol
+import one.only.player.core.model.StoragePath
 
 class LocalFavoriteRepository @Inject constructor(
     private val dao: FavoriteItemDao,
@@ -124,12 +125,11 @@ class LocalFavoriteRepository @Inject constructor(
         oldPath: String,
         newPath: String,
     ) {
-        val oldCanonicalPath = oldPath.canonicalPathOrSelf()
+        val oldStoragePath = StoragePath.of(oldPath.canonicalPathOrSelf())
         val targets = dao.getByTargetType(FavoriteTargetType.LOCAL_FOLDER.name)
             .filter { entity ->
                 val localPath = entity.localPath ?: entity.targetKey.removePrefix(LOCAL_FOLDER_TARGET_PREFIX)
-                val canonicalPath = localPath.canonicalPathOrSelf()
-                canonicalPath == oldCanonicalPath || canonicalPath.startsWith(oldCanonicalPath + File.separator)
+                StoragePath.of(localPath.canonicalPathOrSelf()).isInside(oldStoragePath)
             }
         targets.forEach { current ->
             val currentPath = current.localPath ?: current.targetKey.removePrefix(LOCAL_FOLDER_TARGET_PREFIX)
@@ -203,9 +203,10 @@ class LocalFavoriteRepository @Inject constructor(
         oldPath: String,
         newPath: String,
     ): String {
-        val canonicalPath = canonicalPathOrSelf()
-        val oldCanonicalPath = oldPath.canonicalPathOrSelf()
-        val relativePath = canonicalPath.removePrefix(oldCanonicalPath).trimStart(File.separatorChar)
+        // 大小写归一不改变长度，按前缀长度截取即可保留原路径的真实写法
+        val canonicalPath = StoragePath.of(canonicalPathOrSelf())
+        val oldPrefixLength = StoragePath.of(oldPath.canonicalPathOrSelf()).value.length
+        val relativePath = canonicalPath.value.drop(oldPrefixLength).trimStart(StoragePath.SEPARATOR)
         if (relativePath.isBlank()) return newPath
         return File(newPath, relativePath).path
     }
