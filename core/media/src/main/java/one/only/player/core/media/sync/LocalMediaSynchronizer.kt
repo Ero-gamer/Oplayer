@@ -109,6 +109,7 @@ class LocalMediaSynchronizer @Inject constructor(
             } else {
                 mergePendingManualVideoPaths()
                 pruneHiddenManualVideoPaths()
+                normalizeManualVideoPaths()
                 val additionalScanTargets = buildRefreshScanTargets()
                 if (additionalScanTargets.isNotEmpty()) {
                     registerUnindexedPaths(additionalScanTargets)
@@ -143,7 +144,7 @@ class LocalMediaSynchronizer @Inject constructor(
     override suspend fun registerManualVideoPath(path: String) {
         if (path.isBlank()) return
 
-        val canonicalPath = path.canonicalPathOrSelf()
+        val canonicalPath = path.canonicalPathOrSelf().toRealCasePath()
         val preferences = appPreferencesDataSource.preferences.first()
         if (!preferences.shouldIgnoreNoMediaFiles && File(canonicalPath).isInsideNoMediaDirectory()) {
             Logger.info(TAG, "registerManualVideoPath skippedHiddenPath=${canonicalPath.toPrivateLogSummary()}")
@@ -187,6 +188,22 @@ class LocalMediaSynchronizer @Inject constructor(
                 pendingExternalVideoPaths = emptyList(),
             )
         }
+    }
+
+    // 历史数据可能存了非真实大小写的路径，按 MediaStore 的权威写法规范化，避免同一文件重复入库
+    private suspend fun normalizeManualVideoPaths() {
+        val manualVideoPaths = appPreferencesDataSource.preferences.first().manualVideoPaths
+        if (manualVideoPaths.isEmpty()) return
+
+        val realCaseByKey = getMediaVideo(selection = null, selectionArgs = null, sortOrder = null)
+            .associate { mediaVideo -> mediaVideo.data.lowercase() to mediaVideo.data }
+        val normalizedPaths = manualVideoPaths
+            .map { path -> realCaseByKey[path.lowercase()] ?: path }
+            .distinct()
+        if (normalizedPaths == manualVideoPaths) return
+
+        Logger.info(TAG, "normalizeManualVideoPaths before=${manualVideoPaths.size} after=${normalizedPaths.size}")
+        appPreferencesDataSource.update { it.copy(manualVideoPaths = normalizedPaths) }
     }
 
     private suspend fun pruneHiddenManualVideoPaths() {
@@ -467,6 +484,32 @@ class LocalMediaSynchronizer @Inject constructor(
         return file.toBasicMediaVideo()
     }
 
+    // 调用方给的大小写不可信，canonicalPath 只解符号链接不纠正大小写，需要还原文件系统真实写法
+    private fun String.toRealCasePath(): String {
+        // MediaStore 的 DATA 是 COLLATE NOCASE 且保存真实大小写，命中即可直接采用
+        val indexedPath = getMediaVideo(
+            selection = "${MediaStore.Video.Media.DATA} = ?",
+            selectionArgs = arrayOf(this),
+            sortOrder = null,
+        ).firstOrNull()?.data
+        if (indexedPath != null) return indexedPath
+
+        return resolveRealCaseFromFileSystem()
+    }
+
+    // MediaStore 未收录时逐级比对真实目录项，找不到的层级保持原样
+    private fun String.resolveRealCaseFromFileSystem(): String {
+        var currentDirectory = File(File.separator)
+        val realSegments = split(File.separatorChar).filter(String::isNotEmpty).map { segment ->
+            val realSegment = runCatching { currentDirectory.list() }.getOrNull()
+                ?.firstOrNull { it.equals(segment, ignoreCase = true) }
+                ?: segment
+            currentDirectory = File(currentDirectory, realSegment)
+            realSegment
+        }
+        return File.separator + realSegments.joinToString(File.separator)
+    }
+
     private suspend fun deletePathMedia(path: String): Boolean {
         val medium = mediumDao.getByPath(path) ?: return false
         return deleteMedium(medium)
@@ -619,13 +662,14 @@ class LocalMediaSynchronizer @Inject constructor(
     private suspend fun buildRefreshScanTargets(): List<String> {
         if (!hasManageExternalStorageAccess()) return emptyList()
 
-        val indexedPaths = getMediaVideo(selection = null, selectionArgs = null, sortOrder = null)
-            .map { it.data }
+        // MediaStore 的 DATA 是 COLLATE NOCASE，判断是否已收录必须与之一致，否则同一文件会按两种大小写重复入库
+        val indexedPathKeys = getMediaVideo(selection = null, selectionArgs = null, sortOrder = null)
+            .map { it.data.lowercase() }
             .toHashSet()
 
         val scanFolderPaths = appPreferencesDataSource.preferences.first().scanFolders
         val targets = collectScanRoots(scanFolderPaths).flatMap { root ->
-            root.collectVisibleUnindexedVideoPaths(indexedPaths)
+            root.collectVisibleUnindexedVideoPaths(indexedPathKeys)
         }.distinct()
 
         if (targets.isNotEmpty()) {
@@ -918,7 +962,7 @@ class LocalMediaSynchronizer @Inject constructor(
         return currentDirectoryVideos + nestedVideos
     }
 
-    private fun File.collectVisibleUnindexedVideoPaths(indexedPaths: Set<String>): List<String> {
+    private fun File.collectVisibleUnindexedVideoPaths(indexedPathKeys: Set<String>): List<String> {
         if (!exists() || !isDirectory) return emptyList()
         if (name.equals("Android", ignoreCase = true)) return emptyList()
         if (name in EXCLUDED_DIRECTORY_NAMES) return emptyList()
@@ -931,11 +975,11 @@ class LocalMediaSynchronizer @Inject constructor(
         if (hasNoMedia) return emptyList()
 
         val currentPaths = children
-            .filter { it.isVisibleVideoFile() && it.path !in indexedPaths }
+            .filter { it.isVisibleVideoFile() && it.path.lowercase() !in indexedPathKeys }
             .map { it.path }
         val nestedPaths = children
             .filter(File::isDirectory)
-            .flatMap { directory -> directory.collectVisibleUnindexedVideoPaths(indexedPaths) }
+            .flatMap { directory -> directory.collectVisibleUnindexedVideoPaths(indexedPathKeys) }
 
         return currentPaths + nestedPaths
     }
