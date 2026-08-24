@@ -44,7 +44,6 @@ import one.only.player.core.common.extensions.canonicalPathOrSelf
 import one.only.player.core.common.extensions.getMediaFileContentUri
 import one.only.player.core.common.extensions.getStorageVolumes
 import one.only.player.core.common.extensions.isInsideNoMediaDirectory
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.common.extensions.scanPaths
 import one.only.player.core.common.extensions.toPrivateLogSummary
 import one.only.player.core.common.hasManageExternalStorageAccess
@@ -705,7 +704,7 @@ class LocalMediaSynchronizer @Inject constructor(
             val parentPath = directory.parent?.let { parent -> directoryPaths[StoragePath.of(parent)] } ?: "/"
             DirectoryEntity(
                 path = realPath,
-                name = directory.prettyName,
+                name = directory.name,
                 modified = directory.lastModified(),
                 parentPath = parentPath,
             )

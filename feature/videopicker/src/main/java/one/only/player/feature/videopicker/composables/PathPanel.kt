@@ -1,6 +1,5 @@
 package one.only.player.feature.videopicker.composables
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -55,8 +54,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import java.io.File
 import one.only.player.core.common.extensions.canonicalPathOrSelf
-import one.only.player.core.common.extensions.getStorageVolumes
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.AppIcons
@@ -81,25 +78,19 @@ internal data class MediaPickerPathEntry(
 )
 
 internal fun buildMediaPickerPathEntries(
-    context: Context,
     folderPath: String?,
-    currentFolderName: String?,
     rootLabel: String,
+    storageRootLabels: Map<StoragePath, String>,
 ): List<MediaPickerPathEntry> {
     val normalizedPath = folderPath
         ?.takeIf(String::isNotBlank)
         ?.let(::normalizePath)
         ?: return emptyList()
-    val storageRoots = context.getStorageVolumes()
-        .map { volume -> StoragePath.of(normalizePath(volume.path)) }
-        .distinct()
-    val currentPath = StoragePath.of(normalizedPath)
-    val storageRoot = storageRoots.firstOrNull(currentPath::isInside)
-    val shouldShowStorageRoot = storageRoots.size > 1
+    val shouldShowStorageRoot = storageRootLabels.size > 1
     val paths = buildList {
         var path = normalizedPath
         while (path != "/") {
-            val isStorageRoot = storageRoot != null && StoragePath.of(path) == storageRoot
+            val isStorageRoot = StoragePath.of(path) in storageRootLabels
             if (!isStorageRoot || shouldShowStorageRoot) add(path)
             if (isStorageRoot) break
             path = path.substringBeforeLast('/').ifBlank { "/" }
@@ -115,15 +106,11 @@ internal fun buildMediaPickerPathEntries(
             ),
         )
         paths.forEachIndexed { index, path ->
-            val file = File(path)
             add(
                 MediaPickerPathEntry(
                     path = path,
-                    label = if (path == normalizedPath) {
-                        currentFolderName ?: file.prettyName
-                    } else {
-                        file.prettyName
-                    },
+                    label = storageRootLabels[StoragePath.of(path)]
+                        ?: File(path).name,
                     depth = index + 1,
                 ),
             )

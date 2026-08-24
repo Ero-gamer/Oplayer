@@ -3,7 +3,6 @@ package one.only.player.core.common.extensions
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import androidx.core.net.toUri
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -101,8 +100,5 @@ fun File.isInsideNoMediaDirectory(): Boolean {
 fun Iterable<String>.excludeNoMediaPaths(): List<String> = filterNot { path ->
     path.isInsideNoMediaDirectory()
 }
-
-val File.prettyName: String
-    get() = this.name.takeIf { this.path != Environment.getExternalStorageDirectory()?.path } ?: "Internal Storage"
 
 private val SUBTITLE_EXTENSIONS = setOf("srt", "ssa", "ass", "vtt", "webvtt", "ttml", "smi", "sami")

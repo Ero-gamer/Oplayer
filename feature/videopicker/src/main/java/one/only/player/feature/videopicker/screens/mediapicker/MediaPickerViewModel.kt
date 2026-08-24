@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 import one.only.player.core.common.Logger
 import one.only.player.core.common.di.ApplicationScope
 import one.only.player.core.common.extensions.canonicalPathOrSelf
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.common.hasManageExternalStorageAccess
 import one.only.player.core.data.repository.FavoriteRepository
 import one.only.player.core.data.repository.MediaMoveProgress
@@ -83,7 +82,7 @@ class MediaPickerViewModel @Inject constructor(
     private val uiStateInternal = MutableStateFlow(
         MediaPickerUiState(
             folderPath = folderPath,
-            folderName = folderPath?.let { File(folderPath).prettyName },
+            folderName = folderPath?.let { File(folderPath).name },
             mediaDataState = initialMediaDataState,
             preferences = initialPreferences,
             playerPreferences = initialPlayerPreferences,

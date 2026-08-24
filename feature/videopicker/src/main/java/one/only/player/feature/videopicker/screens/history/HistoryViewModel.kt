@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.domain.GetWatchHistoryUseCase
@@ -43,7 +42,7 @@ class HistoryViewModel @Inject constructor(
             videos.filter { video ->
                 video.displayName.contains(normalizedQuery, ignoreCase = true) ||
                     video.nameWithExtension.contains(normalizedQuery, ignoreCase = true) ||
-                    File(video.parentPath).prettyName.contains(normalizedQuery, ignoreCase = true)
+                    File(video.parentPath).name.contains(normalizedQuery, ignoreCase = true)
             }
         }
         HistoryUiState(

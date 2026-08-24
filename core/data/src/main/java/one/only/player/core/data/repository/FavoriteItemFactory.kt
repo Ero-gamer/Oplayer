@@ -2,7 +2,6 @@ package one.only.player.core.data.repository
 
 import java.io.File
 import one.only.player.core.common.extensions.canonicalPathOrSelf
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
 import one.only.player.core.model.Folder
@@ -29,7 +28,7 @@ fun Folder.toFavoriteItem(parentId: Long? = null): FavoriteItem {
         parentId = parentId,
         targetType = FavoriteTargetType.LOCAL_FOLDER,
         targetKey = "local:folder:$canonicalPath",
-        title = File(path).prettyName,
+        title = File(path).name,
         subtitle = path,
         localPath = path,
     )

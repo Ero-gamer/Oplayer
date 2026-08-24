@@ -7,7 +7,6 @@ import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import one.only.player.core.common.extensions.canonicalPathOrSelf
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.data.repository.toFavoriteItem
 import one.only.player.core.data.repository.toFavoriteRootItem
 import one.only.player.core.data.repository.toRemoteFavoriteItem
@@ -121,7 +120,7 @@ private suspend fun DebugCommandEntryPoint.addFavorite(extras: Bundle): Long {
                     parentId = parentId,
                     targetType = FavoriteTargetType.LOCAL_FOLDER,
                     targetKey = "local:folder:$path",
-                    title = File(path).prettyName,
+                    title = File(path).name,
                     subtitle = path,
                     localPath = path,
                 ),

@@ -9,9 +9,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -19,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import one.only.player.core.media.extensions.storageRootLabelOf
+import one.only.player.core.media.extensions.storageRootLabels
 import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
 import one.only.player.core.ui.base.DataState
@@ -58,6 +62,8 @@ private fun FolderPreferencesContent(
     onEvent: (FolderPreferencesUiEvent) -> Unit,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
+    val context = LocalContext.current
+    val storageRootLabels = remember(context) { context.storageRootLabels() }
 
     Scaffold(
         topBar = {
@@ -103,9 +109,12 @@ private fun FolderPreferencesContent(
                     verticalArrangement = Arrangement.spacedBy(CardItemGap),
                 ) {
                     itemsIndexed(uiState.foldersDataState.value) { index, folder ->
+                        val title = remember(folder.path, storageRootLabels) {
+                            storageRootLabels.storageRootLabelOf(folder.path) ?: folder.name
+                        }
                         SelectablePreference(
                             modifier = Modifier.testTag("item_settings_folder_$index"),
-                            title = folder.name,
+                            title = title,
                             description = folder.path,
                             isSelected = StoragePath.of(folder.path) in uiState.preferences.excludeFolders,
                             onClick = { onEvent(FolderPreferencesUiEvent.UpdateExcludeList(folder.path)) },

@@ -6,7 +6,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import one.only.player.core.common.extensions.canonicalPathOrSelf
-import one.only.player.core.common.extensions.prettyName
 import one.only.player.core.database.dao.FavoriteItemDao
 import one.only.player.core.database.entities.FavoriteItemEntity
 import one.only.player.core.model.FavoriteItem
@@ -141,7 +140,7 @@ class LocalFavoriteRepository @Inject constructor(
                 current = current,
                 updated = current.copy(
                     targetKey = LOCAL_FOLDER_TARGET_PREFIX + updatedPath.canonicalPathOrSelf(),
-                    title = File(updatedPath).prettyName,
+                    title = File(updatedPath).name,
                     subtitle = updatedPath,
                     localPath = updatedPath,
                     updatedAt = System.currentTimeMillis(),

@@ -33,7 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.io.File
-import one.only.player.core.common.extensions.prettyName
+import one.only.player.core.media.extensions.isStorageRoot
+import one.only.player.core.media.extensions.storageRootLabelOf
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.FavoriteItem
 import one.only.player.core.model.FavoriteTargetType
@@ -58,6 +59,7 @@ import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.VideoThumbnail
 import one.only.player.feature.videopicker.composables.libraryListThumbWidth
 import one.only.player.feature.videopicker.composables.metaParts
+import one.only.player.feature.videopicker.composables.rememberStorageRootLabels
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
@@ -459,16 +461,25 @@ private fun DeleteFavoriteDialog(
     )
 }
 
-private fun FavoriteItem.displayTitle(shouldShowExtension: Boolean): String = when (targetType) {
-    FavoriteTargetType.LOCAL_VIDEO -> video?.let { current ->
-        if (shouldShowExtension) current.nameWithExtension else current.displayName
-    } ?: title.substringBeforeLast('.')
-    FavoriteTargetType.LOCAL_FOLDER,
-    FavoriteTargetType.FAVORITE_FOLDER,
-    FavoriteTargetType.REMOTE_FILE,
-    FavoriteTargetType.REMOTE_DIRECTORY,
-    FavoriteTargetType.REMOTE_SERVER_ROOT,
-    -> title
+@Composable
+private fun FavoriteItem.displayTitle(shouldShowExtension: Boolean): String {
+    val storageRootLabels = rememberStorageRootLabels()
+    return when (targetType) {
+        FavoriteTargetType.LOCAL_VIDEO -> video?.let { current ->
+            if (shouldShowExtension) current.nameWithExtension else current.displayName
+        } ?: title.substringBeforeLast('.')
+        FavoriteTargetType.LOCAL_FOLDER -> {
+            val storageRootLabel = remember(localPath, storageRootLabels) {
+                localPath?.let(storageRootLabels::storageRootLabelOf)
+            }
+            storageRootLabel ?: title
+        }
+        FavoriteTargetType.FAVORITE_FOLDER,
+        FavoriteTargetType.REMOTE_FILE,
+        FavoriteTargetType.REMOTE_DIRECTORY,
+        FavoriteTargetType.REMOTE_SERVER_ROOT,
+        -> title
+    }
 }
 
 @Composable
@@ -517,17 +528,24 @@ private fun FavoriteItem.isVideoFavorite(): Boolean = when (targetType) {
 
 private fun FavoriteItem.isFolderFavorite(): Boolean = !isVideoFavorite()
 
-private fun FavoriteItem.locationLabel(): String? = when (targetType) {
-    FavoriteTargetType.FAVORITE_FOLDER,
-    FavoriteTargetType.LOCAL_VIDEO,
-    -> null
-    FavoriteTargetType.LOCAL_FOLDER -> localPath?.let { path ->
-        File(path).parentFile?.prettyName?.takeIf { it.isNotBlank() }
+@Composable
+private fun FavoriteItem.locationLabel(): String? {
+    val storageRootLabels = rememberStorageRootLabels()
+    return when (targetType) {
+        FavoriteTargetType.FAVORITE_FOLDER,
+        FavoriteTargetType.LOCAL_VIDEO,
+        -> null
+        FavoriteTargetType.LOCAL_FOLDER -> remember(localPath, storageRootLabels) {
+            localPath
+                ?.takeUnless(storageRootLabels::isStorageRoot)
+                ?.let { path -> File(path).parentFile }
+                ?.let { parent -> storageRootLabels.storageRootLabelOf(parent.path) ?: parent.name }
+        }
+        FavoriteTargetType.REMOTE_FILE,
+        FavoriteTargetType.REMOTE_DIRECTORY,
+        FavoriteTargetType.REMOTE_SERVER_ROOT,
+        -> remoteServerName?.takeIf { it.isNotBlank() }
     }
-    FavoriteTargetType.REMOTE_FILE,
-    FavoriteTargetType.REMOTE_DIRECTORY,
-    FavoriteTargetType.REMOTE_SERVER_ROOT,
-    -> remoteServerName?.takeIf { it.isNotBlank() }
 }
 
 private fun FavoriteItem.descendantIds(allItems: List<FavoriteItem>): Set<Long> {

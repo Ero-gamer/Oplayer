@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import one.only.player.core.common.Utils
+import one.only.player.core.media.extensions.storageRootLabelOf
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaLayoutMode
@@ -82,7 +84,7 @@ private fun FolderListItem(
         },
         content = {
             Text(
-                text = folder.name,
+                text = folder.localizedName(),
                 maxLines = 2,
                 style = MiuixTheme.textStyles.title4,
                 overflow = TextOverflow.Ellipsis,
@@ -144,7 +146,7 @@ private fun FolderGridItem(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = folder.name,
+                        text = folder.localizedName(),
                         maxLines = 2,
                         style = MiuixTheme.textStyles.title4,
                         overflow = TextOverflow.Ellipsis,
@@ -160,6 +162,12 @@ private fun FolderGridItem(
             }
         },
     )
+}
+
+@Composable
+private fun Folder.localizedName(): String {
+    val storageRootLabels = rememberStorageRootLabels()
+    return remember(path, name, storageRootLabels) { storageRootLabels.storageRootLabelOf(path) ?: name }
 }
 
 @Composable

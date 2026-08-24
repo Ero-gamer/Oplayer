@@ -55,6 +55,7 @@ import one.only.player.core.common.Utils
 import one.only.player.core.common.extensions.canonicalPathOrSelf
 import one.only.player.core.common.storagePermission
 import one.only.player.core.data.repository.MediaMoveProgress
+import one.only.player.core.media.extensions.storageRootLabelOf
 import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.Folder
 import one.only.player.core.model.MediaLayoutMode
@@ -88,6 +89,7 @@ import one.only.player.feature.videopicker.composables.VideoInfoDialog
 import one.only.player.feature.videopicker.composables.buildMediaPickerPathEntries
 import one.only.player.feature.videopicker.composables.rememberPathPanelBackdrop
 import one.only.player.feature.videopicker.composables.rememberPullToRefreshTexts
+import one.only.player.feature.videopicker.composables.rememberStorageRootLabels
 import one.only.player.feature.videopicker.navigation.MediaPickerScreenMode
 import one.only.player.feature.videopicker.state.SelectedFolder
 import one.only.player.feature.videopicker.state.SelectedVideo
@@ -211,12 +213,12 @@ internal fun MediaPickerScreen(
     val isLibraryMode = uiState.screenMode == MediaPickerScreenMode.LIBRARY
     val isMoveMode = uiState.moveSelection != null && isLibraryMode
     val pathRootLabel = stringResource(R.string.tab_home)
-    val pathEntries = remember(uiState.folderPath, uiState.folderName, pathRootLabel) {
+    val storageRootLabels = rememberStorageRootLabels()
+    val pathEntries = remember(uiState.folderPath, pathRootLabel, storageRootLabels) {
         buildMediaPickerPathEntries(
-            context = context,
             folderPath = uiState.folderPath,
-            currentFolderName = uiState.folderName,
             rootLabel = pathRootLabel,
+            storageRootLabels = storageRootLabels,
         )
     }
     val canOpenPathPanel = isLibraryMode &&
@@ -279,9 +281,9 @@ internal fun MediaPickerScreen(
     val topBarTitle = when {
         selectionManager.isInSelectionMode -> selectedCountTitle
         isMoveMode -> stringResource(R.string.move)
-        else -> uiState.folderName ?: stringResource(
-            if (isRecycleBinMode) R.string.recycle_bin else R.string.app_name,
-        )
+        else -> uiState.folderPath?.let(storageRootLabels::storageRootLabelOf)
+            ?: uiState.folderName
+            ?: stringResource(if (isRecycleBinMode) R.string.recycle_bin else R.string.app_name)
     }
     val shouldUseLargeTopBar = !selectionManager.isInSelectionMode &&
         !isMoveMode &&
