@@ -78,6 +78,7 @@ import one.only.player.core.ui.preview.VideoPickerPreviewParameterProvider
 import one.only.player.core.ui.theme.OnlyPlayerTheme
 import one.only.player.feature.videopicker.composables.AddToPlaylistDialog
 import one.only.player.feature.videopicker.composables.MediaPickerPathPanel
+import one.only.player.feature.videopicker.composables.MediaPickerPathScope
 import one.only.player.feature.videopicker.composables.MediaView
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
@@ -214,12 +215,23 @@ internal fun MediaPickerScreen(
     val isMoveMode = uiState.moveSelection != null && isLibraryMode
     val pathRootLabel = stringResource(R.string.tab_home)
     val storageRootLabels = rememberStorageRootLabels()
-    val pathEntries = remember(uiState.folderPath, pathRootLabel, storageRootLabels, uiState.homeLandingPath) {
+    val pathEntries = remember(
+        uiState.folderPath,
+        pathRootLabel,
+        storageRootLabels,
+        uiState.homeLandingPath,
+        uiState.preferences.mediaViewMode,
+        uiState.mediaBearingFolderPaths,
+    ) {
         buildMediaPickerPathEntries(
             folderPath = uiState.folderPath,
             rootLabel = pathRootLabel,
             storageRootLabels = storageRootLabels,
-            homeLandingPath = uiState.homeLandingPath,
+            scope = MediaPickerPathScope.of(
+                mediaViewMode = uiState.preferences.mediaViewMode,
+                homeLandingPath = uiState.homeLandingPath,
+                mediaBearingFolderPaths = uiState.mediaBearingFolderPaths,
+            ),
         )
     }
     val canOpenPathPanel = isLibraryMode &&

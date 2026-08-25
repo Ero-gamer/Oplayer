@@ -27,6 +27,7 @@ import one.only.player.core.data.repository.MediaRepository
 import one.only.player.core.data.repository.PlaylistRepository
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.toFavoriteItem
+import one.only.player.core.domain.GetMediaBearingFolderPathsUseCase
 import one.only.player.core.domain.GetSortedMediaUseCase
 import one.only.player.core.media.services.MediaMoveSpaceCheck
 import one.only.player.core.media.services.MediaMoveTargetDirectoryContent
@@ -47,6 +48,7 @@ import one.only.player.feature.videopicker.state.SelectedVideo
 @HiltViewModel
 class MediaPickerViewModel @Inject constructor(
     getSortedMediaUseCase: GetSortedMediaUseCase,
+    getMediaBearingFolderPathsUseCase: GetMediaBearingFolderPathsUseCase,
     savedStateHandle: SavedStateHandle,
     private val mediaService: MediaService,
     private val mediaRepository: MediaRepository,
@@ -119,8 +121,12 @@ class MediaPickerViewModel @Inject constructor(
                         preferences = uiStateInternal.value.preferences,
                         hasAllFilesAccess = hasManageExternalStorageAccess(),
                     )
-                    // 主页会下钻到首个有内容的目录，落点供子目录页的路径面板去重
-                    if (folderPath == null) folder?.let { homeStore.set(StoragePath.of(it.path)) }
+                    // 主页会下钻到首个有内容的目录，落点供子目录页的路径面板去重；扁平视图停在根上，没有落点
+                    if (folderPath == null) {
+                        folder?.let { StoragePath.of(it.path) }
+                            ?.takeUnless(StoragePath::isRoot)
+                            ?.let(homeStore::set)
+                    }
                 }
                 uiStateInternal.update { currentState ->
                     currentState.copy(
@@ -139,11 +145,23 @@ class MediaPickerViewModel @Inject constructor(
                         folderPath = null,
                         preferences = initialPreferences,
                         hasAllFilesAccess = initialHasAllFilesAccess,
-                    )?.let { homeFolder -> homeStore.set(StoragePath.of(homeFolder.path)) }
+                    )
+                        ?.let { homeFolder -> StoragePath.of(homeFolder.path) }
+                        ?.takeUnless(StoragePath::isRoot)
+                        ?.let(homeStore::set)
                 }
                 homeStore.landingPath.collect { landingPath ->
                     uiStateInternal.update { currentState ->
                         currentState.copy(homeLandingPath = landingPath)
+                    }
+                }
+            }
+
+            // 扁平视图下中间层级不可浏览，路径面板据此只保留自身含媒体的祖先
+            viewModelScope.launch {
+                getMediaBearingFolderPathsUseCase().collect { paths ->
+                    uiStateInternal.update { currentState ->
+                        currentState.copy(mediaBearingFolderPaths = paths)
                     }
                 }
             }
@@ -560,6 +578,8 @@ data class MediaPickerUiState(
     val folderName: String?,
     val mediaDataState: DataState<Folder?> = DataState.Loading,
     val homeLandingPath: StoragePath? = null,
+    // 自身直接含媒体的目录，扁平视图下路径面板据此裁掉不可浏览的中间层级
+    val mediaBearingFolderPaths: Set<StoragePath> = emptySet(),
     val isRefreshing: Boolean = false,
     val preferences: ApplicationPreferences = ApplicationPreferences(),
     val playerPreferences: PlayerPreferences = PlayerPreferences(),

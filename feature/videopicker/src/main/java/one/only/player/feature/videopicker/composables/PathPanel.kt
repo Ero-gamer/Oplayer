@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import one.only.player.core.common.extensions.canonicalPathOrSelf
+import one.only.player.core.model.MediaViewMode
 import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
 import one.only.player.core.ui.designsystem.AppIcons
@@ -76,26 +77,62 @@ internal data class MediaPickerPathEntry(
     val depth: Int,
 )
 
+// 祖先目录能否作为一层展示，取决于当前视图模式：
+// 树状视图每级都可浏览，落点及其祖先由主页承担；扁平视图只有自身含媒体的目录可以打开
+@Immutable
+internal sealed interface MediaPickerPathScope {
+
+    fun canBrowse(path: StoragePath): Boolean
+
+    fun isCoveredByHome(path: StoragePath): Boolean
+
+    data class FolderTree(val homeLandingPath: StoragePath?) : MediaPickerPathScope {
+        override fun canBrowse(path: StoragePath): Boolean = true
+
+        override fun isCoveredByHome(path: StoragePath): Boolean = path == homeLandingPath
+    }
+
+    data class Flat(val mediaBearingFolderPaths: Set<StoragePath>) : MediaPickerPathScope {
+        override fun canBrowse(path: StoragePath): Boolean = path in mediaBearingFolderPaths
+
+        override fun isCoveredByHome(path: StoragePath): Boolean = false
+    }
+
+    companion object {
+        fun of(
+            mediaViewMode: MediaViewMode,
+            homeLandingPath: StoragePath?,
+            mediaBearingFolderPaths: Set<StoragePath>,
+        ): MediaPickerPathScope = when (mediaViewMode) {
+            MediaViewMode.FOLDER_TREE -> FolderTree(homeLandingPath = homeLandingPath)
+            MediaViewMode.FOLDERS, MediaViewMode.VIDEOS -> Flat(mediaBearingFolderPaths = mediaBearingFolderPaths)
+        }
+    }
+}
+
 internal fun buildMediaPickerPathEntries(
     folderPath: String?,
     rootLabel: String,
     storageRootLabels: Map<StoragePath, String>,
-    homeLandingPath: StoragePath?,
+    scope: MediaPickerPathScope,
 ): List<MediaPickerPathEntry> {
     val normalizedPath = folderPath
         ?.takeIf(String::isNotBlank)
         ?.let(::normalizePath)
         ?: return emptyList()
     val shouldShowStorageRoot = storageRootLabels.size > 1
+    val currentPath = StoragePath.of(normalizedPath)
     val paths = buildList {
         var path = normalizedPath
         while (path != "/") {
-            val currentPath = StoragePath.of(path)
+            val ancestorPath = StoragePath.of(path)
             // 主页已经展示了落点目录，它连同祖先都不再单独占一层
-            if (currentPath == homeLandingPath) break
+            if (scope.isCoveredByHome(ancestorPath)) break
 
-            val isStorageRoot = currentPath in storageRootLabels
-            if (!isStorageRoot || shouldShowStorageRoot) add(path)
+            val isStorageRoot = ancestorPath in storageRootLabels
+            val shouldAddLevel = (ancestorPath == currentPath || scope.canBrowse(ancestorPath)) &&
+                (!isStorageRoot || shouldShowStorageRoot)
+            if (shouldAddLevel) add(path)
             if (isStorageRoot) break
             path = path.substringBeforeLast('/').ifBlank { "/" }
         }
