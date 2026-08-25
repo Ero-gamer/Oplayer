@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import one.only.player.core.data.repository.AppUpdateChecker
+import one.only.player.core.data.repository.AppUpdateResult
 import one.only.player.core.data.repository.PreferencesRepository
 
 @HiltViewModel
@@ -47,13 +48,13 @@ class AboutPreferencesViewModel @Inject constructor(
         uiStateInternal.update { it.copy(updateState = UpdateState.Checking) }
 
         viewModelScope.launch {
-            val updateInfo = appUpdateChecker.checkForUpdate(currentVersion)
-            val result = when {
-                updateInfo != null -> UpdateState.UpdateAvailable(
-                    latestVersion = updateInfo.latestVersion,
-                    releaseUrl = updateInfo.releaseUrl,
+            val result = when (val checkResult = appUpdateChecker.checkForUpdate(currentVersion)) {
+                is AppUpdateResult.Available -> UpdateState.UpdateAvailable(
+                    latestVersion = checkResult.info.latestVersion,
+                    releaseUrl = checkResult.info.releaseUrl,
                 )
-                else -> UpdateState.UpToDate
+                AppUpdateResult.UpToDate -> UpdateState.UpToDate
+                AppUpdateResult.Failed -> UpdateState.Error
             }
             uiStateInternal.update { it.copy(updateState = result) }
         }

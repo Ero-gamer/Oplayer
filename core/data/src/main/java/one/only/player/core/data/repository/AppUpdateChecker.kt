@@ -14,6 +14,13 @@ data class AppUpdateInfo(
     val releaseUrl: String,
 )
 
+// 拿不到结果和确认已是最新是两回事，前者不能当成最新版本展示
+sealed interface AppUpdateResult {
+    data class Available(val info: AppUpdateInfo) : AppUpdateResult
+    data object UpToDate : AppUpdateResult
+    data object Failed : AppUpdateResult
+}
+
 @Singleton
 class AppUpdateChecker @Inject constructor() {
 
@@ -23,7 +30,7 @@ class AppUpdateChecker @Inject constructor() {
             "https://api.github.com/repos/Kindness-Kismet/only_player/releases/latest"
     }
 
-    suspend fun checkForUpdate(currentVersion: String): AppUpdateInfo? = withContext(Dispatchers.IO) {
+    suspend fun checkForUpdate(currentVersion: String): AppUpdateResult = withContext(Dispatchers.IO) {
         runCatching {
             val connection = URL(RELEASES_URL).openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
@@ -31,23 +38,29 @@ class AppUpdateChecker @Inject constructor() {
             connection.connectTimeout = 10_000
             connection.readTimeout = 10_000
 
-            if (connection.responseCode != HttpURLConnection.HTTP_OK) return@withContext null
+            if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                Logger.error(TAG, "Unexpected response code: ${connection.responseCode}")
+                return@withContext AppUpdateResult.Failed
+            }
 
             val json = connection.inputStream.bufferedReader().use { it.readText() }
             connection.disconnect()
             val release = JSONObject(json)
             val tagName = release.optString("tag_name", "").removePrefix("v")
             val htmlUrl = release.optString("html_url", "")
-            if (tagName.isEmpty()) return@withContext null
+            if (tagName.isEmpty()) {
+                Logger.error(TAG, "Release has no tag name")
+                return@withContext AppUpdateResult.Failed
+            }
 
             if (compareVersions(tagName, currentVersion) > 0) {
-                AppUpdateInfo(latestVersion = tagName, releaseUrl = htmlUrl)
+                AppUpdateResult.Available(AppUpdateInfo(latestVersion = tagName, releaseUrl = htmlUrl))
             } else {
-                null
+                AppUpdateResult.UpToDate
             }
         }.getOrElse { throwable ->
             Logger.error(TAG, "Failed to check for updates", throwable)
-            null
+            AppUpdateResult.Failed
         }
     }
 }
