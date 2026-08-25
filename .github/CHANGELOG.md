@@ -1,9 +1,9 @@
-- Show internal storage and SD card by their system names in folder lists, the path list, favorites and settings
-- Stop the path list from repeating the level the home page already opens on
-- Leave a folder's current location out of the move targets
+- Move the automatic update check to app startup, so the about page only checks when you tap it
+- Stop the update prompt from stuttering when it shows up right after launch
+- Say the update check failed instead of claiming you are up to date when GitHub cannot be reached
 
 ---
 
-- 改用系统里的名称显示内部存储和 SD 卡，文件夹列表、路径列表、收藏和设置里都一致
-- 展开路径列表时不再重复显示主页已经打开的那一层
-- 移动文件夹时不再把它当前所在的目录列为可选目标
+- 自动检查更新改到应用启动时进行，关于页只在你主动点击时才检查
+- 修复更新提示刚启动就弹出时的卡顿
+- 连不上 GitHub 时如实提示检查失败，不再误报已是最新版本
