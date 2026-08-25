@@ -24,7 +24,7 @@ data class ApplicationPreferences(
     val scanFolders: List<StoragePath> = emptyList(),
     val localFolderLastPlayedMediaUris: Map<String, String> = emptyMap(),
     val remoteFolderLastPlayedMediaPaths: Map<String, String> = emptyMap(),
-    val mediaViewMode: MediaViewMode = MediaViewMode.FOLDERS,
+    val mediaViewMode: MediaViewMode = MediaViewMode.FOLDER_TREE,
     val mediaLayoutMode: MediaLayoutMode = MediaLayoutMode.LIST,
     val mediaLayoutScale: Float = DEFAULT_MEDIA_LAYOUT_SCALE,
     val cloudQuickSettingsByServerId: Map<String, CloudQuickSettings> = emptyMap(),
