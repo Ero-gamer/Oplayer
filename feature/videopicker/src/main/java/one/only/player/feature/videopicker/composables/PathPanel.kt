@@ -52,7 +52,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import java.io.File
 import one.only.player.core.common.extensions.canonicalPathOrSelf
 import one.only.player.core.model.StoragePath
 import one.only.player.core.ui.R
@@ -111,11 +110,11 @@ internal fun buildMediaPickerPathEntries(
             ),
         )
         paths.forEachIndexed { index, path ->
+            val storagePath = StoragePath.of(path)
             add(
                 MediaPickerPathEntry(
                     path = path,
-                    label = storageRootLabels[StoragePath.of(path)]
-                        ?: File(path).name,
+                    label = storageRootLabels[storagePath] ?: storagePath.name,
                     depth = index + 1,
                 ),
             )
