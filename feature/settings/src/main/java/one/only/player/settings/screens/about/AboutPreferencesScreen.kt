@@ -17,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,7 +42,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import one.only.player.core.common.extensions.appIcon
 import one.only.player.core.ui.R
-import one.only.player.core.ui.components.AppDialog
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
@@ -53,13 +51,11 @@ import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
 import one.only.player.settings.screens.about.effect.FlowLightBackground
-import top.yukonga.miuix.kmp.basic.ButtonDefaults
 import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
-import top.yukonga.miuix.kmp.basic.TextButton as MiuixTextButton
 import top.yukonga.miuix.kmp.basic.TopAppBar
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -73,10 +69,6 @@ fun AboutPreferencesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val currentVersionName = remember { context.versionName() }
-
-    LaunchedEffect(uiState.shouldCheckForUpdatesOnStartup) {
-        viewModel.maybeAutoCheck(currentVersionName)
-    }
 
     FlowLightBackground(modifier = Modifier.fillMaxSize()) {
         val scrollBehavior = MiuixScrollBehavior()
@@ -138,11 +130,6 @@ fun AboutPreferencesScreen(
                     )
                 }
             }
-
-            StartupUpdateDialog(
-                uiState = uiState,
-                onEvent = viewModel::onEvent,
-            )
         }
     }
 }
@@ -204,42 +191,6 @@ private fun updateStatusText(state: UpdateState): String = when (state) {
     UpdateState.UpToDate -> stringResource(R.string.update_status_up_to_date)
     is UpdateState.UpdateAvailable -> stringResource(R.string.update_status_available, state.latestVersion)
     UpdateState.Error -> stringResource(R.string.update_status_error)
-}
-
-@Composable
-private fun StartupUpdateDialog(
-    uiState: AboutPreferencesUiState,
-    onEvent: (AboutPreferencesUiEvent) -> Unit,
-) {
-    val state = uiState.updateState as? UpdateState.UpdateAvailable ?: return
-    if (!uiState.shouldShowStartupUpdateDialog) return
-
-    val context = LocalContext.current
-    val uriHandler = LocalUriHandler.current
-
-    AppDialog(
-        onDismissRequest = { onEvent(AboutPreferencesUiEvent.DismissStartupUpdateDialog) },
-        title = stringResource(R.string.update_dialog_title),
-        content = { MiuixText(text = stringResource(R.string.update_dialog_message, state.latestVersion)) },
-        confirmButton = {
-            MiuixTextButton(
-                modifier = Modifier.testTag("btn_about_update_confirm"),
-                text = stringResource(R.string.update_dialog_confirm),
-                colors = ButtonDefaults.textButtonColorsPrimary(),
-                onClick = {
-                    onEvent(AboutPreferencesUiEvent.DismissStartupUpdateDialog)
-                    uriHandler.openUriOrShowToast(state.releaseUrl, context)
-                },
-            )
-        },
-        dismissButton = {
-            MiuixTextButton(
-                modifier = Modifier.testTag("btn_about_update_not_now"),
-                text = stringResource(R.string.not_now),
-                onClick = { onEvent(AboutPreferencesUiEvent.DismissStartupUpdateDialog) },
-            )
-        },
-    )
 }
 
 @Composable

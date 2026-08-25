@@ -39,17 +39,10 @@ class AboutPreferencesViewModel @Inject constructor(
         when (event) {
             is AboutPreferencesUiEvent.CheckForUpdates -> checkForUpdates(event.currentVersion)
             AboutPreferencesUiEvent.ToggleCheckOnStartup -> toggleCheckOnStartup()
-            AboutPreferencesUiEvent.DismissStartupUpdateDialog -> dismissStartupUpdateDialog()
         }
     }
 
-    fun maybeAutoCheck(currentVersion: String) {
-        if (!uiStateInternal.value.shouldCheckForUpdatesOnStartup) return
-        if (uiStateInternal.value.updateState != UpdateState.Idle) return
-        checkForUpdates(currentVersion, fromStartup = true)
-    }
-
-    private fun checkForUpdates(currentVersion: String, fromStartup: Boolean = false) {
+    private fun checkForUpdates(currentVersion: String) {
         if (uiStateInternal.value.updateState == UpdateState.Checking) return
         uiStateInternal.update { it.copy(updateState = UpdateState.Checking) }
 
@@ -62,12 +55,7 @@ class AboutPreferencesViewModel @Inject constructor(
                 )
                 else -> UpdateState.UpToDate
             }
-            uiStateInternal.update {
-                it.copy(
-                    updateState = result,
-                    shouldShowStartupUpdateDialog = fromStartup && result is UpdateState.UpdateAvailable,
-                )
-            }
+            uiStateInternal.update { it.copy(updateState = result) }
         }
     }
 
@@ -78,17 +66,12 @@ class AboutPreferencesViewModel @Inject constructor(
             }
         }
     }
-
-    private fun dismissStartupUpdateDialog() {
-        uiStateInternal.update { it.copy(shouldShowStartupUpdateDialog = false) }
-    }
 }
 
 @Stable
 data class AboutPreferencesUiState(
     val updateState: UpdateState = UpdateState.Idle,
     val shouldCheckForUpdatesOnStartup: Boolean = false,
-    val shouldShowStartupUpdateDialog: Boolean = false,
 )
 
 sealed interface UpdateState {
@@ -102,5 +85,4 @@ sealed interface UpdateState {
 sealed interface AboutPreferencesUiEvent {
     data class CheckForUpdates(val currentVersion: String) : AboutPreferencesUiEvent
     data object ToggleCheckOnStartup : AboutPreferencesUiEvent
-    data object DismissStartupUpdateDialog : AboutPreferencesUiEvent
 }

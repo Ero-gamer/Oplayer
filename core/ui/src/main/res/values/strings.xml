@@ -480,7 +480,7 @@
     <string name="exclude">Exclude</string>
     <string name="check_for_updates">Check for updates</string>
     <string name="check_updates_on_startup">Check on startup</string>
-    <string name="check_updates_on_startup_desc">Automatically check for updates when opening this page</string>
+    <string name="check_updates_on_startup_desc">Automatically check for updates when the app starts</string>
     <string name="update_status_idle">Tap to check for the latest version</string>
     <string name="update_status_checking">Checking…</string>
     <string name="update_status_up_to_date">Already up to date</string>

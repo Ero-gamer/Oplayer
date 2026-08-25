@@ -476,8 +476,8 @@
     <string name="settings_backup_file_name">onlyplayer-settings.json</string>
     <string name="exclude">排除</string>
     <string name="check_for_updates">检查更新</string>
-    <string name="check_updates_on_startup">打开时自动检查</string>
-    <string name="check_updates_on_startup_desc">打开此页面时自动检查更新</string>
+    <string name="check_updates_on_startup">启动时自动检查</string>
+    <string name="check_updates_on_startup_desc">启动应用时自动检查更新</string>
     <string name="update_status_idle">点按检查最新版本</string>
     <string name="update_status_checking">正在检查…</string>
     <string name="update_status_up_to_date">已是最新版本</string>
