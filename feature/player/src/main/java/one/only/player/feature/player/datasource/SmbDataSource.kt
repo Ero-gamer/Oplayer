@@ -18,6 +18,7 @@ import com.hierynomus.smbj.connection.Connection
 import com.hierynomus.smbj.session.Session
 import com.hierynomus.smbj.share.DiskShare
 import java.io.IOException
+import java.io.InputStream
 import java.util.EnumSet
 import java.util.concurrent.TimeUnit
 
@@ -33,8 +34,8 @@ class SmbDataSource private constructor(
     private var session: Session? = null
     private var share: DiskShare? = null
     private var smbFile: com.hierynomus.smbj.share.File? = null
+    private var inputStream: InputStream? = null
     private var uri: Uri? = null
-    private var filePosition: Long = 0
     private var bytesRemaining: Long = 0
     private var hasStartedTransfer: Boolean = false
 
@@ -79,8 +80,13 @@ class SmbDataSource private constructor(
                 throw IOException("SMB position ${dataSpec.position} is outside file size $fileSize")
             }
 
-            filePosition = dataSpec.position
-            val availableBytes = fileSize - filePosition
+            // 走输入流而非逐次随机读：它整块读取并异步预取下一块，随机读会让每次 read 都多一个网络往返
+            val stream = smbFile!!.inputStream
+            // skip 只调整读取偏移，不产生额外请求
+            stream.skip(dataSpec.position)
+            inputStream = stream
+
+            val availableBytes = fileSize - dataSpec.position
             bytesRemaining = if (dataSpec.length == C.LENGTH_UNSET.toLong()) {
                 availableBytes
             } else {
@@ -101,12 +107,10 @@ class SmbDataSource private constructor(
         if (bytesRemaining == 0L) return C.RESULT_END_OF_INPUT
 
         val bytesToRead = minOf(length.toLong(), bytesRemaining).toInt()
-        val file = smbFile ?: throw IOException("SMB file is not open")
-        val bytesRead = file.read(buffer, filePosition, offset, bytesToRead)
-        if (bytesRead < 0) throw IOException("SMB file ended before the requested range")
-        if (bytesRead == 0) throw IOException("SMB read returned no data")
+        val stream = inputStream ?: throw IOException("SMB file is not open")
+        val bytesRead = stream.read(buffer, offset, bytesToRead)
+        if (bytesRead == -1) return C.RESULT_END_OF_INPUT
 
-        filePosition += bytesRead
         bytesRemaining -= bytesRead
         bytesTransferred(bytesRead)
         return bytesRead
@@ -123,6 +127,10 @@ class SmbDataSource private constructor(
     }
 
     private fun closeResources() {
+        try {
+            inputStream?.close()
+        } catch (_: Exception) {
+        }
         try {
             smbFile?.close()
         } catch (_: Exception) {
@@ -144,12 +152,12 @@ class SmbDataSource private constructor(
         } catch (_: Exception) {
         }
         smbFile = null
+        inputStream = null
         share = null
         session = null
         connection = null
         client = null
         uri = null
-        filePosition = 0
         bytesRemaining = 0
     }
 
