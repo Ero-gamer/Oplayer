@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,13 +48,18 @@ class MainViewModel @Inject constructor(
             if (!prefs.shouldCheckForUpdatesOnStartup) return@launch
             val versionName = context.packageManager
                 .getPackageInfo(context.packageName, 0).versionName ?: return@launch
-            val info = appUpdateChecker.checkForUpdate(versionName)
-            _updateInfo.update { info }
+            // 等首屏画完再查，否则弹窗要新建一个 Window，和启动一起抢主线程会明显掉帧
+            delay(STARTUP_CHECK_DELAY_MS)
+            _updateInfo.update { appUpdateChecker.checkForUpdate(versionName) }
         }
     }
 
     fun dismissUpdate() {
         _updateInfo.update { null }
+    }
+
+    private companion object {
+        const val STARTUP_CHECK_DELAY_MS = 2_000L
     }
 }
 
