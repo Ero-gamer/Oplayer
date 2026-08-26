@@ -97,7 +97,6 @@ import one.only.player.settings.navigation.navigateToLogs
 import one.only.player.settings.navigation.navigateToMediaLibraryPreferencesScreen
 import one.only.player.settings.navigation.navigateToPlayerControlsCustomize
 import one.only.player.settings.navigation.navigateToPlayerPreferences
-import one.only.player.settings.navigation.navigateToPrivacyPreferences
 import one.only.player.settings.navigation.navigateToSubtitlePreferences
 import one.only.player.settings.navigation.navigateToThumbnailPreferencesScreen
 import top.yukonga.miuix.kmp.basic.ButtonDefaults
@@ -302,10 +301,6 @@ class MainActivity : AppCompatActivity() {
             DebugPageRoute.SETTINGS_SUBTITLE -> {
                 rootNavigationState.jumpTo(RootDestination.SETTINGS)
                 navController.navigateToSubtitlePreferences()
-            }
-            DebugPageRoute.SETTINGS_PRIVACY -> {
-                rootNavigationState.jumpTo(RootDestination.SETTINGS)
-                navController.navigateToPrivacyPreferences()
             }
             DebugPageRoute.SETTINGS_GENERAL -> {
                 rootNavigationState.jumpTo(RootDestination.SETTINGS)

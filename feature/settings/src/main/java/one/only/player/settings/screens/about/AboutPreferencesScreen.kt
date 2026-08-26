@@ -109,12 +109,6 @@ fun AboutPreferencesScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 AboutHero(onLibrariesClick = onLibrariesClick)
-                DiagnosticsSection(onLogsClick = onLogsClick)
-                UpdateSection(
-                    uiState = uiState,
-                    currentVersionName = currentVersionName,
-                    onEvent = viewModel::onEvent,
-                )
                 PreferenceGroup {
                     PreferenceItem(
                         title = stringResource(R.string.architecture),
@@ -128,24 +122,21 @@ fun AboutPreferencesScreen(
                         icon = AppIcons.Update,
                         isEnabled = true,
                     )
+                    ClickablePreferenceItem(
+                        modifier = Modifier.testTag("item_settings_about_logs"),
+                        title = stringResource(R.string.app_logs),
+                        description = stringResource(R.string.app_logs_description),
+                        icon = AppIcons.BugReport,
+                        onClick = onLogsClick,
+                    )
                 }
+                UpdateSection(
+                    uiState = uiState,
+                    currentVersionName = currentVersionName,
+                    onEvent = viewModel::onEvent,
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun DiagnosticsSection(
-    onLogsClick: () -> Unit,
-) {
-    PreferenceGroup {
-        ClickablePreferenceItem(
-            modifier = Modifier.testTag("item_settings_about_logs"),
-            title = stringResource(R.string.app_logs),
-            description = stringResource(R.string.app_logs_description),
-            icon = AppIcons.BugReport,
-            onClick = onLogsClick,
-        )
     }
 }
 

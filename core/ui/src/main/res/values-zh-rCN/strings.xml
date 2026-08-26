@@ -74,7 +74,6 @@
     <string name="select_playback_speed">选择播放速度</string>
     <string name="size">大小</string>
     <string name="about_description">版本与设备信息</string>
-    <string name="fast_seek">快速跳转</string>
     <string name="grant_permission">授予权限</string>
     <string name="duration">时长</string>
     <string name="open_settings">打开设置</string>
@@ -96,8 +95,6 @@
     <string name="on">开</string>
     <string name="play_pause">播放/暂停</string>
     <string name="none">无</string>
-    <string name="auto">自动</string>
-    <string name="enable">启用</string>
     <string name="yes">是</string>
     <string name="no">否</string>
     <string name="play_pause_ff_rewind">播放/暂停和快进/快退</string>
@@ -157,8 +154,6 @@
     <string name="subtitle_font">字幕字体</string>
     <string name="external_subtitle_font_import">导入外部字幕字体</string>
     <string name="external_subtitle_font_import_desc">导入一个或多个 .ttf 或 .otf 字幕字体文件</string>
-    <string name="external_subtitle_font_current">当前导入字体</string>
-    <string name="external_subtitle_font_not_imported">未导入</string>
     <string name="external_subtitle_font_clear">清除导入字幕字体</string>
     <string name="external_subtitle_font_clear_desc">移除当前导入字幕字体并恢复使用内置字体</string>
     <string name="external_subtitle_font_notice_title">外部字幕字体提示</string>
@@ -383,14 +378,12 @@
     <string name="reset_seek_increment">重置跳转增量</string>
     <string name="pan_gesture">平移手势</string>
     <string name="pan_gesture_description">缩放和平移视频</string>
-    <string name="privacy_protection">隐私保护</string>
-    <string name="privacy_protection_description">禁止截图并隐藏最近任务中的应用内容</string>
     <string name="prevent_screenshots">禁止截图</string>
     <string name="prevent_screenshots_description">阻止在应用内截图和录屏</string>
     <string name="hide_in_recents">隐藏最近任务预览</string>
     <string name="hide_in_recents_description">在最近任务界面隐藏应用预览内容</string>
     <string name="general_name">常规</string>
-    <string name="general_description">用户数据选项</string>
+    <string name="general_description">隐私、备份与重置</string>
     <string name="user_data">用户数据</string>
     <string name="delete_video_cache">删除视频缓存</string>
     <string name="delete_video_cache_description">删除缓存的缩略图、媒体列表快照、字幕和 MKV 跳转数据。</string>

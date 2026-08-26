@@ -13,7 +13,6 @@
     <string name="double_tap">Double tap gesture</string>
     <string name="double_tap_description">Select double tap gesture action</string>
     <string name="error_playing_video">Error: Can\'t play video</string>
-    <string name="fast_seek">Fast seeking</string>
     <string name="grant_permission">Grant Permission</string>
     <string name="duration">Duration</string>
     <string name="location">Location</string>
@@ -113,8 +112,6 @@
     <string name="ff_rewind">Fast forward/Rewind</string>
     <string name="play_pause_ff_rewind">Play/Pause and Fast forward/Rewind</string>
     <string name="none">None</string>
-    <string name="auto">Auto</string>
-    <string name="enable">Enable</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="media_library">Media library</string>
@@ -154,8 +151,6 @@
     <string name="subtitle_font">Subtitle font</string>
     <string name="external_subtitle_font_import">Import external subtitle font</string>
     <string name="external_subtitle_font_import_desc">Import one or more .ttf or .otf subtitle font files</string>
-    <string name="external_subtitle_font_current">Current imported font</string>
-    <string name="external_subtitle_font_not_imported">Not imported</string>
     <string name="external_subtitle_font_clear">Clear imported subtitle font</string>
     <string name="external_subtitle_font_clear_desc">Remove the current imported subtitle font and use built-in fonts again</string>
     <string name="external_subtitle_font_notice_title">External subtitle font notice</string>
@@ -396,14 +391,12 @@
     <string name="crash_screen_restart">Restart the app</string>
     <string name="crash_screen_feedback_toast">The app crashed unexpectedly. Please include the crash log when reporting the issue.</string>
     <string name="crash_screen_startup_timeout">The app did not finish starting within %1$d seconds. It has opened the recovery page so you can inspect and share the logs.</string>
-    <string name="privacy_protection">Privacy protection</string>
-    <string name="privacy_protection_description">Prevent screenshots and hide app content in recents</string>
     <string name="prevent_screenshots">Prevent screenshots</string>
     <string name="prevent_screenshots_description">Block screenshots and screen recording inside the app</string>
     <string name="hide_in_recents">Hide content in recents</string>
     <string name="hide_in_recents_description">Hide app preview in the recent tasks screen</string>
     <string name="general_name">General</string>
-    <string name="general_description">User data options</string>
+    <string name="general_description">Privacy, backup and reset</string>
     <string name="user_data">User data</string>
     <string name="delete_video_cache">Delete video cache</string>
     <string name="delete_video_cache_description">Delete cached thumbnails, media list snapshots, subtitles, and MKV seek data</string>

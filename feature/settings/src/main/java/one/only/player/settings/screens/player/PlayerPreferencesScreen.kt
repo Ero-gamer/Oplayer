@@ -137,6 +137,13 @@ private fun PlayerPreferencesContent(
                     isChecked = uiState.preferences.shouldDimVideoWhenControlsVisible,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleDimVideoWhenControlsVisible) },
                 )
+                ClickablePreferenceItem(
+                    modifier = Modifier.testTag("item_settings_player_customize_controls"),
+                    title = stringResource(id = R.string.customize_player_controls),
+                    description = stringResource(id = R.string.customize_player_controls_description),
+                    icon = AppIcons.Edit,
+                    onClick = onCustomizeControlsClick,
+                )
             }
 
             PreferenceGroup {
@@ -166,16 +173,6 @@ private fun PlayerPreferencesContent(
                     icon = AppIcons.Brightness,
                     isChecked = uiState.preferences.shouldRememberPlayerBrightness,
                     onClick = { onEvent(PlayerPreferencesUiEvent.ToggleRememberBrightnessLevel) },
-                )
-            }
-
-            PreferenceGroup {
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_player_customize_controls"),
-                    title = stringResource(id = R.string.customize_player_controls),
-                    description = stringResource(id = R.string.customize_player_controls_description),
-                    icon = AppIcons.Edit,
-                    onClick = onCustomizeControlsClick,
                 )
             }
 

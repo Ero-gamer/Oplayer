@@ -16,6 +16,7 @@ import one.only.player.core.common.Logger
 import one.only.player.core.data.repository.PreferencesRepository
 import one.only.player.core.data.repository.SettingsBackupManager
 import one.only.player.core.media.sync.MediaInfoSynchronizer
+import one.only.player.core.model.ApplicationPreferences
 import one.only.player.core.model.SettingsBackup
 
 @HiltViewModel
@@ -29,12 +30,26 @@ class GeneralPreferencesViewModel @Inject constructor(
         private const val TAG = "GeneralPreferencesViewModel"
     }
 
-    private val uiStateInternal = MutableStateFlow(GeneralPreferencesUiState())
+    private val uiStateInternal = MutableStateFlow(
+        GeneralPreferencesUiState(
+            preferences = preferencesRepository.applicationPreferences.value,
+        ),
+    )
     val uiState = uiStateInternal.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            preferencesRepository.applicationPreferences.collect { preferences ->
+                uiStateInternal.update { it.copy(preferences = preferences) }
+            }
+        }
+    }
 
     fun onEvent(event: GeneralPreferencesUiEvent) {
         when (event) {
             is GeneralPreferencesUiEvent.ShowDialog -> showDialog(event.value)
+            GeneralPreferencesUiEvent.TogglePreventScreenshots -> togglePreventScreenshots()
+            GeneralPreferencesUiEvent.ToggleHideInRecents -> toggleHideInRecents()
             GeneralPreferencesUiEvent.ClearVideoCache -> clearVideoCache()
             GeneralPreferencesUiEvent.ResetSettings -> resetSettings()
             GeneralPreferencesUiEvent.BackupSettings -> backupSettings()
@@ -47,6 +62,22 @@ class GeneralPreferencesViewModel @Inject constructor(
 
     private fun showDialog(value: GeneralPreferencesDialog?) {
         uiStateInternal.update { it.copy(showDialog = value) }
+    }
+
+    private fun togglePreventScreenshots() {
+        viewModelScope.launch {
+            preferencesRepository.updateApplicationPreferences {
+                it.copy(shouldPreventScreenshots = !it.shouldPreventScreenshots)
+            }
+        }
+    }
+
+    private fun toggleHideInRecents() {
+        viewModelScope.launch {
+            preferencesRepository.updateApplicationPreferences {
+                it.copy(shouldHideInRecents = !it.shouldHideInRecents)
+            }
+        }
     }
 
     private fun clearVideoCache() {
@@ -121,6 +152,7 @@ data class GeneralPreferencesUiState(
     val showDialog: GeneralPreferencesDialog? = null,
     val pendingAction: GeneralPreferencesPendingAction? = null,
     val resultMessage: GeneralPreferencesResultMessage? = null,
+    val preferences: ApplicationPreferences = ApplicationPreferences(),
 )
 
 sealed interface GeneralPreferencesPendingAction {
@@ -144,6 +176,8 @@ sealed interface GeneralPreferencesUiEvent {
     data class ShowDialog(val value: GeneralPreferencesDialog?) : GeneralPreferencesUiEvent
     data class OnBackupFileSelected(val context: Context, val uri: Uri?) : GeneralPreferencesUiEvent
     data class OnRestoreFileSelected(val context: Context, val uri: Uri?) : GeneralPreferencesUiEvent
+    data object TogglePreventScreenshots : GeneralPreferencesUiEvent
+    data object ToggleHideInRecents : GeneralPreferencesUiEvent
     data object ClearVideoCache : GeneralPreferencesUiEvent
     data object ResetSettings : GeneralPreferencesUiEvent
     data object BackupSettings : GeneralPreferencesUiEvent

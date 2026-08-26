@@ -24,7 +24,6 @@ internal enum class DebugPageRoute(val id: String) {
     SETTINGS_DECODER("settings.decoder"),
     SETTINGS_AUDIO("settings.audio"),
     SETTINGS_SUBTITLE("settings.subtitle"),
-    SETTINGS_PRIVACY("settings.privacy"),
     SETTINGS_GENERAL("settings.general"),
     SETTINGS_ABOUT("settings.about"),
     SETTINGS_LIBRARIES("settings.libraries"),

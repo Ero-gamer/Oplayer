@@ -135,6 +135,53 @@ private fun MediaLibraryPreferencesContent(
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
             PreferenceGroup {
+                ClickablePreferenceItem(
+                    modifier = Modifier.testTag("item_settings_media_all_files_access"),
+                    title = stringResource(id = R.string.all_files_access_title),
+                    description = stringResource(id = R.string.media_library_all_files_access_desc),
+                    icon = AppIcons.Settings,
+                    onClick = onOpenAllFilesAccessSettings,
+                )
+                PreferenceSwitch(
+                    modifier = Modifier.testTag("switch_settings_media_ignore_nomedia"),
+                    title = stringResource(id = R.string.ignore_nomedia_files),
+                    description = stringResource(id = R.string.ignore_nomedia_files_desc),
+                    icon = AppIcons.HideSource,
+                    isEnabled = hasAllFilesAccess,
+                    isChecked = preferences.shouldIgnoreNoMediaFiles,
+                    onClick = {
+                        onToggleIgnoreNoMediaFiles(!preferences.shouldIgnoreNoMediaFiles)
+                    },
+                )
+                PreferenceSwitch(
+                    modifier = Modifier.testTag("switch_settings_media_recycle_bin"),
+                    title = stringResource(id = R.string.recycle_bin),
+                    description = stringResource(id = R.string.recycle_bin_desc),
+                    icon = AppIcons.DeleteSweep,
+                    isEnabled = hasAllFilesAccess,
+                    isChecked = preferences.isRecycleBinEnabled,
+                    onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRecycleBinEnabled) },
+                )
+            }
+
+            PreferenceGroup {
+                ClickablePreferenceItem(
+                    modifier = Modifier.testTag("item_settings_media_scan_folders"),
+                    title = stringResource(id = R.string.scan_folders),
+                    description = stringResource(id = R.string.scan_folders_desc),
+                    icon = AppIcons.Folder,
+                    onClick = onScanFolderSettingClick,
+                )
+                ClickablePreferenceItem(
+                    modifier = Modifier.testTag("item_settings_media_folders"),
+                    title = stringResource(id = R.string.manage_folders),
+                    description = stringResource(id = R.string.manage_folders_desc),
+                    icon = AppIcons.FolderOff,
+                    onClick = onFolderSettingClick,
+                )
+            }
+
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_media_mark_last_played"),
                     title = stringResource(id = R.string.mark_last_played_media),
@@ -152,53 +199,6 @@ private fun MediaLibraryPreferencesContent(
                     icon = AppIcons.History,
                     isChecked = preferences.shouldRestoreLastPlayedMediaInFolders,
                     onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRestoreLastPlayedMediaInFolders) },
-                )
-            }
-
-            PreferenceGroup {
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_media_all_files_access"),
-                    title = stringResource(id = R.string.all_files_access_title),
-                    description = stringResource(id = R.string.media_library_all_files_access_desc),
-                    icon = AppIcons.Settings,
-                    onClick = onOpenAllFilesAccessSettings,
-                )
-                PreferenceSwitch(
-                    modifier = Modifier.testTag("switch_settings_media_recycle_bin"),
-                    title = stringResource(id = R.string.recycle_bin),
-                    description = stringResource(id = R.string.recycle_bin_desc),
-                    icon = AppIcons.DeleteSweep,
-                    isEnabled = hasAllFilesAccess,
-                    isChecked = preferences.isRecycleBinEnabled,
-                    onClick = { onEvent(MediaLibraryPreferencesUiEvent.ToggleRecycleBinEnabled) },
-                )
-            }
-
-            PreferenceGroup {
-                PreferenceSwitch(
-                    modifier = Modifier.testTag("switch_settings_media_ignore_nomedia"),
-                    title = stringResource(id = R.string.ignore_nomedia_files),
-                    description = stringResource(id = R.string.ignore_nomedia_files_desc),
-                    icon = AppIcons.HideSource,
-                    isEnabled = hasAllFilesAccess,
-                    isChecked = preferences.shouldIgnoreNoMediaFiles,
-                    onClick = {
-                        onToggleIgnoreNoMediaFiles(!preferences.shouldIgnoreNoMediaFiles)
-                    },
-                )
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_media_scan_folders"),
-                    title = stringResource(id = R.string.scan_folders),
-                    description = stringResource(id = R.string.scan_folders_desc),
-                    icon = AppIcons.Folder,
-                    onClick = onScanFolderSettingClick,
-                )
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_media_folders"),
-                    title = stringResource(id = R.string.manage_folders),
-                    description = stringResource(id = R.string.manage_folders_desc),
-                    icon = AppIcons.FolderOff,
-                    onClick = onFolderSettingClick,
                 )
             }
 

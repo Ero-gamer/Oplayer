@@ -11,9 +11,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.unit.dp
 
-internal val MingCutePinch: ImageVector by lazy {
+internal val MingCuteBorderOuter: ImageVector by lazy {
     ImageVector.Builder(
-        name = "MingCute.Pinch",
+        name = "MingCute.BorderOuter",
         defaultWidth = 24.dp,
         defaultHeight = 24.dp,
         viewportWidth = 24f,
@@ -21,7 +21,7 @@ internal val MingCutePinch: ImageVector by lazy {
         autoMirror = false,
     ).apply {
         addPath(
-            pathData = PathParser().parsePathString("M11 11V5.5a1.5 1.5 0 0 0-3 0V13c-2-2.5-3-3-5-2l3.065 6.13A7 7 0 0 0 12.326 21H13a7 7 0 0 0 7-7v-1m-9-1V3.5a1.5 1.5 0 0 1 3 0V11v-.5a1.5 1.5 0 0 1 3 0V12v-.5a1.5 1.5 0 0 1 3 0v1.833").toNodes(),
+            pathData = PathParser().parsePathString("M12 8H12.01M8 12H8.01M12 12H12.01M16 12H16.01M12 16H12.01M5 20H19C19.5523 20 20 19.5523 20 19V5C20 4.44772 19.5523 4 19 4H5C4.44772 4 4 4.44772 4 5V19C4 19.5523 4.44772 20 5 20Z").toNodes(),
             pathFillType = PathFillType.NonZero,
             fill = null,
             stroke = SolidColor(Color.Black),

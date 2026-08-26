@@ -195,7 +195,6 @@ enum class Setting {
     DECODER,
     AUDIO,
     SUBTITLE,
-    PRIVACY,
     GENERAL,
     ABOUT,
 }
@@ -220,7 +219,6 @@ private enum class SettingSection(
     ),
     SYSTEM_AND_SUPPORT(
         rows = listOf(
-            SettingRow.PRIVACY,
             SettingRow.GENERAL,
             SettingRow.ABOUT,
         ),
@@ -359,19 +357,10 @@ internal enum class SettingRow(
             R.string.remember_subtitle_track,
             R.string.subtitle_font,
             R.string.external_subtitle_font_import,
+            R.string.external_subtitle_font_clear,
             R.string.subtitle_text_encoding,
             R.string.embedded_styles,
             R.string.system_caption_style,
-        ),
-    ),
-    PRIVACY(
-        titleResId = R.string.privacy_protection,
-        descriptionResId = R.string.privacy_protection_description,
-        icon = AppIcons.HideSource,
-        setting = Setting.PRIVACY,
-        subSettingResIds = listOf(
-            R.string.prevent_screenshots,
-            R.string.hide_in_recents,
         ),
     ),
     GENERAL(
@@ -380,10 +369,12 @@ internal enum class SettingRow(
         icon = AppIcons.ExtraSettings,
         setting = Setting.GENERAL,
         subSettingResIds = listOf(
-            R.string.delete_video_cache,
-            R.string.reset_settings,
+            R.string.prevent_screenshots,
+            R.string.hide_in_recents,
             R.string.backup_settings,
             R.string.restore_settings,
+            R.string.delete_video_cache,
+            R.string.reset_settings,
         ),
     ),
     ABOUT(

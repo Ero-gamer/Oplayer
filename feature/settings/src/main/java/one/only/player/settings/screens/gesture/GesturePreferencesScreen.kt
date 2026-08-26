@@ -156,7 +156,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_brightness"),
                     title = stringResource(id = R.string.brightness_gesture),
                     description = stringResource(id = R.string.brightness_gesture_description),
-                    icon = AppIcons.SwipeVertical,
+                    icon = AppIcons.Brightness,
                     isChecked = uiState.preferences.isBrightnessSwipeGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnableBrightnessSwipeGesture) },
                 )
@@ -186,7 +186,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_volume"),
                     title = stringResource(id = R.string.volume_gesture),
                     description = stringResource(id = R.string.volume_gesture_description),
-                    icon = AppIcons.SwipeVertical,
+                    icon = AppIcons.VolumeUp,
                     isChecked = uiState.preferences.isVolumeSwipeGestureEnabled,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnableVolumeSwipeGesture) },
                 )
@@ -222,9 +222,6 @@ private fun GesturePreferencesContent(
                     onChecked = { onEvent(GesturePreferencesUiEvent.ToggleDoubleTapGesture) },
                     onClick = { onEvent(GesturePreferencesUiEvent.ShowDialog(GesturePreferenceDialog.DoubleTapDialog)) },
                 )
-            }
-
-            PreferenceGroup {
                 PreferenceSwitchWithDivider(
                     modifier = Modifier.testTag("item_settings_gesture_long_press"),
                     switchModifier = Modifier.testTag("switch_settings_gesture_long_press"),
@@ -239,7 +236,7 @@ private fun GesturePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_gesture_long_press_variable_speed"),
                     title = stringResource(id = R.string.long_press_variable_speed),
                     description = stringResource(id = R.string.long_press_variable_speed_desc),
-                    icon = AppIcons.SwipeHorizontal,
+                    icon = AppIcons.Speed,
                     isEnabled = uiState.preferences.shouldUseLongPressControls,
                     isChecked = uiState.preferences.shouldUseLongPressVariableSpeed,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleUseLongPressVariableSpeed) },

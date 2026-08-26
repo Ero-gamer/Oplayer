@@ -27,13 +27,11 @@ import one.only.player.settings.navigation.navigateToLogs
 import one.only.player.settings.navigation.navigateToMediaLibraryPreferencesScreen
 import one.only.player.settings.navigation.navigateToPlayerControlsCustomize
 import one.only.player.settings.navigation.navigateToPlayerPreferences
-import one.only.player.settings.navigation.navigateToPrivacyPreferences
 import one.only.player.settings.navigation.navigateToScanFolderPreferencesScreen
 import one.only.player.settings.navigation.navigateToSubtitlePreferences
 import one.only.player.settings.navigation.navigateToThumbnailPreferencesScreen
 import one.only.player.settings.navigation.playerControlsCustomizeScreen
 import one.only.player.settings.navigation.playerPreferencesScreen
-import one.only.player.settings.navigation.privacyPreferencesScreen
 import one.only.player.settings.navigation.scanFolderPreferencesScreen
 import one.only.player.settings.navigation.subtitlePreferencesScreen
 import one.only.player.settings.navigation.thumbnailPreferencesScreen
@@ -88,9 +86,6 @@ fun NavGraphBuilder.settingsDetailNavGraph(
     subtitlePreferencesScreen(
         onNavigateUp = navController::navigateUp,
     )
-    privacyPreferencesScreen(
-        onNavigateUp = navController::navigateUp,
-    )
     generalPreferencesScreen(
         onNavigateUp = navController::navigateUp,
     )
@@ -116,7 +111,6 @@ private fun NavHostController.navigateToSetting(setting: Setting) {
         Setting.DECODER -> navigateToDecoderPreferences()
         Setting.AUDIO -> navigateToAudioPreferences()
         Setting.SUBTITLE -> navigateToSubtitlePreferences()
-        Setting.PRIVACY -> navigateToPrivacyPreferences()
         Setting.GENERAL -> navigateToGeneralPreferences()
         Setting.ABOUT -> navigateToAboutPreferences()
     }

@@ -134,6 +134,9 @@ private fun AudioPreferencesContent(
                     isChecked = uiState.preferences.shouldPauseOnHeadsetDisconnect,
                     onClick = { onEvent(AudioPreferencesUiEvent.TogglePauseOnHeadsetDisconnect) },
                 )
+            }
+
+            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_system_volume_panel"),
                     title = stringResource(id = R.string.system_volume_panel),
@@ -142,9 +145,6 @@ private fun AudioPreferencesContent(
                     isChecked = uiState.preferences.shouldShowSystemVolumePanel,
                     onClick = { onEvent(AudioPreferencesUiEvent.ToggleShowSystemVolumePanel) },
                 )
-            }
-
-            PreferenceGroup {
                 PreferenceSwitch(
                     modifier = Modifier.testTag("switch_settings_audio_remember_volume"),
                     title = stringResource(id = R.string.remember_volume_level),

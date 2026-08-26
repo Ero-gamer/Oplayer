@@ -100,8 +100,6 @@
     <string name="subtitle_font">字幕字型</string>
     <string name="external_subtitle_font_import">匯入外部字幕字型</string>
     <string name="external_subtitle_font_import_desc">匯入一個或多個 .ttf 或 .otf 字幕字型檔案</string>
-    <string name="external_subtitle_font_current">目前匯入字型</string>
-    <string name="external_subtitle_font_not_imported">未匯入</string>
     <string name="external_subtitle_font_clear">清除匯入字幕字型</string>
     <string name="external_subtitle_font_clear_desc">移除目前匯入字幕字型並恢復使用內建字型</string>
     <string name="external_subtitle_font_notice_title">外部字幕字型提示</string>
@@ -170,7 +168,6 @@
     <string name="monospace">等寬字型</string>
     <string name="folder_path">資料夾路徑</string>
     <string name="appearance_description">調整此應用程式以符合您的喜好</string>
-    <string name="enable">啟用</string>
     <string name="video_zoom">影片縮放</string>
     <string name="mirror_video">鏡像影片</string>
     <string name="media_library">媒體庫</string>
@@ -179,7 +176,6 @@
     <string name="remember_brightness_level_description">記住播放時的亮度等級</string>
     <string name="preferred_subtitle_lang_description">預設使用的字幕軌語言</string>
     <string name="largest">最大</string>
-    <string name="auto">自動</string>
     <string name="sort">排序</string>
     <string name="sleep_timer">睡眠定時</string>
     <string name="sleep_timer_minutes">%d 分鐘</string>
@@ -195,7 +191,6 @@
     <string name="enable_video_filters">啟用影片濾鏡</string>
     <string name="enable_video_filters_description">關閉後跳過 GPU 影片濾鏡以節省電量</string>
     <string name="video_filters_unavailable_software_decoder">軟體解碼不支援影片濾鏡</string>
-    <string name="fast_seek">快速跳轉</string>
     <string name="select_playback_speed">選擇播放速度</string>
     <string name="seek_gesture">跳轉手勢</string>
     <string name="require_audio_focus_desc">當此播放器播放影片時，暫停其他播放器，反之亦然。</string>
@@ -383,14 +378,12 @@
     <string name="crash_screen_restart">重新啟動應用程式</string>
     <string name="crash_screen_feedback_toast">應用程式意外崩潰，請附上記錄回報</string>
     <string name="crash_screen_startup_timeout">應用程式啟動超過 %1$d 秒仍未完成，已進入復原頁面，你可以查看並分享記錄。</string>
-    <string name="privacy_protection">隱私保護</string>
-    <string name="privacy_protection_description">禁止截圖並隱藏最近任務中的應用內容</string>
     <string name="prevent_screenshots">禁止截圖</string>
     <string name="prevent_screenshots_description">阻止在應用內截圖和錄影</string>
     <string name="hide_in_recents">隱藏最近任務預覽</string>
     <string name="hide_in_recents_description">在最近任務畫面隱藏應用預覽內容</string>
     <string name="general_name">一般</string>
-    <string name="general_description">使用者資料選項</string>
+    <string name="general_description">隱私、備份與重置</string>
     <string name="user_data">使用者資料</string>
     <string name="delete_video_cache">刪除影片快取</string>
     <string name="delete_video_cache_description">刪除已快取的縮圖、媒體清單快照、字幕和 MKV 跳轉資料。</string>

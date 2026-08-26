@@ -187,7 +187,7 @@ private fun SubtitlePreferencesContent(
                     modifier = Modifier.testTag("switch_settings_subtitle_embedded_styles"),
                     title = stringResource(R.string.embedded_styles),
                     description = stringResource(R.string.embedded_styles_desc),
-                    icon = AppIcons.Style,
+                    icon = AppIcons.Brush,
                     isChecked = uiState.preferences.shouldApplyEmbeddedStyles,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ToggleApplyEmbeddedStyles) },
                 )
@@ -213,16 +213,12 @@ private fun SubtitlePreferencesContent(
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_import_external_font"),
                     title = stringResource(id = R.string.external_subtitle_font_import),
-                    description = stringResource(id = R.string.external_subtitle_font_import_desc),
+                    // 已导入时显示字体名，未导入时说明支持的格式
+                    description = uiState.externalFontName.ifBlank {
+                        stringResource(id = R.string.external_subtitle_font_import_desc)
+                    },
                     icon = AppIcons.FileOpen,
                     onClick = { onEvent(SubtitlePreferencesUiEvent.ImportExternalSubtitleFont) },
-                )
-                ClickablePreferenceItem(
-                    modifier = Modifier.testTag("item_settings_subtitle_current_external_font"),
-                    title = stringResource(id = R.string.external_subtitle_font_current),
-                    description = uiState.externalFontName.ifBlank { stringResource(id = R.string.external_subtitle_font_not_imported) },
-                    icon = AppIcons.Font,
-                    isEnabled = false,
                 )
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_subtitle_clear_external_font"),

@@ -1,5 +1,6 @@
 package one.only.player.settings.screens.general
 
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
@@ -27,6 +28,7 @@ import one.only.player.core.ui.components.CancelButton
 import one.only.player.core.ui.components.ClickablePreferenceItem
 import one.only.player.core.ui.components.PageContentTopPadding
 import one.only.player.core.ui.components.PreferenceGroup
+import one.only.player.core.ui.components.PreferenceSwitch
 import one.only.player.core.ui.components.SettingsGroupGap
 import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.withBottomFallback
@@ -136,6 +138,28 @@ private fun GeneralPreferencesContent(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(SettingsGroupGap),
         ) {
+            val isHideInRecentsAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
+            PreferenceGroup {
+                PreferenceSwitch(
+                    modifier = Modifier.testTag("switch_settings_privacy_prevent_screenshots"),
+                    title = stringResource(id = R.string.prevent_screenshots),
+                    description = stringResource(id = R.string.prevent_screenshots_description),
+                    icon = AppIcons.HideSource,
+                    isChecked = uiState.preferences.shouldPreventScreenshots,
+                    onClick = { onEvent(GeneralPreferencesUiEvent.TogglePreventScreenshots) },
+                )
+                if (isHideInRecentsAvailable) {
+                    PreferenceSwitch(
+                        modifier = Modifier.testTag("switch_settings_privacy_hide_in_recents"),
+                        title = stringResource(id = R.string.hide_in_recents),
+                        description = stringResource(id = R.string.hide_in_recents_description),
+                        icon = AppIcons.Background,
+                        isChecked = uiState.preferences.shouldHideInRecents,
+                        onClick = { onEvent(GeneralPreferencesUiEvent.ToggleHideInRecents) },
+                    )
+                }
+            }
             PreferenceGroup {
                 ClickablePreferenceItem(
                     modifier = Modifier.testTag("item_settings_general_backup_settings"),
