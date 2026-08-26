@@ -102,7 +102,6 @@
     <string name="no">否</string>
     <string name="play_pause_ff_rewind">播放/暂停和快进/快退</string>
     <string name="media_library">媒体库</string>
-    <string name="force_rescan_storage">强制重新扫描存储空间</string>
     <string name="media_library_description">扫描和管理媒体库</string>
     <string name="video">视频</string>
     <string name="videos">视频</string>
@@ -331,7 +330,6 @@
     <string name="logs_cleared">日志已清空</string>
     <string name="logs_clear_failed">清空日志失败</string>
     <string name="logs_share_failed">分享日志失败</string>
-    <string name="device_info">设备信息</string>
     <string name="architecture">架构</string>
     <string name="android_version">安卓版本</string>
     <string name="error_opening_link">未找到可打开此链接的应用</string>

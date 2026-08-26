@@ -118,7 +118,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="media_library">Media library</string>
-    <string name="force_rescan_storage">Force rescan storage</string>
     <string name="media_library_description">Scan and manage media library</string>
     <string name="manage_folders">Manage folders</string>
     <string name="ignore_nomedia_files">Ignore .nomedia files</string>
@@ -338,7 +337,6 @@
     <string name="logs_cleared">Logs cleared</string>
     <string name="logs_clear_failed">Failed to clear logs</string>
     <string name="logs_share_failed">Failed to share logs</string>
-    <string name="device_info">Device info</string>
     <string name="architecture">Architecture</string>
     <string name="android_version">Android version</string>
     <string name="error_opening_link">No app found to handle this link</string>

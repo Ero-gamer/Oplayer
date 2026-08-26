@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="size">大小</string>
-    <string name="force_rescan_storage">強制掃描儲存區</string>
     <string name="dynamic_theme">動態色主題</string>
     <string name="fields">欄位</string>
     <string name="navigate_up">向上巡覽</string>
@@ -335,7 +334,6 @@
     <string name="logs_cleared">日誌已清空</string>
     <string name="logs_clear_failed">清空日誌失敗</string>
     <string name="logs_share_failed">分享日誌失敗</string>
-    <string name="device_info">裝置資訊</string>
     <string name="architecture">架構</string>
     <string name="android_version">Android 版本</string>
     <string name="error_opening_link">沒有應用程式可開啟這個連結</string>
