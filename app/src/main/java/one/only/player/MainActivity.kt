@@ -463,16 +463,17 @@ class MainActivity : AppCompatActivity() {
                     shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
                     floatingBlurBackdrop = floatingBlurBackdrop,
                     onTabSelected = { destination ->
-                        if (mainNavController.currentDestination?.hasRoute(
-                                route = RootPagerRoute::class.qualifiedName!!,
-                                arguments = null,
-                            ) == true
-                        ) {
-                            rootNavigationState.animateTo(destination)
-                        } else {
-                            // 先定位目标页，让返回动画直接揭示正确的根页面。
-                            rootNavigationState.jumpTo(destination)
-                            mainNavController.popBackStack(RootPagerRoute, inclusive = false)
+                        if (destination != rootNavigationState.selectedDestination) {
+                            if (mainNavController.currentDestination?.hasRoute(
+                                    route = RootPagerRoute::class.qualifiedName!!,
+                                    arguments = null,
+                                ) == true
+                            ) {
+                                rootNavigationState.animateTo(destination)
+                            } else {
+                                rootNavigationState.jumpTo(destination)
+                                mainNavController.popBackStack(RootPagerRoute, inclusive = false)
+                            }
                         }
                     },
                     modifier = Modifier.align(Alignment.BottomCenter),

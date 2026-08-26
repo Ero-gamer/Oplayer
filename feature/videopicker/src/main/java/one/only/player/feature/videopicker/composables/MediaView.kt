@@ -43,6 +43,8 @@ import one.only.player.feature.videopicker.state.rememberSelectionManager
 
 internal val MediaItemContentPadding = 8.dp
 
+internal val MediaSectionTitleStartPadding = 15.dp
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MediaView(
@@ -72,7 +74,11 @@ fun MediaView(
             MediaLayoutMode.LIST -> CardItemGap
             MediaLayoutMode.GRID -> CardItemGap
         }
-        val sectionTitleStartPadding = if (preferences.mediaViewMode == MediaViewMode.FOLDER_TREE) 15.dp else 0.dp
+        val sectionTitleStartPadding = if (preferences.mediaViewMode == MediaViewMode.FOLDER_TREE) {
+            MediaSectionTitleStartPadding
+        } else {
+            0.dp
+        }
         val maxWidth = this.maxWidth - (contentHorizontalPadding * 2) - itemSpacing
         val maxFolders = (maxWidth / folderMinWidth).toInt()
         val maxVideos = (maxWidth / videoMinWidth).toInt()

@@ -79,6 +79,7 @@ import one.only.player.feature.videopicker.composables.LocalNetworkPermissionMis
 import one.only.player.feature.videopicker.composables.MediaItemContentPadding
 import one.only.player.feature.videopicker.composables.MediaMessageState
 import one.only.player.feature.videopicker.composables.MediaMetaText
+import one.only.player.feature.videopicker.composables.MediaSectionTitleStartPadding
 import one.only.player.feature.videopicker.composables.MenuAction
 import one.only.player.feature.videopicker.composables.MenuActionsPopup
 import one.only.player.feature.videopicker.composables.QuickSettingsDialog
@@ -245,6 +246,7 @@ internal fun CloudBrowseScreen(
     }
 
     val scrollBehavior = MiuixScrollBehavior()
+    val shouldUseLargeTopBar = !isInSelectionMode && uiState.isAtRoot
 
     Scaffold(
         topBar = {
@@ -326,10 +328,38 @@ internal fun CloudBrowseScreen(
                         )
                     },
                 )
-            } else {
+            } else if (shouldUseLargeTopBar) {
                 TopAppBar(
                     title = serverName,
                     scrollBehavior = scrollBehavior,
+                    navigationIcon = {
+                        MiuixIconButton(
+                            onClick = onNavigateUp,
+                            modifier = Modifier.padding(start = 12.dp),
+                        ) {
+                            MiuixIcon(
+                                imageVector = AppIcons.ArrowBack,
+                                contentDescription = stringResource(R.string.navigate_up),
+                                tint = MiuixTheme.colorScheme.onBackground,
+                            )
+                        }
+                    },
+                    actions = {
+                        MiuixIconButton(
+                            onClick = { shouldShowQuickSettingsDialog = true },
+                            modifier = Modifier.testTag("btn_cloud_quick_settings"),
+                        ) {
+                            MiuixIcon(
+                                imageVector = AppIcons.DashBoard,
+                                contentDescription = stringResource(R.string.cloud_quick_settings),
+                                tint = MiuixTheme.colorScheme.onBackground,
+                            )
+                        }
+                    },
+                )
+            } else {
+                SmallTopAppBar(
+                    title = serverName,
                     navigationIcon = {
                         MiuixIconButton(
                             onClick = onNavigateUp,
@@ -368,7 +398,10 @@ internal fun CloudBrowseScreen(
                 modifier = Modifier
                     .fillMaxSize(),
             ) {
-                val contentPadding = innerPadding.copy(top = PageContentTopPadding, start = 0.dp).withBottomFallback()
+                val contentPadding = innerPadding.copy(
+                    top = if (shouldUseLargeTopBar) PageContentTopPadding else 0.dp,
+                    start = 0.dp,
+                ).withBottomFallback()
                 val refreshTexts = rememberPullToRefreshTexts()
                 PullToRefresh(
                     modifier = Modifier.fillMaxSize(),
@@ -491,6 +524,11 @@ private fun CloudRemoteMediaView(
     BoxWithConstraints {
         val contentHorizontalPadding = 8.dp
         val itemSpacing = CardItemGap
+        val sectionTitlePadding = PaddingValues(
+            start = MediaSectionTitleStartPadding,
+            top = 4.dp,
+            bottom = 4.dp,
+        )
         val maxWidth = this.maxWidth - (contentHorizontalPadding * 2) - itemSpacing
         val maxFolders = (maxWidth / folderMinWidth).toInt()
         val maxVideos = (maxWidth / videoMinWidth).toInt()
@@ -518,7 +556,10 @@ private fun CloudRemoteMediaView(
         ) {
             if (folders.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    ListSectionTitle(text = stringResource(id = R.string.folders) + " (${folders.size})")
+                    ListSectionTitle(
+                        text = stringResource(id = R.string.folders) + " (${folders.size})",
+                        contentPadding = sectionTitlePadding,
+                    )
                 }
             }
             itemsIndexed(
@@ -547,7 +588,10 @@ private fun CloudRemoteMediaView(
 
             if (videos.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    ListSectionTitle(text = stringResource(id = R.string.videos) + " (${videos.size})")
+                    ListSectionTitle(
+                        text = stringResource(id = R.string.videos) + " (${videos.size})",
+                        contentPadding = sectionTitlePadding,
+                    )
                 }
             }
             itemsIndexed(
