@@ -169,6 +169,12 @@ class PlayerService : MediaSessionService() {
         private const val DEFAULT_AMBIENCE_TARGET_ASPECT_RATIO = 16f / 9f
         private val EXACT_SEEK_PARAMETERS = SeekParameters.DEFAULT
         private val REMOTE_SOURCE_URI_SCHEMES = setOf("smb", "ftp")
+
+        // Media3 只对 file、content 等本地 scheme 用小缓冲，smb、ftp 会分到 125 MB 视频缓冲，
+        // 播放高码率视频时超出堆上限就会 OOM，所以按可用堆重新计算上限
+        private const val TARGET_BUFFER_HEAP_FRACTION = 6
+        private const val MIN_TARGET_BUFFER_BYTES = 16L * 1024 * 1024
+        private const val MAX_TARGET_BUFFER_BYTES = 64L * 1024 * 1024
     }
 
     @Inject
@@ -1622,7 +1628,14 @@ class PlayerService : MediaSessionService() {
         ThemeConfig.ON -> true
     }
 
-    private fun createLoadControl(): DefaultLoadControl = DefaultLoadControl.Builder().build()
+    private fun createLoadControl(): DefaultLoadControl = DefaultLoadControl.Builder()
+        .setTargetBufferBytes(targetBufferBytes())
+        .build()
+
+    // 缓冲上限取可用堆的六分之一，并限制在 16 MB 到 64 MB 之间
+    private fun targetBufferBytes(): Int = (Runtime.getRuntime().maxMemory() / TARGET_BUFFER_HEAP_FRACTION)
+        .coerceIn(MIN_TARGET_BUFFER_BYTES, MAX_TARGET_BUFFER_BYTES)
+        .toInt()
 
     private fun createPlayer(
         decoderPriority: DecoderPriority,
