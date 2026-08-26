@@ -66,12 +66,10 @@ class FtpDataSource private constructor(
             transferStarted(dataSpec)
             hasStartedTransfer = true
             return bytesRemaining
-        } catch (exception: IOException) {
+        } catch (exception: Exception) {
             close()
-            throw exception
-        } catch (exception: RuntimeException) {
-            close()
-            throw exception
+            // Media3 只会重试 IOException，其他异常会被判成致命错误
+            throw if (exception is IOException) exception else IOException("Failed to open FTP file", exception)
         }
     }
 
