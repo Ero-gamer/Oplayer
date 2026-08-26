@@ -108,7 +108,12 @@ class SmbDataSource private constructor(
 
         val bytesToRead = minOf(length.toLong(), bytesRemaining).toInt()
         val stream = inputStream ?: throw IOException("SMB file is not open")
-        val bytesRead = stream.read(buffer, offset, bytesToRead)
+        // smbj 在连接断开或被关闭时抛 RuntimeException，Media3 只会重试 IOException
+        val bytesRead = try {
+            stream.read(buffer, offset, bytesToRead)
+        } catch (exception: RuntimeException) {
+            throw IOException("Failed to read SMB file", exception)
+        }
         if (bytesRead == -1) return C.RESULT_END_OF_INPUT
 
         bytesRemaining -= bytesRead
