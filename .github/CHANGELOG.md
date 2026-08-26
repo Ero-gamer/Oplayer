@@ -1,9 +1,11 @@
-- Fix videos on SMB shares taking a very long time to start or never playing at all
-- Browse the media library as a folder tree by default
-- Stop the path panel from listing folders that open to an empty page
+- Fix the app crashing when playing high-bitrate videos from SMB, FTP or WebDAV
+- Retry automatically when reading from SMB or FTP fails instead of stopping playback
+- Keep the cloud folder you are browsing when tapping the current tab again
+- Tidy up spacing in cloud media lists and show shorter titles in subdirectories
 
 ---
 
-- 修复 SMB 共享里的视频迟迟不开始播放，甚至一直转圈的问题
-- 媒体库默认按文件夹树浏览
-- 路径面板不再列出点开后是空白的文件夹
+- 修复播放 SMB、FTP、WebDAV 上的高码率视频时闪退的问题
+- 遇到 SMB 和 FTP 读取失败时自动重试，不再直接中断播放
+- 保留正在浏览的云端目录，重复点击当前标签不再退回上层
+- 统一云端媒体列表的间距，子目录标题更简洁
