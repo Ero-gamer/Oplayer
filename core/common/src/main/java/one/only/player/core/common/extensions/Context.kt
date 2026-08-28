@@ -13,6 +13,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.storage.StorageManager
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -431,11 +432,16 @@ suspend fun ContentResolver.deleteMedia(
     }
 }
 
-fun Context.getStorageVolumes() = try {
-    getExternalFilesDirs(null)?.mapNotNull {
-        File(it.path.substringBefore("/Android")).takeIf { file -> file.exists() }
-    } ?: listOf(Environment.getExternalStorageDirectory())
+// 已挂载外部存储卷的根目录。必须走 StorageManager：应用专属目录要求卷上存在 Android/data，
+// USB OTG 通常没有该目录，据此枚举会整卷漏掉
+fun Context.getStorageVolumes(): List<File> = try {
+    getSystemService(StorageManager::class.java)
+        .storageVolumes
+        .mapNotNull { volume -> volume.directory }
+        .filter(File::exists)
+        .ifEmpty { listOf(Environment.getExternalStorageDirectory()) }
 } catch (e: Exception) {
+    Logger.error("StorageVolumes", "Failed to enumerate storage volumes", e)
     listOf(Environment.getExternalStorageDirectory())
 }
 
