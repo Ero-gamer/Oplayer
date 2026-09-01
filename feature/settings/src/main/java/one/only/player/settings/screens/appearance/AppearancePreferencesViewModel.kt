@@ -48,6 +48,7 @@ class AppearancePreferencesViewModel @Inject constructor(
             AppearancePreferencesEvent.ToggleNavigateHomeOnTitleLongPress -> toggleNavigateHomeOnTitleLongPress()
             AppearancePreferencesEvent.ToggleUseFloatingNavigationBar -> toggleUseFloatingNavigationBar()
             AppearancePreferencesEvent.ToggleBlurFloatingNavigationBar -> toggleBlurFloatingNavigationBar()
+            AppearancePreferencesEvent.ToggleShowCloudTab -> toggleShowCloudTab()
             is AppearancePreferencesEvent.ToggleEnablePredictiveBack -> {
                 toggleEnablePredictiveBack(event.isEnabled, event.onApplied)
             }
@@ -119,6 +120,14 @@ class AppearancePreferencesViewModel @Inject constructor(
         }
     }
 
+    private fun toggleShowCloudTab() {
+        viewModelScope.launch {
+            preferencesRepository.updateApplicationPreferences {
+                it.copy(shouldShowCloudTab = !it.shouldShowCloudTab)
+            }
+        }
+    }
+
     private fun toggleEnablePredictiveBack(
         isEnabled: Boolean,
         onApplied: () -> Unit,
@@ -152,6 +161,7 @@ sealed interface AppearancePreferencesEvent {
     data object ToggleNavigateHomeOnTitleLongPress : AppearancePreferencesEvent
     data object ToggleUseFloatingNavigationBar : AppearancePreferencesEvent
     data object ToggleBlurFloatingNavigationBar : AppearancePreferencesEvent
+    data object ToggleShowCloudTab : AppearancePreferencesEvent
     data class ToggleEnablePredictiveBack(
         val isEnabled: Boolean,
         val onApplied: () -> Unit,

@@ -163,6 +163,14 @@ private fun AppearancePreferencesContent(
 
             Card(modifier = Modifier.fillMaxWidth()) {
                 SwitchPreference(
+                    modifier = Modifier.testTag("switch_settings_appearance_show_cloud_tab"),
+                    title = stringResource(id = R.string.show_cloud_tab),
+                    summary = stringResource(id = R.string.show_cloud_tab_description),
+                    startAction = { PrefIcon(AppIcons.Cloud) },
+                    checked = preferences.shouldShowCloudTab,
+                    onCheckedChange = { onEvent(AppearancePreferencesEvent.ToggleShowCloudTab) },
+                )
+                SwitchPreference(
                     modifier = Modifier.testTag("switch_settings_appearance_title_long_press_home"),
                     title = stringResource(id = R.string.home_title_long_press_to_root),
                     summary = stringResource(id = R.string.home_title_long_press_to_root_description),

@@ -250,6 +250,8 @@ internal enum class SettingRow(
             R.string.floating_navigation_bar_description,
             R.string.floating_navigation_bar_blur,
             R.string.floating_navigation_bar_blur_description,
+            R.string.show_cloud_tab,
+            R.string.show_cloud_tab_description,
             R.string.predictive_back_gesture,
         ),
     ),

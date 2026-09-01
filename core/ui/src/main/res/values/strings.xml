@@ -539,6 +539,8 @@
     <string name="floating_navigation_bar_description">Use a rounded floating bottom navigation bar</string>
     <string name="floating_navigation_bar_blur">Navigation bar blur</string>
     <string name="floating_navigation_bar_blur_description">Apply blur and translucency to the bottom navigation bar</string>
+    <string name="show_cloud_tab">Show cloud tab</string>
+    <string name="show_cloud_tab_description">Show the cloud entry in the bottom navigation bar</string>
     <string name="predictive_back_gesture">Predictive back gesture</string>
     <string name="predictive_back_gesture_description">Enable predictive back gesture support</string>
     <string name="take_screenshot">Take screenshot</string>

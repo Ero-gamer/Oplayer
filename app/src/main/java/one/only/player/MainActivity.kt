@@ -84,6 +84,7 @@ import one.only.player.navigation.pagePopExitTransition
 import one.only.player.navigation.rememberRootBlurBackdrop
 import one.only.player.navigation.rememberRootBottomBarPadding
 import one.only.player.navigation.rememberRootNavigationState
+import one.only.player.navigation.rememberVisibleRootDestinations
 import one.only.player.navigation.settingsDetailNavGraph
 import one.only.player.settings.navigation.navigateToAboutPreferences
 import one.only.player.settings.navigation.navigateToAppearancePreferences
@@ -198,6 +199,7 @@ class MainActivity : AppCompatActivity() {
                     MainAppContent(
                         shouldUseFloatingNavigationBar = preferences?.shouldUseFloatingNavigationBar == true,
                         shouldBlurFloatingNavigationBar = preferences?.shouldBlurFloatingNavigationBar != false,
+                        shouldShowCloudTab = preferences?.shouldShowCloudTab != false,
                         onMediaAccessAvailable = synchronizer::startSync,
                     )
                 }
@@ -326,6 +328,7 @@ class MainActivity : AppCompatActivity() {
     private fun MainAppContent(
         shouldUseFloatingNavigationBar: Boolean,
         shouldBlurFloatingNavigationBar: Boolean,
+        shouldShowCloudTab: Boolean,
         onMediaAccessAvailable: () -> Unit,
     ) {
         val storagePermissionState = rememberRuntimePermissionState(permission = storagePermission)
@@ -372,7 +375,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         val mainNavController = rememberNavController()
-        val rootNavigationState = rememberRootNavigationState()
+        val rootDestinations = rememberVisibleRootDestinations(shouldShowCloudTab = shouldShowCloudTab)
+        val rootNavigationState = rememberRootNavigationState(destinations = rootDestinations)
         val bottomBarPadding = rememberRootBottomBarPadding(shouldUseFloatingNavigationBar)
         val floatingBlurBackdrop = rememberRootBlurBackdrop(
             shouldBlurNavigationBar = shouldBlurFloatingNavigationBar,
@@ -455,6 +459,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 RootBottomBar(
                     currentRoot = rootNavigationState.selectedDestination,
+                    destinations = rootDestinations,
                     shouldUseFloatingNavigationBar = shouldUseFloatingNavigationBar,
                     floatingBlurBackdrop = floatingBlurBackdrop,
                     onTabSelected = { destination ->

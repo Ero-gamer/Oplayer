@@ -16,6 +16,7 @@ data class ApplicationPreferences(
     val shouldEnablePredictiveBack: Boolean = false,
     val shouldPreventScreenshots: Boolean = false,
     val shouldHideInRecents: Boolean = false,
+    val shouldShowCloudTab: Boolean = true,
     val shouldMarkLastPlayedMedia: Boolean = true,
     val shouldRestoreLastPlayedMediaInFolders: Boolean = false,
     val shouldIgnoreNoMediaFiles: Boolean = false,
