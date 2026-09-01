@@ -1,5 +1,5 @@
-- Scan videos on USB drives and SD cards that were previously missed
+- Let you hide the cloud tab from the bottom bar
 
 ---
 
-- 扫描此前会被漏掉的 U 盘和 SD 卡里的视频
+- 可以在外观设置里关掉底部导航的云端入口
