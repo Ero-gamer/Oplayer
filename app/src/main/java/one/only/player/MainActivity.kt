@@ -82,6 +82,8 @@ import one.only.player.navigation.pageEnterTransition
 import one.only.player.navigation.pageExitTransition
 import one.only.player.navigation.pagePopEnterTransition
 import one.only.player.navigation.pagePopExitTransition
+import one.only.player.navigation.pagePredictivePopEnterTransition
+import one.only.player.navigation.pagePredictivePopExitTransition
 import one.only.player.navigation.rememberRootBlurBackdrop
 import one.only.player.navigation.rememberRootBottomBarPadding
 import one.only.player.navigation.rememberRootNavigationState
@@ -420,6 +422,12 @@ class MainActivity : AppCompatActivity() {
                         exitTransition = { pageExitTransition() },
                         popEnterTransition = { pagePopEnterTransition() },
                         popExitTransition = { pagePopExitTransition() },
+                        predictivePopEnterTransition = { swipeEdge ->
+                            pagePredictivePopEnterTransition(swipeEdge)
+                        },
+                        predictivePopExitTransition = { swipeEdge ->
+                            pagePredictivePopExitTransition(swipeEdge)
+                        },
                     ) {
                         composable<RootPagerRoute> {
                             RootScaffold(
