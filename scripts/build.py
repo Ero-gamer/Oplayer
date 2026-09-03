@@ -173,6 +173,16 @@ def collect_apks(console: Console, project_root: Path, app_info: AppInfo, abis: 
         console.ok(f"apk={target.relative_to(project_root)} size_mb={target.stat().st_size / 1024 / 1024:.2f}")
 
 
+def signing_args_from_env() -> list[str]:
+    pairs = (
+        ("KEYSTORE_PATH", "android.injected.signing.store.file"),
+        ("KEYSTORE_PASSWORD", "android.injected.signing.store.password"),
+        ("KEY_ALIAS", "android.injected.signing.key.alias"),
+        ("KEY_PASSWORD", "android.injected.signing.key.password"),
+    )
+    return [f"-P{property_name}={os.environ[key]}" for key, property_name in pairs if os.environ.get(key)]
+
+
 def build_apk(args: argparse.Namespace) -> None:
     start = time.monotonic()
     console = Console(args.verbose)
@@ -187,7 +197,7 @@ def build_apk(args: argparse.Namespace) -> None:
         console.ok("output dir cleaned")
 
     console.step(1, 2, "Build APK")
-    gradle_args = [assemble_task(build_type), f"-PabiFilter={','.join(abis)}"]
+    gradle_args = [assemble_task(build_type), f"-PabiFilter={','.join(abis)}", *signing_args_from_env()]
     result = run_process(console, gradlew_path(project_root), gradle_args, cwd=project_root)
     if result.returncode != 0:
         fail("apk build failed")
@@ -211,7 +221,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     apk.add_argument("-v", "--verbose", action="store_true", help="Print Gradle output and command details")
     apk.add_argument("--abi", choices=SUPPORTED_ABIS, default="armeabi-v7a", help="Target ABI")
-    apk.add_argument("--build-type", default="debug", help="Gradle build type; default: debug")
+    apk.add_argument("--build-type", default="release", help="Gradle build type; default: release")
     apk.add_argument("--clean", action="store_true", help="Remove old APK files from build/apk before building")
     apk.set_defaults(func=build_apk)
     return parser
