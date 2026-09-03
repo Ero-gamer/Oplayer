@@ -56,19 +56,12 @@ android {
             isDebuggable = true
             applicationIdSuffix = ".debug"
         }
-
-        create("release-with-debug-signing") {
-            initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("debug")
-            applicationIdSuffix = ".release"
-            matchingFallbacks.add("release")
-        }
     }
 
     splits {
         abi {
             val isBuildingBundle = gradle.startParameter.taskNames.any { it.lowercase().contains("bundle") }
-            val abiTargets = if (configuredAbiFilter.isEmpty()) listOf("arm64-v8a", "x86_64") else configuredAbiFilter
+            val abiTargets = if (configuredAbiFilter.isEmpty()) listOf("armeabi-v7a") else configuredAbiFilter
 
             isEnable = !isBuildingBundle
             reset()
@@ -88,9 +81,9 @@ android {
     }
 
     dependenciesInfo {
-        // 构建 APK 时关闭依赖元数据写入
+        // Disable dependency metadata inclusion when building APK
         includeInApk = false
-        // 构建 Android App Bundle 时关闭依赖元数据写入
+        // Disable dependency metadata inclusion when building Android App Bundle
         includeInBundle = false
     }
 }
@@ -111,7 +104,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
 
-    // Compose 依赖
+    // Compose Dependencies
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.ui)
@@ -128,7 +121,7 @@ dependencies {
 
     implementation(libs.coil.compose)
 
-    // Hilt 依赖
+    // Hilt Dependencies
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     ksp(libs.kotlin.metadata.jvm)
@@ -145,7 +138,7 @@ dependencies {
     debugImplementation(libs.kotlinx.coroutines.guava)
 }
 
-// navigationevent 1.1.2 丢失拖动中的手势进度导致预测返回动画失效，1.2.0-alpha04 已修复，stable 后移除
+// navigationevent 1.1.2 drops gesture progress during drag causing predictive back animation to break; fixed in 1.2.0-alpha04
 configurations.all {
     resolutionStrategy {
         force("androidx.navigationevent:navigationevent:1.2.0-alpha04")
