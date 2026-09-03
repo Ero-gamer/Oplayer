@@ -14,7 +14,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-SUPPORTED_ABIS = ("arm64-v8a", "x86_64")
+SUPPORTED_ABIS = ("armeabi-v7a",)
 APK_OUTPUT_DIR = Path("build/apk")
 
 
@@ -142,10 +142,6 @@ def gradlew_path(project_root: Path) -> Path:
     return project_root / ("gradlew.bat" if os.name == "nt" else "gradlew")
 
 
-def build_type_name(build_type: str) -> str:
-    return "debug" if build_type == "debug" else ""
-
-
 def assemble_task(build_type: str) -> str:
     return "assemble" + "".join(part.capitalize() for part in build_type.split("-"))
 
@@ -154,16 +150,12 @@ def apk_source_names(abi: str, build_type: str) -> list[str]:
     return [
         f"app-{abi}-{build_type}.apk",
         f"app-{abi}-{build_type}-unsigned.apk",
+        f"app-{build_type}.apk",
     ]
 
 
 def apk_target_name(app_info: AppInfo, abi: str, build_type: str) -> str:
-    parts = [app_info.name]
-    type_name = build_type_name(build_type)
-    if type_name:
-        parts.append(type_name)
-    parts.extend([abi, app_info.version_name])
-    return "-".join(parts) + ".apk"
+    return f"{app_info.name}-{build_type}-{abi}-{app_info.version_name}.apk"
 
 
 def clean_output_dir(project_root: Path) -> None:
@@ -193,10 +185,6 @@ def collect_apks(console: Console, project_root: Path, app_info: AppInfo, abis: 
 
 def signing_args_from_env() -> list[str]:
     pairs = (
-        ("ANDROID_KEYSTORE_PATH", "android.injected.signing.store.file"),
-        ("ANDROID_KEYSTORE_PASSWORD", "android.injected.signing.store.password"),
-        ("ANDROID_KEY_ALIAS", "android.injected.signing.key.alias"),
-        ("ANDROID_KEY_PASSWORD", "android.injected.signing.key.password"),
         ("KEYSTORE_PATH", "android.injected.signing.store.file"),
         ("KEYSTORE_PASSWORD", "android.injected.signing.store.password"),
         ("KEY_ALIAS", "android.injected.signing.key.alias"),
@@ -232,21 +220,18 @@ def build_apk(args: argparse.Namespace) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="only-player-build",
-        description="Build Only Player APKs and copy them into build/apk with release-ready names.",
-        epilog="Example: python scripts/build.py build-apk --abi arm64-v8a",
+        prog="build-script",
+        description="Build Android APKs for armeabi-v7a target.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
     apk = sub.add_parser(
         "build-apk",
         help="Build APK files",
-        description="Build APK files with Gradle, then copy outputs to build/apk.",
-        epilog="Name format: <app>-debug-<abi>-<version>.apk for debug, otherwise <app>-<abi>-<version>.apk.",
     )
     apk.add_argument("-v", "--verbose", action="store_true", help="Print Gradle output and command details")
-    apk.add_argument("--abi", choices=SUPPORTED_ABIS, help="Build only one ABI; default builds all supported ABIs")
-    apk.add_argument("--build-type", default="release", choices=("debug", "release", "release-with-debug-signing"), help="Gradle build type; default: release")
+    apk.add_argument("--abi", choices=SUPPORTED_ABIS, default="armeabi-v7a", help="Target ABI (default: armeabi-v7a)")
+    apk.add_argument("--build-type", default="release", help="Gradle build type; default: release")
     apk.add_argument("--clean", action="store_true", help="Remove old APK files from build/apk before building")
     apk.set_defaults(func=build_apk)
     return parser
