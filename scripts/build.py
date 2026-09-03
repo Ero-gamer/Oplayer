@@ -146,18 +146,6 @@ def assemble_task(build_type: str) -> str:
     return "assemble" + "".join(part.capitalize() for part in build_type.split("-"))
 
 
-def apk_source_names(abi: str, build_type: str) -> list[str]:
-    return [
-        f"app-{abi}-{build_type}.apk",
-        f"app-{abi}-{build_type}-unsigned.apk",
-        f"app-{build_type}.apk",
-    ]
-
-
-def apk_target_name(app_info: AppInfo, abi: str, build_type: str) -> str:
-    return f"{app_info.name}-{build_type}-{abi}-{app_info.version_name}.apk"
-
-
 def clean_output_dir(project_root: Path) -> None:
     output_dir = project_root / APK_OUTPUT_DIR
     if not output_dir.exists():
@@ -168,29 +156,21 @@ def clean_output_dir(project_root: Path) -> None:
 
 
 def collect_apks(console: Console, project_root: Path, app_info: AppInfo, abis: list[str], build_type: str) -> None:
-    source_dir = project_root / "app" / "build" / "outputs" / "apk" / build_type
+    search_dir = project_root / "app" / "build" / "outputs" / "apk"
     output_dir = project_root / APK_OUTPUT_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
-    for abi in abis:
-        source = next((source_dir / name for name in apk_source_names(abi, build_type) if (source_dir / name).exists()), None)
-        if not source:
-            expected = ", ".join(apk_source_names(abi, build_type))
-            fail(f"APK not found in {source_dir.relative_to(project_root)}: {expected}")
-        target = output_dir / apk_target_name(app_info, abi, build_type)
+
+    found_apks = list(search_dir.glob("**/*.apk"))
+    if not found_apks:
+        fail(f"No APK files found under {search_dir.relative_to(project_root)}")
+
+    for apk_file in found_apks:
+        target_name = f"{app_info.name}-{build_type}-{abis[0]}-{app_info.version_name}.apk"
+        target = output_dir / target_name
         if target.exists():
             target.unlink()
-        shutil.copy2(source, target)
+        shutil.copy2(apk_file, target)
         console.ok(f"apk={target.relative_to(project_root)} size_mb={target.stat().st_size / 1024 / 1024:.2f}")
-
-
-def signing_args_from_env() -> list[str]:
-    pairs = (
-        ("KEYSTORE_PATH", "android.injected.signing.store.file"),
-        ("KEYSTORE_PASSWORD", "android.injected.signing.store.password"),
-        ("KEY_ALIAS", "android.injected.signing.key.alias"),
-        ("KEY_PASSWORD", "android.injected.signing.key.password"),
-    )
-    return [f"-P{property_name}={os.environ[key]}" for key, property_name in pairs if os.environ.get(key)]
 
 
 def build_apk(args: argparse.Namespace) -> None:
@@ -207,7 +187,7 @@ def build_apk(args: argparse.Namespace) -> None:
         console.ok("output dir cleaned")
 
     console.step(1, 2, "Build APK")
-    gradle_args = [assemble_task(build_type), f"-PabiFilter={','.join(abis)}", *signing_args_from_env()]
+    gradle_args = [assemble_task(build_type), f"-PabiFilter={','.join(abis)}"]
     result = run_process(console, gradlew_path(project_root), gradle_args, cwd=project_root)
     if result.returncode != 0:
         fail("apk build failed")
@@ -230,8 +210,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Build APK files",
     )
     apk.add_argument("-v", "--verbose", action="store_true", help="Print Gradle output and command details")
-    apk.add_argument("--abi", choices=SUPPORTED_ABIS, default="armeabi-v7a", help="Target ABI (default: armeabi-v7a)")
-    apk.add_argument("--build-type", default="release", help="Gradle build type; default: release")
+    apk.add_argument("--abi", choices=SUPPORTED_ABIS, default="armeabi-v7a", help="Target ABI")
+    apk.add_argument("--build-type", default="debug", help="Gradle build type; default: debug")
     apk.add_argument("--clean", action="store_true", help="Remove old APK files from build/apk before building")
     apk.set_defaults(func=build_apk)
     return parser
