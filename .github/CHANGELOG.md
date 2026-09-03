@@ -1,5 +1,5 @@
-- Add a top bar blur option to appearance settings
+- Restore the slide animation for the predictive back gesture
 
 ---
 
-- 在外观设置里新增顶栏模糊开关
+- 恢复预测性返回手势的页面滑动动画
