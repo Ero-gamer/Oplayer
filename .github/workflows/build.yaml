@@ -31,7 +31,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.x'
 
@@ -55,7 +55,7 @@ jobs:
         run: python scripts/build.py build-apk --abi armeabi-v7a --clean
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: Media3-Player-armv7a-${{ github.sha }}
           path: build/apk/*.apk
