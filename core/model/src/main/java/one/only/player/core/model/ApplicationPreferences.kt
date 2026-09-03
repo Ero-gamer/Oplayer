@@ -13,6 +13,7 @@ data class ApplicationPreferences(
     val shouldNavigateHomeOnTitleLongPress: Boolean = false,
     val shouldUseFloatingNavigationBar: Boolean = false,
     val shouldBlurFloatingNavigationBar: Boolean = true,
+    val shouldBlurTopBar: Boolean = true,
     val shouldEnablePredictiveBack: Boolean = false,
     val shouldPreventScreenshots: Boolean = false,
     val shouldHideInRecents: Boolean = false,

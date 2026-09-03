@@ -92,6 +92,9 @@ internal suspend fun DebugCommandEntryPoint.setSetting(
         "appearance.floating_navigation_bar" -> updateApplicationBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldUseFloatingNavigationBar = isEnabled)
         }
+        "appearance.top_bar_blur" -> updateApplicationBoolean(value) { preferences, isEnabled ->
+            preferences.copy(shouldBlurTopBar = isEnabled)
+        }
         "appearance.floating_navigation_bar_blur" -> updateApplicationBoolean(value) { preferences, isEnabled ->
             preferences.copy(shouldBlurFloatingNavigationBar = isEnabled)
         }
@@ -346,6 +349,7 @@ internal suspend fun DebugCommandEntryPoint.toggleSetting(target: String?) {
         "appearance.dynamic_colors" -> toggleApplication { it.copy(shouldUseDynamicColors = !it.shouldUseDynamicColors) }
         "appearance.title_long_press_home" -> toggleApplication { it.copy(shouldNavigateHomeOnTitleLongPress = !it.shouldNavigateHomeOnTitleLongPress) }
         "appearance.floating_navigation_bar" -> toggleApplication { it.copy(shouldUseFloatingNavigationBar = !it.shouldUseFloatingNavigationBar) }
+        "appearance.top_bar_blur" -> toggleApplication { it.copy(shouldBlurTopBar = !it.shouldBlurTopBar) }
         "appearance.floating_navigation_bar_blur" -> toggleApplication { it.copy(shouldBlurFloatingNavigationBar = !it.shouldBlurFloatingNavigationBar) }
         "appearance.predictive_back" -> toggleApplication { it.copy(shouldEnablePredictiveBack = !it.shouldEnablePredictiveBack) }
         "appearance.show_cloud_tab" -> toggleApplication { it.copy(shouldShowCloudTab = !it.shouldShowCloudTab) }

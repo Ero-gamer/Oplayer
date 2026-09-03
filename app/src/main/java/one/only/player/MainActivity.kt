@@ -52,6 +52,7 @@ import one.only.player.core.media.sync.MediaSynchronizer
 import one.only.player.core.model.ThemeConfig
 import one.only.player.core.ui.R as UiR
 import one.only.player.core.ui.components.AppDialog
+import one.only.player.core.ui.components.LocalTopBarBlur
 import one.only.player.core.ui.composables.rememberRuntimePermissionState
 import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
 import one.only.player.core.ui.theme.OnlyPlayerTheme
@@ -173,6 +174,7 @@ class MainActivity : AppCompatActivity() {
             val preferences = (uiState as? MainActivityUiState.Success)?.preferences
             val shouldPreventScreenshots = preferences?.shouldPreventScreenshots == true
             val shouldHideInRecents = preferences?.shouldHideInRecents == true
+            val shouldBlurTopBar = preferences?.shouldBlurTopBar != false
             LaunchedEffect(shouldPreventScreenshots, shouldHideInRecents) {
                 if (preferences == null) return@LaunchedEffect
                 this@MainActivity.applyPrivacyProtection(
@@ -192,16 +194,18 @@ class MainActivity : AppCompatActivity() {
                 shouldUseDarkTheme = shouldUseDarkTheme,
                 shouldUseDynamicColor = shouldUseDynamicColor,
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MiuixTheme.colorScheme.surface,
-                ) {
-                    MainAppContent(
-                        shouldUseFloatingNavigationBar = preferences?.shouldUseFloatingNavigationBar == true,
-                        shouldBlurFloatingNavigationBar = preferences?.shouldBlurFloatingNavigationBar != false,
-                        shouldShowCloudTab = preferences?.shouldShowCloudTab != false,
-                        onMediaAccessAvailable = synchronizer::startSync,
-                    )
+                CompositionLocalProvider(LocalTopBarBlur provides shouldBlurTopBar) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MiuixTheme.colorScheme.surface,
+                    ) {
+                        MainAppContent(
+                            shouldUseFloatingNavigationBar = preferences?.shouldUseFloatingNavigationBar == true,
+                            shouldBlurFloatingNavigationBar = preferences?.shouldBlurFloatingNavigationBar != false,
+                            shouldShowCloudTab = preferences?.shouldShowCloudTab != false,
+                            onMediaAccessAvailable = synchronizer::startSync,
+                        )
+                    }
                 }
             }
         }

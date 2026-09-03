@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.serialization.Serializable
 import one.only.player.core.ui.R as UiR
+import one.only.player.core.ui.components.surfaceBlur
 import one.only.player.core.ui.designsystem.AppIcons
 import one.only.player.core.ui.extensions.LocalRootBottomBarPadding
 import one.only.player.ui.component.FloatingBottomBar
@@ -42,13 +42,10 @@ import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.Backdrop
-import top.yukonga.miuix.kmp.blur.BlendColorEntry
-import top.yukonga.miuix.kmp.blur.BlurDefaults
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
-import top.yukonga.miuix.kmp.blur.textureBlur
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 // 根 Tab 定义，每项对应一个顶级导航目的地
@@ -183,22 +180,7 @@ fun RootBottomBar(
     val isBlurEnabled = floatingBlurBackdrop != null
     val barColor = if (isBlurEnabled) Color.Transparent else MiuixTheme.colorScheme.surface
     NavigationBar(
-        modifier = modifier.then(
-            if (isBlurEnabled) {
-                Modifier.textureBlur(
-                    backdrop = floatingBlurBackdrop,
-                    shape = RectangleShape,
-                    blurRadius = 25f,
-                    colors = BlurDefaults.blurColors(
-                        blendColors = listOf(
-                            BlendColorEntry(color = MiuixTheme.colorScheme.surface.copy(0.8f)),
-                        ),
-                    ),
-                )
-            } else {
-                Modifier
-            },
-        ),
+        modifier = modifier.surfaceBlur(floatingBlurBackdrop),
         color = barColor,
     ) {
         destinations.forEach { target ->
