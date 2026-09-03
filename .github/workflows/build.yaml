@@ -35,8 +35,24 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Build Debug APK
-        run: python scripts/build.py build-apk --abi armeabi-v7a --build-type debug --clean
+      - name: Generate Temporary Debug Keystore
+        id: debug_signing
+        shell: bash
+        run: |
+          keystore_path="${RUNNER_TEMP}/release-debug.keystore"
+          keytool -genkey -v -keystore "${keystore_path}" \
+            -storepass android -alias androiddebugkey -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+          echo "keystore_path=${keystore_path}" >> "$GITHUB_OUTPUT"
+
+      - name: Build Release APK
+        env:
+          KEYSTORE_PATH: ${{ steps.debug_signing.outputs.keystore_path }}
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: androiddebugkey
+          KEY_PASSWORD: android
+        run: python scripts/build.py build-apk --abi armeabi-v7a --build-type release --clean
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v7.0.1
