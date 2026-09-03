@@ -1,5 +1,5 @@
-- Let you hide the cloud tab from the bottom bar
+- Add a top bar blur option to appearance settings
 
 ---
 
-- 可以在外观设置里关掉底部导航的云端入口
+- 在外观设置里新增顶栏模糊开关
