@@ -19,7 +19,7 @@ android {
 
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk = 27
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         applicationId = "one.only.player"
         versionCode = 194
